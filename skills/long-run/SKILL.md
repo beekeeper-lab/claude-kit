@@ -45,45 +45,47 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 ### Phase 3: Bean Execution
 
 7. **Pick the bean** — Update status to `In Progress` in both `bean.md` and `_index.md`. Set owner to `team-lead`.
-8. **Create feature branch** — Create and checkout the feature branch:
+8. **Ensure test branch exists** — Check if `test` branch exists locally. If not, create it: `git checkout -b test main && git checkout -`.
+9. **Create feature branch** — Create and checkout the feature branch (mandatory for every bean):
    - Branch name: `bean/BEAN-NNN-<slug>` (derived from the bean directory name)
    - Command: `git checkout -b bean/BEAN-NNN-<slug>`
    - If the branch already exists (e.g., resuming after an error), check it out instead.
-9. **Decompose into tasks** — Read the bean's Problem Statement, Goal, Scope, and Acceptance Criteria. Create numbered task files in `ai/beans/BEAN-NNN-<slug>/tasks/`:
-   - Name: `01-<owner>-<slug>.md`, `02-<owner>-<slug>.md`, etc.
-   - Follow the wave: BA → Architect → Developer → Tech-QA.
-   - Skip roles when not needed (e.g., skip BA/Architect for markdown-only beans).
-   - Each task file includes: Owner, Depends On, Goal, Inputs, Acceptance Criteria, Definition of Done.
-10. **Update bean task table** — Fill in the Tasks table in `bean.md` with the created tasks.
+   - All work happens on this branch. Never commit to `main`.
+10. **Decompose into tasks** — Read the bean's Problem Statement, Goal, Scope, and Acceptance Criteria. Create numbered task files in `ai/beans/BEAN-NNN-<slug>/tasks/`:
+    - Name: `01-<owner>-<slug>.md`, `02-<owner>-<slug>.md`, etc.
+    - Follow the wave: BA → Architect → Developer → Tech-QA.
+    - Skip roles when not needed (e.g., skip BA/Architect for markdown-only beans).
+    - Each task file includes: Owner, Depends On, Goal, Inputs, Acceptance Criteria, Definition of Done.
+11. **Update bean task table** — Fill in the Tasks table in `bean.md` with the created tasks.
 
 ### Phase 4: Wave Execution
 
-11. **Execute tasks in dependency order** — For each task:
+12. **Execute tasks in dependency order** — For each task:
     - Read the task file and all referenced inputs.
     - Perform the work as the assigned persona.
     - Write outputs to `ai/outputs/<persona>/`.
     - Update the task status to `Done` in the task file and the bean's task table.
     - Reprint the **Header Block + Task Progress Table** after each status change.
-12. **Skip inapplicable roles** — If a role has no meaningful contribution for a bean (e.g., Architect for a documentation-only bean), skip it. Document the skip reason in the bean's Notes section.
+13. **Skip inapplicable roles** — If a role has no meaningful contribution for a bean (e.g., Architect for a documentation-only bean), skip it. Document the skip reason in the bean's Notes section.
 
 ### Phase 5: Verification & Closure
 
-13. **Verify acceptance criteria** — Check every criterion in the bean's Acceptance Criteria section. For code beans: run tests (`uv run pytest`) and lint (`uv run ruff check`).
-14. **Close the bean** — Update status to `Done` in both `bean.md` and `_index.md`.
-15. **Commit on feature branch** — Stage all files changed during this bean's execution. Commit with message: `BEAN-NNN: <bean title>`. The commit goes on the `bean/BEAN-NNN-<slug>` branch.
+14. **Verify acceptance criteria** — Check every criterion in the bean's Acceptance Criteria section. For code beans: run tests (`uv run pytest`) and lint (`uv run ruff check`).
+15. **Close the bean** — Update status to `Done` in both `bean.md` and `_index.md`.
+16. **Commit on feature branch** — Stage all files changed during this bean's execution. Commit with message: `BEAN-NNN: <bean title>`. The commit goes on the `bean/BEAN-NNN-<slug>` branch.
 
 ### Phase 5.5: Merge Captain
 
-16. **Merge to test branch** — Execute the `/merge-bean` skill to merge the feature branch into `test`:
+17. **Merge to test branch** — Execute the `/merge-bean` skill to merge the feature branch into `test`:
     - Checkout `test`, pull latest, merge `bean/BEAN-NNN-<slug>` with `--no-ff`, push.
     - If merge conflicts occur: report the conflicts, abort the merge, leave the bean on its feature branch, and stop the loop.
     - If merge succeeds: continue.
-17. **Return to main** — Checkout the main branch: `git checkout main`.
-18. **Report progress** — Print the **Completion Summary** from the Team Lead Communication Template: bean title, task counts, branch name, files changed, notes, and remaining backlog status.
+18. **Return to main** — Checkout the main branch: `git checkout main`.
+19. **Report progress** — Print the **Completion Summary** from the Team Lead Communication Template: bean title, task counts, branch name, files changed, notes, and remaining backlog status.
 
 ### Phase 6: Loop
 
-19. **Return to Phase 1** — Read the backlog again. If actionable beans remain, process the next one. If not, report final summary and exit.
+20. **Return to Phase 1** — Read the backlog again. If actionable beans remain, process the next one. If not, report final summary and exit.
 
 ---
 

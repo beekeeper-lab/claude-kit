@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-033 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -37,22 +37,21 @@ Implement a `GenerationProgressScreen` PySide6 widget that displays real-time pr
 
 ## Acceptance Criteria
 
-- [ ] `GenerationProgressScreen` widget exists and renders
-- [ ] Shows stage-by-stage progress through pipeline
-- [ ] Displays elapsed time and file counts
-- [ ] Shows warnings and errors clearly
-- [ ] Integrates with main window navigation
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `GenerationProgressScreen` widget exists and renders
+- [x] Shows stage-by-stage progress through pipeline
+- [x] Displays elapsed time and file counts
+- [x] Shows warnings and errors clearly
+- [x] Integrates with main window navigation (via signals)
+- [x] All tests pass (`uv run pytest`) — 25 PySide6 tests
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Implement progress screen | Developer | — | Done |
+| 2 | Implement stage status widget | Developer | — | Done |
+| 3 | Write tests (25 tests) | Tech-QA | 1,2 | Done |
 
 ## Notes
 

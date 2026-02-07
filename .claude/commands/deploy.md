@@ -1,10 +1,6 @@
 # /deploy Command
 
-Claude Code slash command that promotes the `test` integration branch to `main` with a full quality gate: tests, code quality review, security review, release notes, and user approval.
-
-## Purpose
-
-After beans are completed and merged to `test`, this command provides a deliberate, gated process for promoting that work to `main`. The user controls when deploys happen — they are never automatic.
+Promotes `test` to `main` via a pull request. Runs tests, creates the PR, merges it, and cleans up — all after a single user approval.
 
 ## Usage
 
@@ -12,80 +8,54 @@ After beans are completed and merged to `test`, this command provides a delibera
 /deploy [--tag <version>]
 ```
 
-- `--tag <version>` -- Optional. Tag the merge commit on `main` with a version (e.g., `v1.1.0`).
-
-## Inputs
-
-| Input | Source | Required |
-|-------|--------|----------|
-| `test` branch | Git | Yes (must exist and have commits ahead of `main`) |
-| `main` branch | Git | Yes (target for merge) |
-| Bean index | `ai/beans/_index.md` | Yes (for release notes generation) |
+- `--tag <version>` -- Optional. Tag the merge commit with a version (e.g., `v1.2.0`).
 
 ## Process
 
-1. **Checkout test** — `git checkout test && git pull origin test`.
-2. **Verify ahead of main** — Check that `test` has commits not in `main`. If test is not ahead, report "Nothing to deploy" and stop.
-3. **Run tests** — Execute `uv run pytest`. All tests must pass.
-4. **Code quality review** — Acting as the code-quality-reviewer persona, review the diff between `main` and `test`. Produce a report at `ai/outputs/code-quality-reviewer/deploy-YYYY-MM-DD.md`.
-5. **Security review** — Acting as the security-engineer persona, review the diff for vulnerabilities. Produce a report at `ai/outputs/security-engineer/deploy-YYYY-MM-DD.md`.
-6. **Generate release notes** — Identify all beans merged to `test` since the last deploy. Produce a summary listing each bean's title and key changes.
-7. **Present summary** — Show the user: release notes, review verdicts, test results.
-8. **Wait for approval** — Ask the user for explicit "go" before proceeding. If the user declines, abort cleanly.
-9. **Merge to main** — `git checkout main && git pull origin main && git merge test --no-ff`.
-10. **Tag (optional)** — If `--tag` was provided: `git tag <version>`.
-11. **Push** — `git push origin main` (and `git push origin --tags` if tagged).
-12. **Report** — Output: merge commit hash, beans included, tag (if any).
-
-## Output
-
-| Artifact | Path | Description |
-|----------|------|-------------|
-| Code quality report | `ai/outputs/code-quality-reviewer/deploy-YYYY-MM-DD.md` | Quality review of test→main diff |
-| Security report | `ai/outputs/security-engineer/deploy-YYYY-MM-DD.md` | Security review of test→main diff |
-| Release notes | Console output | Summary of beans and changes being deployed |
-| Merge commit | Git history on `main` | test merged into main |
-
-## Error Handling
-
-| Error | Cause | Resolution |
-|-------|-------|------------|
-| `NothingToDeploy` | `test` is not ahead of `main` | Report and stop — no action needed |
-| `TestFailure` | Tests fail on `test` branch | Report failures; do not merge. Fix on a bean branch first. |
-| `QualityGateFail` | Code quality or security review finds blockers | Report issues; do not merge. User decides whether to proceed. |
-| `MergeConflict` | Conflict merging test → main | Report conflicting files; abort merge. This shouldn't happen if main is only updated via /deploy. |
-| `UserDeclined` | User says "no" at approval gate | Abort cleanly, return to previous branch |
-| `PushFailure` | Push to main fails | Report error for manual resolution |
+1. **Auto-stash** dirty working tree if needed (restored at end)
+2. **Checkout test**, push to remote
+3. **Run tests** (`uv run pytest`) and **ruff** (`uv run ruff check foundry_app/`) — stop if they fail
+4. **Build release notes** from bean commits in `git log main..test`
+5. **Show summary** — beans, test results, branch cleanup count
+6. **One approval prompt** — user says "go", "go with tag", or "abort"
+7. **Create PR** (`gh pr create --base main --head test`)
+8. **Merge PR** (`gh pr merge --merge`) — preserves full commit history
+9. **Tag** if requested
+10. **Delete** merged feature branches (local + remote)
+11. **Sync main** locally, restore stash
+12. **Report** — PR URL, merge commit, beans deployed, branches deleted
 
 ## Examples
 
-**Standard deploy:**
 ```
-/deploy
+/deploy              # Standard deploy
+/deploy --tag v2.0.0 # Deploy with version tag
 ```
-Checks out test, runs tests, performs reviews, generates release notes, asks for approval, merges to main.
 
-**Deploy with version tag:**
-```
-/deploy --tag v1.2.0
-```
-Same as above, plus tags the merge commit as `v1.2.0`.
-
-**Typical approval prompt:**
+**Approval prompt:**
 ```
 ===================================================
-DEPLOY: test → main
+DEPLOY: test → main (via PR)
 ===================================================
 
-Beans included:
-  - BEAN-012: Enforce Feature Branch Workflow
-  - BEAN-013: Deploy Command
-  - BEAN-014: Team Lead Progress Dashboard
+Beans: BEAN-029, BEAN-030, BEAN-033
+Tests: 750 passed, 0 failed
+Ruff: clean
 
-Reviews:
-  Code Quality: PASS
-  Security: PASS
-  Tests: 300 passed, 0 failed
+Post-merge: 3 feature branches will be deleted
 
-Proceed with merge to main? [go / abort]
+On "go": create PR, merge it, delete branches,
+restore working tree. No further prompts.
+===================================================
 ```
+
+## Error Handling
+
+| Error | Resolution |
+|-------|------------|
+| Nothing to deploy | Report and exit |
+| Tests fail | Report failures, stop. Fix on a bean branch first. |
+| PR create fails | Check `gh auth status` and repo permissions |
+| PR merge fails | Check branch protection rules or merge conflicts |
+| User aborts | Restore stash, return to original branch |
+| Command blocked by sandbox | Prints exact command for manual execution, continues |

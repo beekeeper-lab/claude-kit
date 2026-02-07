@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-009 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 
 ## Problem Statement
 
@@ -46,10 +46,10 @@ Refine the hook-policy and safety settings to support branch-level push permissi
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| | | | | |
+| 01 | Update Push Hooks, Settings, and Agent Files | developer | — | Done |
+| 02 | Push Hook Refinement Verification | tech-qa | 01 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> BA and Architect skipped — requirements are clear and this is a configuration/documentation change, not an architectural decision.
 
 ## Notes
 

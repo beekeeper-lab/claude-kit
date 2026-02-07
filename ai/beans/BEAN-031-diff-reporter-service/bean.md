@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-031 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -34,21 +34,20 @@ Implement a `DiffReporterService` that generates a `diff-report.md` file summari
 
 ## Acceptance Criteria
 
-- [ ] `foundry_app/services/diff_reporter.py` exists with `write_diff_report()` function
-- [ ] Generates markdown report with create/update/delete sections
-- [ ] Handles empty overlay plans gracefully
-- [ ] Generator stub replaced with real service call
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `foundry_app/services/diff_reporter.py` exists with `write_diff_report()` function
+- [x] Generates markdown report with create/update/delete sections
+- [x] Handles empty overlay plans gracefully
+- [x] Generator stub replaced with real service call
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Implement diff reporter service | Developer | — | Done |
+| 2 | Integrate with generator | Developer | 1 | Done |
+| 3 | Write tests (19 tests) | Tech-QA | 1 | Done |
 
 ## Notes
 

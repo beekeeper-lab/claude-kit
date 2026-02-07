@@ -110,29 +110,37 @@ When `fast N` is provided, the Team Lead orchestrates N parallel workers instead
 
 5. **Select independent beans** — From the actionable set, select up to N beans that have no unmet inter-bean dependencies. Beans that depend on other pending or in-progress beans are queued, not parallelized.
 6. **Update bean statuses** — Mark each selected bean as `In Progress` in both `bean.md` and `_index.md`. Set owner to `team-lead`.
-7. **Spawn workers** — For each selected bean, open a tmux child window:
-   ```
-   tmux new-window -n "bean-NNN" "claude --print '
-   Process BEAN-NNN-<slug> through the full team wave:
+7. **Spawn workers** — For each selected bean, create a launcher script and open a tmux child window:
+   ```bash
+   LAUNCHER=$(mktemp /tmp/foundry-bean-XXXXXX.sh)
+   cat > "$LAUNCHER" << 'SCRIPT_EOF'
+   #!/bin/bash
+   cd /home/gregg/Nextcloud/workspace/foundry
+   claude --dangerously-skip-permissions --agent team-lead \
+     "Process BEAN-NNN-<slug> through the full team wave:
    1. Create feature branch bean/BEAN-NNN-<slug>
    2. Decompose into tasks
    3. Execute the wave (BA → Architect → Developer → Tech-QA)
    4. Verify acceptance criteria
    5. Commit on the feature branch
    6. Update bean status to Done
-   7. Merge feature branch into test (Merge Captain)
-   '"
+   7. Merge feature branch into test (Merge Captain)"
+   SCRIPT_EOF
+   chmod +x "$LAUNCHER"
+   tmux new-window -n "bean-NNN" "bash $LAUNCHER; rm -f $LAUNCHER"
    ```
-8. **Record worker assignments** — Track which window is processing which bean.
+   The prompt is passed as a positional argument to `claude`, so it auto-submits immediately. The window auto-closes when claude exits (no bare shell left behind). The launcher script self-deletes after use. Stagger spawns by ~15 seconds.
+8. **Record worker assignments** — Track which window name maps to which bean.
 
 ### Parallel Phase 4: Progress Monitoring
 
-9. **Monitor workers** — Periodically read `_index.md` to detect status changes as workers complete beans.
-10. **Report completions** — As each worker finishes (bean moves to `Done`), report in the main window.
-11. **Assign next bean** — When a worker becomes idle:
+9. **Monitor workers** — Use `tmux list-windows -F '#{window_name}'` to check which worker windows are still active. Worker windows are named `bean-NNN`. When a worker finishes (claude exits), its window auto-closes — a disappeared window means the worker completed (or failed). Cross-reference with `_index.md` to confirm bean status changes.
+10. **Report completions** — As each worker finishes (bean moves to `Done` and window disappears), report in the main window.
+11. **Assign next bean** — When a worker window disappears:
     - Re-read the backlog for newly unblocked beans.
-    - If an independent actionable bean exists, assign it to the idle worker by spawning a new tmux window.
-    - If no more beans, let the worker stay idle.
+    - If an independent actionable bean exists, spawn a new worker window for it using the same launcher script pattern.
+    - If no more beans, do not spawn.
+    - To force-kill a stuck worker: `tmux kill-window -t "bean-NNN"`
 
 ### Parallel Phase 5: Completion
 

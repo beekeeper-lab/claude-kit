@@ -23,6 +23,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 | `/bean-status` | At any time to review the backlog. Shows all beans grouped by status with counts and actionable items. Use `--verbose` for task-level detail. |
 | `/long-run` | When the user wants autonomous backlog processing. Reads the backlog, picks the best bean, decomposes, executes the wave, verifies, commits, merges to `test`, and loops until the backlog is clear. Use `--fast N` to run N beans in parallel via tmux child windows. |
 | `/merge-bean` | After a bean is Done and committed on its feature branch. Safely merges the feature branch into `test` (checkout, pull, merge --no-ff, push). Reports conflicts without auto-resolving. |
+| `/deploy` | When the user wants to promote `test` → `main`. Runs tests, code quality review, security review, generates release notes, waits for user approval, then merges. The only authorized path to `main`. |
 | `/seed-tasks` | When decomposing a bean into tasks. Helps structure tasks with owners, dependencies, and acceptance criteria. |
 | `/new-work` | When creating a new work item (feature, bug, chore, spike, refactor) outside the beans flow. Routes through the proper funnel with type-specific artifacts. |
 | `/status-report` | After each task completes and when closing a bean. Scan task state, collect artifacts, identify blockers, produce a progress summary for stakeholders. Write to `ai/outputs/team-lead/`. |

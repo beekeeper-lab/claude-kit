@@ -60,6 +60,7 @@ def _compile_member(
         "stacks": stack_ids,
         "hooks_posture": hooks_posture,
         "strictness": strictness,
+        "project_context": project_context,
     }
 
     persona_md = _render_template(_read_file_or_empty(persona_dir / "persona.md"), tpl_ctx)

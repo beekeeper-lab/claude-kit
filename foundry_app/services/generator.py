@@ -163,9 +163,10 @@ def _run_pipeline(
     # Step 3: Compile
     members_dir = project_dir / "ai" / "generated" / "members"
     project_context = ""
-    context_file = project_dir / "ai" / "context" / "project.md"
-    if context_file.is_file():
-        project_context = context_file.read_text()
+    if composition.generation.inject_project_context:
+        context_file = project_dir / "ai" / "context" / "project.md"
+        if context_file.is_file():
+            project_context = context_file.read_text()
 
     logger.info("Compiling team members to %s", members_dir)
     compile_result = compile_team(

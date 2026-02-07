@@ -57,6 +57,7 @@ class GenerationOptions(BaseModel):
     seed_mode: str = "detailed"  # detailed | kickoff
     write_manifest: bool = True
     write_diff_report: bool = False
+    inject_project_context: bool = True
 
 
 class GitPolicy(BaseModel):

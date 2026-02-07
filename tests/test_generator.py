@@ -260,3 +260,33 @@ def test_generate_kickoff_mode(tmp_path: Path):
     content = tasks_file.read_text()
     assert "kickoff" in content.lower()
     assert "team-lead" in content
+
+
+# -- Project context injection toggle -----------------------------------------
+
+
+def test_generate_injects_project_context_by_default(tmp_path: Path):
+    """When project.md exists and toggle is default (True), compiled prompts include context."""
+    spec = _make_spec(personas=["developer"], seed_tasks=False)
+    output = tmp_path / "project"
+
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    assert validation.is_valid
+
+    # Scaffold creates ai/context/project.md, so context should be injected
+    compiled = (output / "ai" / "generated" / "members" / "developer.md").read_text()
+    # The scaffold creates a project.md with stacks info — check for the section header
+    assert "## Project Context" in compiled
+
+
+def test_generate_skips_project_context_when_disabled(tmp_path: Path):
+    """When inject_project_context is False, compiled prompts should not include context."""
+    spec = _make_spec(personas=["developer"], seed_tasks=False)
+    spec.generation.inject_project_context = False
+    output = tmp_path / "project"
+
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    assert validation.is_valid
+
+    compiled = (output / "ai" / "generated" / "members" / "developer.md").read_text()
+    assert "## Project Context" not in compiled

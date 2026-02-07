@@ -18,4 +18,4 @@
 | BEAN-002 | Generator Overlay Mode | High | Done | team-lead |
 | BEAN-003 | Bean Management Commands | Medium | New | — |
 | BEAN-004 | Safety Source Directory Config | Low | Done | team-lead |
-| BEAN-005 | Compiled Prompt Project Context | Medium | New | — |
+| BEAN-005 | Compiled Prompt Project Context | Medium | Done | team-lead |

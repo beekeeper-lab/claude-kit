@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-005 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 
 ## Problem Statement
 
@@ -30,21 +30,23 @@ Enhance the compiler to optionally inject project context from `ai/context/proje
 
 ## Acceptance Criteria
 
-- [ ] Compiled member prompts include project context when `project.md` exists
-- [ ] Context injection is togglable (default: on when `project.md` exists)
-- [ ] Each persona's compiled prompt includes the project overview and architecture
-- [ ] Tests verify context injection with and without `project.md`
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Compiled member prompts include project context when `project.md` exists
+- [x] Context injection is togglable via `inject_project_context` (default: true)
+- [x] Each persona's compiled prompt includes project overview and architecture
+- [x] `{{ project_context }}` available as Jinja2 variable in library .md files
+- [x] Tests verify context injection with and without `project.md` (10 new tests)
+- [x] All tests pass (`uv run pytest`) — 323 total
+- [x] Lint clean (`uv run ruff check foundry_app/`) — 0 new issues
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| | | | | |
+| 01 | Context Injection Requirements | ba | — | Done |
+| 02 | Context Injection Implementation | developer | 01 | Done |
+| 03 | Context Injection Verification | tech-qa | 02 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Note: Architect task skipped — no architectural decisions needed. The core mechanism already exists; this bean adds a toggle, a Jinja2 variable, and tests.
 
 ## Notes
 

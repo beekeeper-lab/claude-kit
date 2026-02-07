@@ -6,6 +6,7 @@ from pathlib import Path
 
 from foundry_app.core.models import (
     CompositionSpec,
+    GenerationOptions,
     HookPackSelection,
     HooksConfig,
     PersonaSelection,
@@ -418,3 +419,148 @@ def test_jinja2_renders_stacks_list(tmp_path: Path):
     assert "{{ stacks" not in compiled_text, (
         "Raw Jinja2 placeholder should not appear in compiled output"
     )
+
+
+# ---------------------------------------------------------------------------
+# Project context injection tests
+# ---------------------------------------------------------------------------
+
+
+def test_compile_injects_project_context(tmp_path: Path):
+    """compile_team should inject project_context into the compiled prompt."""
+    library_root = tmp_path / "library"
+    output_dir = tmp_path / "output"
+
+    _create_persona_dir(library_root, "developer")
+
+    spec = _make_spec_local(
+        personas=[PersonaSelection(id="developer", include_agent=True)],
+        stacks=[],
+    )
+
+    compile_team(spec, library_root, output_dir, project_context="# My Project\n\nThis is Foundry.")
+
+    compiled_text = (output_dir / "developer.md").read_text()
+    assert "## Project Context" in compiled_text
+    assert "This is Foundry." in compiled_text
+
+
+def test_compile_omits_project_context_when_empty(tmp_path: Path):
+    """compile_team should not include a Project Context section when context is empty."""
+    library_root = tmp_path / "library"
+    output_dir = tmp_path / "output"
+
+    _create_persona_dir(library_root, "developer")
+
+    spec = _make_spec_local(
+        personas=[PersonaSelection(id="developer", include_agent=True)],
+        stacks=[],
+    )
+
+    compile_team(spec, library_root, output_dir, project_context="")
+
+    compiled_text = (output_dir / "developer.md").read_text()
+    assert "## Project Context" not in compiled_text
+
+
+def test_compile_omits_project_context_when_whitespace_only(tmp_path: Path):
+    """Whitespace-only project context should be treated as empty."""
+    library_root = tmp_path / "library"
+    output_dir = tmp_path / "output"
+
+    _create_persona_dir(library_root, "developer")
+
+    spec = _make_spec_local(
+        personas=[PersonaSelection(id="developer", include_agent=True)],
+        stacks=[],
+    )
+
+    compile_team(spec, library_root, output_dir, project_context="   \n  \n  ")
+
+    compiled_text = (output_dir / "developer.md").read_text()
+    assert "## Project Context" not in compiled_text
+
+
+def test_compile_default_project_context_is_empty(tmp_path: Path):
+    """When no project_context is passed, no Project Context section appears."""
+    library_root = tmp_path / "library"
+    output_dir = tmp_path / "output"
+
+    _create_persona_dir(library_root, "developer")
+
+    spec = _make_spec_local(
+        personas=[PersonaSelection(id="developer", include_agent=True)],
+        stacks=[],
+    )
+
+    # Call without project_context (uses default "")
+    compile_team(spec, library_root, output_dir)
+
+    compiled_text = (output_dir / "developer.md").read_text()
+    assert "## Project Context" not in compiled_text
+
+
+def test_jinja2_renders_project_context_variable(tmp_path: Path):
+    """{{ project_context }} should be available as a Jinja2 variable in library .md files."""
+    library_root = tmp_path / "library"
+    output_dir = tmp_path / "output"
+
+    persona_id = "dev"
+    persona_dir = library_root / "personas" / persona_id
+    persona_dir.mkdir(parents=True, exist_ok=True)
+    (persona_dir / "persona.md").write_text(
+        "# Developer\n\n{{ project_context }}\n"
+    )
+    (persona_dir / "outputs.md").write_text("# Outputs\n")
+    (persona_dir / "prompts.md").write_text("# Prompts\n")
+
+    spec = _make_spec_local(
+        personas=[PersonaSelection(id=persona_id, include_agent=True)],
+        stacks=[],
+    )
+
+    compile_team(
+        spec, library_root, output_dir,
+        project_context="Architecture: pipeline with 6 stages",
+    )
+
+    compiled_text = (output_dir / f"{persona_id}.md").read_text()
+    assert "Architecture: pipeline with 6 stages" in compiled_text
+    assert "{{ project_context }}" not in compiled_text
+
+
+def test_jinja2_project_context_empty_when_no_context(tmp_path: Path):
+    """{{ project_context }} should render as empty string when no context is provided."""
+    library_root = tmp_path / "library"
+    output_dir = tmp_path / "output"
+
+    persona_id = "dev"
+    persona_dir = library_root / "personas" / persona_id
+    persona_dir.mkdir(parents=True, exist_ok=True)
+    (persona_dir / "persona.md").write_text(
+        "# Developer\n\nContext: [{{ project_context }}]\n"
+    )
+    (persona_dir / "outputs.md").write_text("# Outputs\n")
+    (persona_dir / "prompts.md").write_text("# Prompts\n")
+
+    spec = _make_spec_local(
+        personas=[PersonaSelection(id=persona_id, include_agent=True)],
+        stacks=[],
+    )
+
+    compile_team(spec, library_root, output_dir, project_context="")
+
+    compiled_text = (output_dir / f"{persona_id}.md").read_text()
+    assert "Context: []" in compiled_text
+
+
+def test_generation_options_inject_project_context_default():
+    """GenerationOptions.inject_project_context should default to True."""
+    opts = GenerationOptions()
+    assert opts.inject_project_context is True
+
+
+def test_generation_options_inject_project_context_toggle():
+    """GenerationOptions.inject_project_context can be set to False."""
+    opts = GenerationOptions(inject_project_context=False)
+    assert opts.inject_project_context is False

@@ -16,7 +16,6 @@ Updates a bean's status from `New` to `Picked` (or `In Progress`), assigning own
 |-------|------|----------|-------------|
 | bean_id | Text | Yes | Bean ID to pick (e.g., `BEAN-006`, `006`, or `6`) |
 | start | Boolean | No | If true, set status to `In Progress` instead of `Picked`. Defaults to false. |
-| no_branch | Boolean | No | If true, skip feature branch creation even when starting. Defaults to false. |
 
 ## Process
 
@@ -45,14 +44,20 @@ Updates a bean's status from `New` to `Picked` (or `In Progress`), assigning own
    - Status column to the new status
    - Owner column to `team-lead`
 
-8. **Create feature branch** -- If `start` is true and `no_branch` is false:
-   - Derive the slug from the bean directory name (e.g., `BEAN-006-backlog-refinement`)
-   - Run: `git checkout -b bean/BEAN-NNN-<slug>`
-   - If the branch already exists, check it out instead of creating.
+8. **Ensure test branch exists** -- Check if the `test` integration branch exists locally:
+   - Run: `git branch --list test`
+   - If it doesn't exist, create it: `git checkout -b test main && git checkout -` (create from main, then return)
 
-9. **Confirm** -- Report: bean ID, title, new status, branch name (if created), and next step:
-   - If `Picked`: "Ready for review. Use `/pick-bean {id} --start` when ready to decompose."
-   - If `In Progress`: "Ready for decomposition on branch `bean/BEAN-NNN-<slug>`. Create task files in `tasks/` subdirectory."
+9. **Create feature branch** -- Always create the feature branch when starting:
+   - If `start` is true:
+     - Derive the slug from the bean directory name (e.g., `BEAN-006-backlog-refinement`)
+     - Run: `git checkout -b bean/BEAN-NNN-<slug>`
+     - If the branch already exists, check it out instead of creating.
+   - Feature branching is mandatory. Every bean gets its own branch.
+
+10. **Confirm** -- Report: bean ID, title, new status, branch name, and next step:
+    - If `Picked`: "Ready for review. Use `/pick-bean {id} --start` when ready to decompose."
+    - If `In Progress`: "Ready for decomposition on branch `bean/BEAN-NNN-<slug>`. Create task files in `tasks/` subdirectory."
 
 ## Outputs
 

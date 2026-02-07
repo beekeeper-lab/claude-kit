@@ -7,6 +7,7 @@
 | **Priority** | Medium |
 | **Created** | YYYY-MM-DD |
 | **Owner** | (unassigned) |
+| **Category** | (App \| Process \| Infra) |
 
 ## Problem Statement
 

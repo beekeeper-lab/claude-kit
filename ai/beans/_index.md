@@ -10,21 +10,29 @@
 | Done | All acceptance criteria met |
 | Deferred | Intentionally postponed |
 
+## Categories
+
+| Category | Meaning |
+|----------|---------|
+| App | Changes to the Python application — features, services, models, UI, CLI (`foundry_app/`, `tests/`) |
+| Process | Changes to the AI team workflow — agent instructions, skills, commands, communication patterns (`.claude/`, `ai/`) |
+| Infra | Git workflow, hooks, branch protection, CI/CD, deployment |
+
 ## Backlog
 
-| Bean ID | Title | Priority | Status | Owner |
-|---------|-------|----------|--------|-------|
-| BEAN-001 | Backlog Seeding Infrastructure | Medium | Done | team-lead |
-| BEAN-002 | Generator Overlay Mode | High | Done | team-lead |
-| BEAN-003 | Bean Management Commands | Medium | Done | team-lead |
-| BEAN-004 | Safety Source Directory Config | Low | Done | team-lead |
-| BEAN-005 | Compiled Prompt Project Context | Medium | Done | team-lead |
-| BEAN-006 | Backlog Refinement Command | High | Done | team-lead |
-| BEAN-007 | Long Run Command | High | Done | team-lead |
-| BEAN-008 | Feature Branch Workflow | High | Done | team-lead |
-| BEAN-009 | Push Hook Refinement | High | Done | team-lead |
-| BEAN-010 | Parallel Long Run (tmux) | Medium | Done | team-lead |
-| BEAN-011 | Merge Captain Auto-Merge | Medium | Done | team-lead |
-| BEAN-012 | Enforce Feature Branch Workflow | Low | New | (unassigned) |
-| BEAN-013 | Deploy Command | Low | New | (unassigned) |
-| BEAN-014 | Team Lead Progress Dashboard | High | Done | team-lead |
+| Bean ID | Title | Category | Priority | Status | Owner |
+|---------|-------|----------|----------|--------|-------|
+| BEAN-001 | Backlog Seeding Infrastructure | App | Medium | Done | team-lead |
+| BEAN-002 | Generator Overlay Mode | App | High | Done | team-lead |
+| BEAN-003 | Bean Management Commands | Process | Medium | Done | team-lead |
+| BEAN-004 | Safety Source Directory Config | App | Low | Done | team-lead |
+| BEAN-005 | Compiled Prompt Project Context | App | Medium | Done | team-lead |
+| BEAN-006 | Backlog Refinement Command | Process | High | Done | team-lead |
+| BEAN-007 | Long Run Command | Process | High | Done | team-lead |
+| BEAN-008 | Feature Branch Workflow | Infra | High | Done | team-lead |
+| BEAN-009 | Push Hook Refinement | Infra | High | Done | team-lead |
+| BEAN-010 | Parallel Long Run (tmux) | Process | Medium | Done | team-lead |
+| BEAN-011 | Merge Captain Auto-Merge | Process | Medium | Done | team-lead |
+| BEAN-012 | Enforce Feature Branch Workflow | Infra | Low | Done | team-lead |
+| BEAN-013 | Deploy Command | Infra | Low | New | (unassigned) |
+| BEAN-014 | Team Lead Progress Dashboard | Process | High | Done | team-lead |

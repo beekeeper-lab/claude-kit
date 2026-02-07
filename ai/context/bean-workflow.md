@@ -81,7 +81,18 @@ Once all acceptance criteria are met:
 
 ## Branch Strategy
 
-Each bean executes on its own feature branch to isolate work and enable parallel execution.
+**Every bean MUST have its own feature branch.** No exceptions. All work happens on the feature branch, never directly on `main`.
+
+### Integration Branch
+
+The standard integration branch is `test`. All completed beans merge into `test` via the Merge Captain. If `test` does not exist, create it from `main`:
+
+```
+git checkout -b test main
+git push -u origin test
+```
+
+Promotion from `test` → `main` happens via the `/deploy` command (a separate, gated process).
 
 ### Naming Convention
 
@@ -93,23 +104,21 @@ Examples: `bean/BEAN-006-backlog-refinement`, `bean/BEAN-012-user-auth`
 
 ### Lifecycle
 
-1. **Branch creation** — When a bean moves to `In Progress`, create the feature branch from the current HEAD:
+1. **Branch creation** — When a bean moves to `In Progress`, create the feature branch immediately:
    ```
    git checkout -b bean/BEAN-NNN-<slug>
    ```
-2. **Work on the branch** — All task commits for this bean happen on the feature branch.
-3. **Merge** — After the bean is verified and closed, the feature branch is merged into an integration branch (e.g., `test`). See the Merge Captain workflow for details.
+   This is the **first action** after picking a bean. No work happens before the branch exists.
+2. **Work on the branch** — All task commits for this bean happen on the feature branch. Never commit to `main`.
+3. **Merge to test** — After the bean is verified and closed, the Merge Captain merges the feature branch into `test` using `/merge-bean`.
 4. **Cleanup** — After a successful merge, the feature branch can be deleted.
 
-### When to Branch
+### Branch Creation Rules
 
-- `/pick-bean --start` creates the feature branch automatically.
-- `/long-run` creates a feature branch for each bean it processes.
-- Manual bean work should create the branch when moving to `In Progress`.
-
-### When NOT to Branch
-
-- Beans that only modify `ai/` files (documentation, workflow updates) may optionally stay on the current branch if they are the only active work. The Team Lead decides.
+- `/pick-bean --start` always creates the feature branch (mandatory).
+- `/long-run` always creates a feature branch for each bean it processes.
+- Manual bean work MUST create the branch when moving to `In Progress`.
+- There are no exceptions — even doc-only beans get their own branch.
 
 ## Status Values
 

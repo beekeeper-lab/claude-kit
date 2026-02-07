@@ -3,10 +3,11 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-012 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
+| **Category** | Infra |
 
 ## Problem Statement
 
@@ -49,10 +50,10 @@ Make the feature branch workflow the enforced default for all bean processing. T
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| | | | | |
+| 01 | Enforce branching in all workflow docs and skills | developer | — | Done |
+| 02 | Create test branch and verify enforcement | tech-qa | 01 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> BA and Architect skipped — this updates existing docs to enforce an already-designed workflow.
 
 ## Notes
 

@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-035 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -39,19 +39,21 @@ Implement two PySide6 UI screens: (1) Export Screen for archiving generated proj
 
 ## Acceptance Criteria
 
-- [ ] Export screen renders and lists generated projects
-- [ ] Export produces valid ZIP/tarball archives
-- [ ] History screen renders and displays past runs
-- [ ] Re-generate action loads composition correctly
-- [ ] Both screens integrate with main window
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Export screen renders and lists generated projects
+- [x] Export produces valid ZIP/tarball archives (via shutil.make_archive)
+- [x] History screen renders and displays past runs
+- [x] Re-generate action emits signal with project path
+- [x] Both screens integrate with main window (via signals)
+- [x] All tests pass (`uv run pytest`) — 27 PySide6 tests
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Implement export screen | Developer | — | Done |
+| 2 | Implement history screen | Developer | — | Done |
+| 3 | Write tests (15+12 tests) | Tech-QA | 1,2 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.

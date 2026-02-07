@@ -56,4 +56,4 @@
 | BEAN-032 | Generator Orchestrator & Overlay | App | High | Done | team-lead |
 | BEAN-033 | Generation Progress Screen | App | Medium | Done | team-lead |
 | BEAN-034 | CLI Interface | App | Medium | Done | team-lead |
-| BEAN-035 | Export & History Screens | App | Low | New | (unassigned) |
+| BEAN-035 | Export & History Screens | App | Low | Done | team-lead |

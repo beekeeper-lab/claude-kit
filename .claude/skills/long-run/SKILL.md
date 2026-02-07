@@ -17,8 +17,14 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 | backlog | Markdown file | Yes | `ai/beans/_index.md` — master bean index |
 | bean_workflow | Markdown file | Yes | `ai/context/bean-workflow.md` — lifecycle reference |
 | bean_files | Markdown files | Yes | Individual `bean.md` files in `ai/beans/BEAN-NNN-<slug>/` |
+| fast | Integer | No | Number of parallel workers. When provided, enables parallel mode via tmux. |
+| tmux_session | Environment | No | `$TMUX` — required only when `fast` is provided |
 
 ## Process
+
+### Phase 0: Mode Detection
+
+0. **Check mode** — If `fast` input is provided, go to **Parallel Mode** (below). Otherwise, continue with sequential mode (Phase 1).
 
 ### Phase 1: Backlog Assessment
 
@@ -71,6 +77,65 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 
 18. **Return to Phase 1** — Read the backlog again. If actionable beans remain, process the next one. If not, report final summary and exit.
 
+---
+
+## Parallel Mode
+
+When `fast N` is provided, the Team Lead orchestrates N parallel workers instead of processing beans sequentially.
+
+### Parallel Phase 1: tmux Detection
+
+1. **Check tmux** — Verify `$TMUX` environment variable is set.
+   - If not set: display "Parallel mode requires tmux. Please restart Claude Code inside a tmux session and re-run `/long-run --fast N`." Then exit.
+   - If set: proceed.
+
+### Parallel Phase 2: Backlog Assessment
+
+2. **Read the backlog index** — Same as sequential Phase 1: parse `_index.md`, filter actionable beans.
+3. **Check stop condition** — If no actionable beans, report and exit.
+4. **Read candidate beans** — Read each actionable bean's `bean.md` to understand dependencies.
+
+### Parallel Phase 3: Worker Spawning
+
+5. **Select independent beans** — From the actionable set, select up to N beans that have no unmet inter-bean dependencies. Beans that depend on other pending or in-progress beans are queued, not parallelized.
+6. **Update bean statuses** — Mark each selected bean as `In Progress` in both `bean.md` and `_index.md`. Set owner to `team-lead`.
+7. **Spawn workers** — For each selected bean, open a tmux child window:
+   ```
+   tmux new-window -n "bean-NNN" "claude --print '
+   Process BEAN-NNN-<slug> through the full team wave:
+   1. Create feature branch bean/BEAN-NNN-<slug>
+   2. Decompose into tasks
+   3. Execute the wave (BA → Architect → Developer → Tech-QA)
+   4. Verify acceptance criteria
+   5. Commit on the feature branch
+   6. Update bean status to Done
+   '"
+   ```
+8. **Record worker assignments** — Track which window is processing which bean.
+
+### Parallel Phase 4: Progress Monitoring
+
+9. **Monitor workers** — Periodically read `_index.md` to detect status changes as workers complete beans.
+10. **Report completions** — As each worker finishes (bean moves to `Done`), report in the main window.
+11. **Assign next bean** — When a worker becomes idle:
+    - Re-read the backlog for newly unblocked beans.
+    - If an independent actionable bean exists, assign it to the idle worker by spawning a new tmux window.
+    - If no more beans, let the worker stay idle.
+
+### Parallel Phase 5: Completion
+
+12. **Check termination** — When all workers are idle and no actionable beans remain, report final summary and exit.
+13. **Final report** — Output: total beans processed, parallel vs sequential breakdown, all branch names created, remaining backlog status.
+
+### Bean Assignment Rules
+
+- Only assign beans with no unmet dependencies on other in-progress or pending beans.
+- If fewer than N independent beans are available, spawn only as many workers as there are beans.
+- Never assign the same bean to multiple workers.
+- The main window orchestrates only — it does not process beans itself.
+
+---
+
 ## Outputs
 
 | Output | Type | Description |
@@ -91,6 +156,8 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 - Tests and lint pass for every code bean before closing.
 - Each bean is committed separately for clean git history.
 - The loop terminates cleanly when the backlog is empty.
+- In parallel mode: dependent beans are never assigned simultaneously.
+- In parallel mode: the main window orchestrates only, never processes beans itself.
 
 ## Error Conditions
 
@@ -101,8 +168,12 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 | `TaskFailure` | A task cannot be completed | Report failure details, leave bean `In Progress`, stop loop |
 | `TestFailure` | Tests or lint fail | Attempt to fix; if unresolvable, report and stop |
 | `CommitFailure` | Git error during commit | Report error and stop for manual resolution |
+| `NotInTmux` | `--fast` used but `$TMUX` is not set | Instruct user to restart in tmux |
+| `WorkerFailure` | A parallel worker fails on its bean | Report which worker/bean failed; other workers continue |
 
-On error: the current bean stays `In Progress` and the loop stops. The user can inspect the state, fix the issue, and either re-run `/long-run` or manually complete the bean.
+On error in sequential mode: the current bean stays `In Progress` and the loop stops. The user can inspect the state, fix the issue, and either re-run `/long-run` or manually complete the bean.
+
+On error in parallel mode: a single worker failure does not stop other workers. The failed bean stays `In Progress`. The main window reports the failure and continues monitoring remaining workers.
 
 ## Dependencies
 

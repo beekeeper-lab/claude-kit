@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-010 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 
 ## Problem Statement
 
@@ -51,10 +51,10 @@ Add a `--fast N` flag to `/long-run` (or a separate `/run-fast` command) that sp
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| | | | | |
+| 01 | Create Parallel Long Run Command & Skill | developer | — | Done |
+| 02 | Parallel Long Run Verification | tech-qa | 01 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> BA and Architect skipped — architecture sketch is already in the bean, and this updates existing command/skill markdown.
 
 ## Notes
 

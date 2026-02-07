@@ -20,6 +20,7 @@ from foundry_app.core.models import (
     Strictness,
     ValidationResult,
 )
+from foundry_app.services.diff_reporter import write_diff_report
 from foundry_app.services.library_indexer import build_library_index
 from foundry_app.services.safety_writer import write_safety
 from foundry_app.services.scaffold import scaffold_project
@@ -58,10 +59,14 @@ def _stub_write_safety(spec: CompositionSpec, output_dir: Path) -> StageResult:
     return write_safety(spec, output_dir)
 
 
-def _stub_diff_report(spec: CompositionSpec, output_dir: Path) -> StageResult:
-    """Stub for the diff reporter service (BEAN-031)."""
-    logger.info("Diff report stage: stub (BEAN-031 not yet implemented)")
-    return StageResult()
+def _stub_diff_report(
+    spec: CompositionSpec, output_dir: Path, plan: OverlayPlan | None = None,
+) -> StageResult:
+    """Diff report stage — replaced by real implementation."""
+    if plan is None:
+        # No overlay plan available (standard mode); produce empty report
+        plan = OverlayPlan()
+    return write_diff_report(plan, output_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -184,6 +189,7 @@ def _run_pipeline(
     spec: CompositionSpec,
     library: LibraryIndex,
     output_dir: Path,
+    overlay_plan: OverlayPlan | None = None,
 ) -> dict[str, StageResult]:
     """Execute all pipeline stages in order and return per-stage results."""
     stages: dict[str, StageResult] = {}
@@ -197,16 +203,16 @@ def _run_pipeline(
     # Stage 3: Copy assets (stub)
     stages["copy_assets"] = _stub_copy_assets(spec, library, output_dir)
 
-    # Stage 4: Seed tasks (stub, only if enabled)
+    # Stage 4: Seed tasks (only if enabled)
     if spec.generation.seed_tasks:
         stages["seed_tasks"] = _stub_seed_tasks(spec, output_dir)
 
-    # Stage 5: Write safety config (stub)
+    # Stage 5: Write safety config
     stages["safety"] = _stub_write_safety(spec, output_dir)
 
-    # Stage 6: Diff report (stub, only if enabled)
+    # Stage 6: Diff report (only if enabled)
     if spec.generation.write_diff_report:
-        stages["diff_report"] = _stub_diff_report(spec, output_dir)
+        stages["diff_report"] = _stub_diff_report(spec, output_dir, overlay_plan)
 
     return stages
 
@@ -293,6 +299,12 @@ def generate_project(
                 # Phase 3: Apply the overlay plan
                 apply_result = _apply_overlay_plan(overlay_plan, tmp_path, output_dir)
                 manifest.stages["overlay_apply"] = apply_result
+
+        # Write diff report to output dir (needs overlay plan)
+        if composition.generation.write_diff_report and not dry_run:
+            manifest.stages["diff_report"] = write_diff_report(
+                overlay_plan, output_dir,
+            )
 
         logger.info(
             "Overlay generation complete: %d creates, %d updates, %d deletes, %d skips",

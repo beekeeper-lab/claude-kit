@@ -1,6 +1,6 @@
 # /long-run Command
 
-Claude Code slash command that puts the Team Lead in autonomous mode, processing beans from the backlog sequentially until the backlog is empty or no actionable beans remain.
+Claude Code slash command that puts the Team Lead in autonomous mode, processing beans from the backlog until the backlog is empty or no actionable beans remain. Supports sequential (default) and parallel (`--fast N`) modes.
 
 ## Purpose
 
@@ -9,8 +9,10 @@ Automates the manual loop of picking a bean, decomposing it into tasks, executin
 ## Usage
 
 ```
-/long-run
+/long-run [--fast N]
 ```
+
+- `--fast N` -- Run N beans in parallel using tmux child windows (optional).
 
 ## Inputs
 
@@ -18,6 +20,7 @@ Automates the manual loop of picking a bean, decomposing it into tasks, executin
 |-------|--------|----------|
 | Backlog | `ai/beans/_index.md` | Yes (must exist with at least one actionable bean) |
 | Bean workflow | `ai/context/bean-workflow.md` | Yes (reference for lifecycle) |
+| tmux session | Environment (`$TMUX`) | Required only when `--fast` is used |
 
 ## Process
 
@@ -64,6 +67,45 @@ The Team Lead selects the next bean using these criteria in priority order:
 
 Dependencies between beans may be stated in the bean's Notes section or Scope section. The Team Lead should read candidate beans to assess implicit dependencies even when not explicitly stated.
 
+### Parallel Mode (`--fast N`)
+
+When `--fast N` is specified, the Team Lead orchestrates N parallel workers instead of processing beans sequentially.
+
+**tmux detection:**
+1. Check if `$TMUX` environment variable is set.
+2. If not in tmux, display: "Parallel mode requires tmux. Please restart Claude Code inside a tmux session and re-run `/long-run --fast N`."
+3. If in tmux, proceed with worker spawning.
+
+**Worker spawning:**
+1. Select up to N independent beans from the backlog (beans with no unmet inter-bean dependencies).
+2. For each selected bean, spawn a tmux child window:
+   ```
+   tmux new-window -n "bean-NNN" "claude --print '
+   Process BEAN-NNN-<slug> through the full team wave:
+   1. Create feature branch bean/BEAN-NNN-<slug>
+   2. Decompose into tasks
+   3. Execute the wave (BA → Architect → Developer → Tech-QA)
+   4. Verify acceptance criteria
+   5. Commit on the feature branch
+   6. Update bean status to Done
+   '"
+   ```
+3. The main window remains the orchestrator — it does not process beans itself.
+
+**Bean assignment rules:**
+- Only assign beans that have no unmet dependencies on other in-progress or pending beans.
+- If fewer than N independent beans are available, spawn only as many workers as there are beans.
+- As a worker completes its bean, check for newly-unblocked beans and assign the next one.
+
+**Progress monitoring:**
+- Periodically read `_index.md` to check for status changes (workers update it as they complete).
+- Report progress in the main window as beans move to `Done`.
+- When all workers are idle and no actionable beans remain, report completion and exit.
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--fast N` | Off (sequential) | Run up to N beans in parallel using tmux child windows |
+
 ## Error Handling
 
 | Error | Cause | Resolution |
@@ -73,8 +115,10 @@ Dependencies between beans may be stated in the bean's Notes section or Scope se
 | `TaskFailure` | A task's acceptance criteria cannot be met | Report the failure, leave bean as `In Progress`, stop the loop |
 | `TestFailure` | Tests or lint fail after implementation | Attempt to fix; if unresolvable, report and stop |
 | `MergeConflict` | Git conflict during commit | Report the conflict and stop for manual resolution |
+| `NotInTmux` | `--fast` used but `$TMUX` is not set | Instruct user to restart in tmux |
+| `WorkerFailure` | A parallel worker fails on its bean | Report which worker/bean failed; other workers continue |
 
-When the loop stops due to an error, the current bean remains `In Progress` so the user can inspect and resume.
+When the loop stops due to an error, the current bean remains `In Progress` so the user can inspect and resume. In parallel mode, a single worker failure does not stop other workers.
 
 ## Examples
 
@@ -98,4 +142,25 @@ Team Lead reads the backlog, picks the highest-priority unblocked bean, processe
 ✓ Long run complete
   Beans processed: 4
   Backlog status: 0 actionable, 2 deferred
+```
+
+**Parallel mode with 3 workers:**
+```
+/long-run --fast 3
+```
+Team Lead detects tmux, selects 3 independent beans, spawns 3 child windows. Each worker processes one bean on its own feature branch. As workers finish, the Team Lead assigns the next unblocked bean.
+
+**Typical parallel output:**
+```
+⚡ Parallel mode: 3 workers
+  Worker 1: BEAN-012 (User Auth) — In Progress
+  Worker 2: BEAN-013 (Dashboard) — In Progress
+  Worker 3: BEAN-014 (Mobile API) — In Progress
+
+✓ Worker 2: BEAN-013 (Dashboard) — Done [bean/BEAN-013-dashboard]
+  Assigning: BEAN-015 (Notifications) → Worker 2
+
+✓ All workers idle. Long run complete.
+  Beans processed: 5 (3 parallel + 2 sequential)
+  Backlog status: 0 actionable
 ```

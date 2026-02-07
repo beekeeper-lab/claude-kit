@@ -19,7 +19,7 @@
 | BEAN-003 | Bean Management Commands | Medium | Done | team-lead |
 | BEAN-004 | Safety Source Directory Config | Low | Done | team-lead |
 | BEAN-005 | Compiled Prompt Project Context | Medium | Done | team-lead |
-| BEAN-006 | Backlog Refinement Command | High | New | (unassigned) |
+| BEAN-006 | Backlog Refinement Command | High | Done | team-lead |
 | BEAN-007 | Long Run Command | High | Done | team-lead |
 | BEAN-008 | Feature Branch Workflow | High | Done | team-lead |
 | BEAN-009 | Push Hook Refinement | High | Done | team-lead |

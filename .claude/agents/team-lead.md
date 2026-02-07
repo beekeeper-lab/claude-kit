@@ -17,6 +17,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 
 | Skill | When to Use |
 |-------|-------------|
+| `/backlog-refinement` | When the user provides raw ideas or vision text. Analyzes the input, asks clarifying questions through dialogue, then creates one or more well-formed beans via `/new-bean`. The primary intake for getting new work into the backlog. |
 | `/new-bean` | When new work is identified. Creates a bean directory, populates bean.md from the template, assigns the next sequential ID, and updates `_index.md`. |
 | `/pick-bean` | When selecting a bean from the backlog. Updates status to Picked/In Progress in both bean.md and `_index.md`. |
 | `/bean-status` | At any time to review the backlog. Shows all beans grouped by status with counts and actionable items. Use `--verbose` for task-level detail. |

@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-006 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 
 ## Problem Statement
 
@@ -49,10 +49,10 @@ Create a `/backlog-refinement` command that takes free-form text input, engages 
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| | | | | |
+| 01 | Create Backlog Refinement Command & Skill | developer | — | Done |
+| 02 | Backlog Refinement Verification | tech-qa | 01 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> BA and Architect skipped — requirements are clear in the bean, and this creates markdown command/skill files following existing patterns.
 
 ## Notes
 

@@ -3,10 +3,11 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-013 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
+| **Category** | Infra |
 
 ## Problem Statement
 
@@ -59,10 +60,10 @@ Create a `/deploy` command that safely promotes `test` → `main` with a full qu
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| | | | | |
+| 01 | Create /deploy command and skill | developer | — | Done |
+| 02 | Deploy command verification | tech-qa | 01 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> BA and Architect skipped — the bean spec is detailed enough and this creates new command/skill markdown.
 
 ## Notes
 

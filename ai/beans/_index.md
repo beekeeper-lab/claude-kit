@@ -34,5 +34,6 @@
 | BEAN-010 | Parallel Long Run (tmux) | Process | Medium | Done | team-lead |
 | BEAN-011 | Merge Captain Auto-Merge | Process | Medium | Done | team-lead |
 | BEAN-012 | Enforce Feature Branch Workflow | Infra | Low | Done | team-lead |
-| BEAN-013 | Deploy Command | Infra | Low | New | (unassigned) |
+| BEAN-013 | Deploy Command | Infra | Low | Done | team-lead |
 | BEAN-014 | Team Lead Progress Dashboard | Process | High | Done | team-lead |
+| BEAN-015 | Long Run Category Filter | Process | High | New | (unassigned) |

@@ -75,6 +75,9 @@ def test_generate_valid_composition(tmp_path: Path) -> None:
         library=LIBRARY_ROOT,
         output=None,
         strictness=None,
+        overlay=None,
+        dry_run=False,
+        force=False,
     )
     rc = _cmd_generate(args)
     assert rc == 0
@@ -90,6 +93,9 @@ def test_generate_missing_composition(tmp_path: Path) -> None:
         library=LIBRARY_ROOT,
         output=None,
         strictness=None,
+        overlay=None,
+        dry_run=False,
+        force=False,
     )
     rc = _cmd_generate(args)
     assert rc == 1
@@ -106,6 +112,9 @@ def test_generate_missing_library(tmp_path: Path) -> None:
         library=tmp_path / "no-such-library",
         output=None,
         strictness=None,
+        overlay=None,
+        dry_run=False,
+        force=False,
     )
     rc = _cmd_generate(args)
     assert rc == 1
@@ -127,6 +136,9 @@ def test_generate_with_output_override(tmp_path: Path) -> None:
         library=LIBRARY_ROOT,
         output=override_dir,
         strictness=None,
+        overlay=None,
+        dry_run=False,
+        force=False,
     )
     rc = _cmd_generate(args)
     assert rc == 0

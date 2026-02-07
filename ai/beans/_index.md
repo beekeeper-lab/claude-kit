@@ -15,7 +15,7 @@
 | Bean ID | Title | Priority | Status | Owner |
 |---------|-------|----------|--------|-------|
 | BEAN-001 | Backlog Seeding Infrastructure | Medium | New | — |
-| BEAN-002 | Generator Overlay Mode | High | New | — |
+| BEAN-002 | Generator Overlay Mode | High | Done | team-lead |
 | BEAN-003 | Bean Management Commands | Medium | New | — |
 | BEAN-004 | Safety Source Directory Config | Low | New | — |
 | BEAN-005 | Compiled Prompt Project Context | Medium | New | — |

@@ -365,7 +365,7 @@ class GenerateScreen(QWidget):
 
             settings = load_settings()
             strictness = settings.validation_strictness or "standard"
-            manifest, validation = generate_project(
+            manifest, validation, _plan = generate_project(
                 composition, library_root, strictness=strictness
             )
 

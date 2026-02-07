@@ -355,7 +355,7 @@ class ProjectWizard(QWidget):
             from foundry_app.services.generator import generate_project
 
             strictness = load_settings().validation_strictness or "standard"
-            manifest, validation = generate_project(
+            manifest, validation, _plan = generate_project(
                 composition,
                 self._library_root,
                 output_root,

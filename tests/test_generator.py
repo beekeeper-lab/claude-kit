@@ -54,7 +54,7 @@ def test_generate_project_succeeds(tmp_path: Path):
     spec = _make_spec()
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid, f"Unexpected errors: {validation.errors}"
     assert isinstance(manifest, GenerationManifest)
@@ -71,7 +71,7 @@ def test_generate_validation_failure_returns_empty(tmp_path: Path):
     spec = _make_spec(personas=["nonexistent-ghost"])
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert not validation.is_valid
     assert len(manifest.stages) == 0
@@ -85,7 +85,7 @@ def test_generate_output_override(tmp_path: Path):
     custom_output = tmp_path / "custom-out"
     spec = _make_spec()
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=custom_output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=custom_output)
 
     assert validation.is_valid
     assert custom_output.is_dir()
@@ -101,7 +101,7 @@ def test_generate_strictness_passed(tmp_path: Path):
     spec = _make_spec(stacks=[])
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(
+    manifest, validation, _plan = generate_project(
         spec, LIBRARY_ROOT, output_root=output, strictness="strict"
     )
 
@@ -121,7 +121,7 @@ def test_generate_seed_tasks_creates_tasks_dir(tmp_path: Path):
     )
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid
     tasks_dir = output / "ai" / "tasks"
@@ -139,7 +139,7 @@ def test_write_manifest_false_skips_manifest(tmp_path: Path):
     spec = _make_spec(write_manifest=False)
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid, f"Unexpected errors: {validation.errors}"
     assert isinstance(manifest, GenerationManifest)
@@ -155,7 +155,7 @@ def test_seed_tasks_false_skips_seeder(tmp_path: Path):
     spec = _make_spec(seed_tasks=False)
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid, f"Unexpected errors: {validation.errors}"
     # The seed stage should not appear in the manifest
@@ -175,7 +175,7 @@ def test_write_diff_report_true_creates_report(tmp_path: Path):
     spec = _make_spec(write_diff_report=True)
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid, f"Unexpected errors: {validation.errors}"
     # The diff stage should be recorded in the manifest
@@ -200,7 +200,7 @@ def test_generate_creates_skills_and_commands(tmp_path: Path):
     spec = _make_spec(personas=["team-lead", "developer"], stacks=["python"])
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid
     # New stages should appear in the manifest
@@ -222,7 +222,7 @@ def test_generate_creates_settings_local_json(tmp_path: Path):
     spec = _make_spec(personas=["team-lead", "developer"], stacks=["python"])
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid
     settings_path = output / ".claude" / "settings.local.json"
@@ -234,7 +234,7 @@ def test_generate_creates_safety_policy_docs(tmp_path: Path):
     spec = _make_spec(personas=["team-lead", "developer"], stacks=["python"])
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid
     assert (output / "ai" / "context" / "safety-policy.md").is_file()
@@ -251,7 +251,7 @@ def test_generate_kickoff_mode(tmp_path: Path):
     spec.generation.seed_mode = "kickoff"
     output = tmp_path / "project"
 
-    manifest, validation = generate_project(spec, LIBRARY_ROOT, output_root=output)
+    manifest, validation, _plan = generate_project(spec, LIBRARY_ROOT, output_root=output)
 
     assert validation.is_valid
     assert "seed" in manifest.stages

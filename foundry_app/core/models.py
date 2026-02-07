@@ -128,6 +128,60 @@ class GenerationManifest(BaseModel):
     library_version: str = ""  # git commit hash if available
     composition_snapshot: CompositionSpec | None = None
     stages: dict[str, StageResult] = Field(default_factory=dict)
+    overlay_summary: OverlaySummary | None = None
+
+
+# --- Overlay Models (used by overlay.py for overlay mode) ---
+
+
+class FileAction(BaseModel):
+    """Classification of a single file in the overlay plan."""
+
+    rel_path: str
+    action: str  # "create" | "unchanged" | "conflict" | "force_overwrite"
+    reason: str = ""
+    sidecar_path: str = ""
+
+
+class OverlayPlan(BaseModel):
+    """Complete plan for an overlay operation."""
+
+    target_dir: str
+    actions: list[FileAction] = Field(default_factory=list)
+    orphans: list[str] = Field(default_factory=list)
+
+    @property
+    def creates(self) -> list[FileAction]:
+        return [a for a in self.actions if a.action == "create"]
+
+    @property
+    def unchanged(self) -> list[FileAction]:
+        return [a for a in self.actions if a.action == "unchanged"]
+
+    @property
+    def conflicts(self) -> list[FileAction]:
+        return [a for a in self.actions if a.action == "conflict"]
+
+    @property
+    def force_overwrites(self) -> list[FileAction]:
+        return [a for a in self.actions if a.action == "force_overwrite"]
+
+    @property
+    def has_conflicts(self) -> bool:
+        return len(self.conflicts) > 0
+
+
+class OverlaySummary(BaseModel):
+    """Summary of overlay operation recorded in the manifest."""
+
+    mode: str = "overlay"  # "overlay" | "dry_run"
+    target_dir: str = ""
+    files_created: int = 0
+    files_unchanged: int = 0
+    files_conflicted: int = 0
+    files_force_overwritten: int = 0
+    orphaned_files: list[str] = Field(default_factory=list)
+    sidecars_written: list[str] = Field(default_factory=list)
 
 
 # --- Library Index (computed on load: .foundry/cache/library_index.json) ---

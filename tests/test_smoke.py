@@ -71,7 +71,7 @@ def test_full_pipeline():
     """Full pipeline: validate, scaffold, compile, seed, manifest."""
     with tempfile.TemporaryDirectory() as tmpdir:
         composition = _make_composition(tmpdir)
-        manifest, validation = generate_project(
+        manifest, validation, _plan = generate_project(
             composition=composition,
             library_root=LIBRARY_ROOT,
             output_root=Path(tmpdir) / "test-project",

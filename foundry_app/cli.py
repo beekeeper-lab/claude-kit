@@ -3,6 +3,9 @@
 Usage examples:
     foundry-cli generate composition.yml --library ./ai-team-library
     foundry-cli generate composition.yml --library ./ai-team-library --output ./my-project
+    foundry-cli generate composition.yml --library ./ai-team-library --overlay .
+    foundry-cli generate composition.yml --library ./ai-team-library --overlay . --dry-run
+    foundry-cli generate composition.yml --library ./ai-team-library --overlay . --force
     foundry-cli validate composition.yml --library ./ai-team-library
     foundry-cli export ./generated-projects/my-proj ./releases/my-proj --mode copy --git-init
     foundry-cli info ./generated-projects/my-proj
@@ -19,7 +22,7 @@ from pathlib import Path
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="foundry-cli",
-        description="Foundry CLI — generate Claude Code projects from compositions.",
+        description="Foundry CLI -- generate Claude Code projects from compositions.",
     )
     sub = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -48,9 +51,36 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Validation strictness (default: from settings or 'standard')",
     )
+    gen.add_argument(
+        "--overlay",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help=(
+            "Overlay into an existing project directory"
+            " (mutually exclusive with --output)"
+        ),
+    )
+    gen.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Preview overlay changes without writing (requires --overlay)",
+    )
+    gen.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help=(
+            "Overwrite conflicting files instead of writing"
+            " .foundry-new sidecars (requires --overlay)"
+        ),
+    )
 
     # -- validate ----------------------------------------------------------
-    val = sub.add_parser("validate", help="Validate a composition without generating")
+    val = sub.add_parser(
+        "validate", help="Validate a composition without generating"
+    )
     val.add_argument(
         "composition",
         type=Path,
@@ -70,7 +100,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     # -- export ------------------------------------------------------------
-    exp = sub.add_parser("export", help="Export a generated project to a destination")
+    exp = sub.add_parser(
+        "export", help="Export a generated project to a destination"
+    )
     exp.add_argument(
         "project_dir",
         type=Path,
@@ -101,7 +133,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     # -- info --------------------------------------------------------------
-    inf = sub.add_parser("info", help="Show generation manifest info for a project")
+    inf = sub.add_parser(
+        "info", help="Show generation manifest info for a project"
+    )
     inf.add_argument(
         "project_dir",
         type=Path,
@@ -109,7 +143,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
 
     # -- diff --------------------------------------------------------------
-    diff = sub.add_parser("diff", help="Display the diff report for a generated project")
+    diff = sub.add_parser(
+        "diff", help="Display the diff report for a generated project"
+    )
     diff.add_argument(
         "project_dir",
         type=Path,
@@ -127,6 +163,42 @@ def _resolve_strictness(args: argparse.Namespace) -> str:
     return load_settings().validation_strictness or "standard"
 
 
+def _validate_overlay_flags(args: argparse.Namespace) -> str | None:
+    """Validate mutual-exclusion rules for overlay-related flags.
+
+    Returns an error message string if validation fails, or None if OK.
+    """
+    overlay_dir: Path | None = args.overlay
+    output_dir: Path | None = args.output
+    dry_run: bool = args.dry_run
+    force_flag: bool = args.force
+
+    if overlay_dir is not None and output_dir is not None:
+        return "Error: --overlay and --output are mutually exclusive."
+
+    if dry_run and overlay_dir is None:
+        return "Error: --dry-run requires --overlay."
+
+    if force_flag and overlay_dir is None:
+        return "Error: --force requires --overlay."
+
+    if dry_run and force_flag:
+        return "Error: --dry-run and --force are mutually exclusive."
+
+    if overlay_dir is not None:
+        if not overlay_dir.exists():
+            return (
+                "Error: Overlay target directory does not exist:"
+                f" {overlay_dir}"
+            )
+        if not overlay_dir.is_dir():
+            return (
+                f"Error: Overlay target is not a directory: {overlay_dir}"
+            )
+
+    return None
+
+
 def _cmd_generate(args: argparse.Namespace) -> int:
     """Run the full generation pipeline."""
     from foundry_app.io.composition_io import load_composition
@@ -136,24 +208,68 @@ def _cmd_generate(args: argparse.Namespace) -> int:
     library_root: Path = args.library
     output_override: Path | None = args.output
     strictness: str = _resolve_strictness(args)
+    overlay_dir: Path | None = args.overlay
+    dry_run: bool = args.dry_run
+    force_flag: bool = args.force
+
+    # Validate overlay flag combinations
+    overlay_error = _validate_overlay_flags(args)
+    if overlay_error is not None:
+        print(overlay_error, file=sys.stderr)
+        return 1
 
     if not comp_path.is_file():
-        print(f"Error: Composition file not found: {comp_path}", file=sys.stderr)
+        print(
+            f"Error: Composition file not found: {comp_path}",
+            file=sys.stderr,
+        )
         return 1
 
     if not library_root.is_dir():
-        print(f"Error: Library root is not a directory: {library_root}", file=sys.stderr)
+        print(
+            f"Error: Library root is not a directory: {library_root}",
+            file=sys.stderr,
+        )
         return 1
 
     print(f"Loading composition from {comp_path}...")
     composition = load_composition(comp_path)
-    print(f"  Project: {composition.project.name} ({composition.project.slug})")
-    print(f"  Stacks: {', '.join(s.id for s in composition.stacks) or '(none)'}")
-    print(f"  Personas: {', '.join(p.id for p in composition.team.personas) or '(none)'}")
+    print(
+        f"  Project: {composition.project.name} ({composition.project.slug})"
+    )
+    print(
+        f"  Stacks: {', '.join(s.id for s in composition.stacks) or '(none)'}"
+    )
+    print(
+        "  Personas:"
+        f" {', '.join(p.id for p in composition.team.personas) or '(none)'}"
+    )
 
-    print(f"Running generation pipeline (library: {library_root}, strictness: {strictness})...")
-    manifest, validation = generate_project(
-        composition, library_root, output_override, strictness
+    # Determine mode
+    is_overlay = overlay_dir is not None
+    effective_output = overlay_dir if is_overlay else output_override
+
+    if is_overlay and force_flag:
+        print(
+            "WARNING: --force will overwrite conflicting files."
+            " Run with --dry-run first to review.",
+        )
+
+    mode_label = "overlay" if is_overlay else "standard"
+    print(
+        f"Running generation pipeline"
+        f" (library: {library_root}, strictness: {strictness},"
+        f" mode: {mode_label})..."
+    )
+
+    manifest, validation, plan = generate_project(
+        composition,
+        library_root,
+        output_root=effective_output,
+        strictness=strictness,
+        overlay=is_overlay,
+        dry_run=dry_run,
+        force=force_flag,
     )
 
     if not validation.is_valid:
@@ -164,7 +280,25 @@ def _cmd_generate(args: argparse.Namespace) -> int:
             print(f"  WARNING: {warn}", file=sys.stderr)
         return 1
 
-    # Report results
+    # --- Overlay report ---
+    if is_overlay and plan is not None:
+        from foundry_app.services.overlay import (
+            format_dry_run_report,
+            format_overlay_report,
+        )
+
+        if dry_run:
+            print()
+            print(format_dry_run_report(plan))
+        else:
+            print()
+            print(format_overlay_report(plan))
+            print()
+            print("Generation complete!")
+            print(f"  Target: {overlay_dir}")
+        return 0
+
+    # --- Standard (non-overlay) report ---
     total_files = 0
     total_warnings = 0
     for stage_name, stage_result in manifest.stages.items():
@@ -181,7 +315,9 @@ def _cmd_generate(args: argparse.Namespace) -> int:
     if output_override:
         output_path = output_override
     else:
-        folder = composition.project.output_folder or composition.project.slug
+        folder = (
+            composition.project.output_folder or composition.project.slug
+        )
         output_path = Path(composition.project.output_root) / folder
 
     print("\nGeneration complete!")
@@ -207,19 +343,32 @@ def _cmd_validate(args: argparse.Namespace) -> int:
     strictness: str = _resolve_strictness(args)
 
     if not comp_path.is_file():
-        print(f"Error: Composition file not found: {comp_path}", file=sys.stderr)
+        print(
+            f"Error: Composition file not found: {comp_path}",
+            file=sys.stderr,
+        )
         return 1
 
     if not library_root.is_dir():
-        print(f"Error: Library root is not a directory: {library_root}", file=sys.stderr)
+        print(
+            f"Error: Library root is not a directory: {library_root}",
+            file=sys.stderr,
+        )
         return 1
 
     print(f"Loading composition from {comp_path}...")
     composition = load_composition(comp_path)
-    print(f"  Project: {composition.project.name} ({composition.project.slug})")
+    print(
+        f"  Project: {composition.project.name} ({composition.project.slug})"
+    )
 
-    print(f"Validating against library: {library_root} (strictness: {strictness})...")
-    result = run_pre_generation_validation(composition, library_root, strictness)
+    print(
+        f"Validating against library: {library_root}"
+        f" (strictness: {strictness})..."
+    )
+    result = run_pre_generation_validation(
+        composition, library_root, strictness
+    )
 
     if result.errors:
         for err in result.errors:
@@ -239,7 +388,10 @@ def _cmd_validate(args: argparse.Namespace) -> int:
 
 def _cmd_export(args: argparse.Namespace) -> int:
     """Export a generated project to a destination directory."""
-    from foundry_app.services.export import export_project, validate_generated_project
+    from foundry_app.services.export import (
+        export_project,
+        validate_generated_project,
+    )
 
     project_dir: Path = args.project_dir
     destination: Path = args.destination
@@ -248,7 +400,10 @@ def _cmd_export(args: argparse.Namespace) -> int:
     validate: bool = args.validate
 
     if not project_dir.is_dir():
-        print(f"Error: Source directory does not exist: {project_dir}", file=sys.stderr)
+        print(
+            f"Error: Source directory does not exist: {project_dir}",
+            file=sys.stderr,
+        )
         return 1
 
     # Optional pre-export validation
@@ -263,7 +418,9 @@ def _cmd_export(args: argparse.Namespace) -> int:
         print("Validation passed.")
 
     print(f"Exporting project ({mode}) to {destination}...")
-    result = export_project(project_dir, destination, mode=mode, git_init=git_init)
+    result = export_project(
+        project_dir, destination, mode=mode, git_init=git_init
+    )
 
     for warn in result.warnings:
         print(f"  WARNING: {warn}")

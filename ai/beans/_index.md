@@ -47,7 +47,7 @@
 | BEAN-023 | Wizard: Hook & Safety Config Page | App | Medium | New | (unassigned) |
 | BEAN-024 | Wizard: Review & Generate Page | App | High | New | (unassigned) |
 | BEAN-025 | Validator Service | App | High | Done | team-lead |
-| BEAN-026 | Scaffold Service | App | High | New | (unassigned) |
+| BEAN-026 | Scaffold Service | App | High | Done | team-lead |
 | BEAN-027 | Compiler Service | App | High | New | (unassigned) |
 | BEAN-028 | Asset Copier Service | App | High | New | (unassigned) |
 | BEAN-029 | Seeder Service | App | Medium | New | (unassigned) |

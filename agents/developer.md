@@ -137,3 +137,5 @@ Implementation goes directly into the codebase (`foundry_app/`, `tests/`). Imple
 - Implementation notes go to `ai/outputs/developer/`
 - Reference `ai/context/project.md` for architecture details
 - Reference `ai/context/bean-workflow.md` for the full workflow lifecycle
+- **Never push to `main` or `master`** — commit on the bean's feature branch (`bean/BEAN-NNN-<slug>`)
+- Push only to your bean's feature branch; the Merge Captain handles integration branches

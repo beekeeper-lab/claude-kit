@@ -105,3 +105,6 @@ Write all outputs to `ai/outputs/team-lead/`. Task files go in the relevant bean
 - Update `ai/beans/_index.md` whenever a bean's status changes
 - Reference `ai/context/bean-workflow.md` for the full lifecycle specification
 - Reference `ai/context/project.md` for detailed architecture and module map
+- **Never push to `main` or `master`** — work on feature branches (`bean/*`), merge via PR or Merge Captain
+- Push to `test` or `dev` only through the Merge Captain workflow
+- See `.claude/hooks/hook-policy.md` "Branch Protection" for full push rules

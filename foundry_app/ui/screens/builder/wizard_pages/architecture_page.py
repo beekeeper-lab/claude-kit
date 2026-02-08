@@ -44,18 +44,45 @@ from foundry_app.ui.theme import (
 logger = logging.getLogger(__name__)
 
 PATTERN_DESCRIPTIONS: dict[str, tuple[str, str]] = {
-    "monolith": ("Monolith", "Single deployable unit; simple to develop, test, and deploy"),
-    "modular-monolith": ("Modular Monolith", "Single deployment with clear module boundaries and internal APIs"),
-    "microservices": ("Microservices", "Independently deployable services communicating over the network"),
-    "serverless": ("Serverless", "Function-as-a-service with managed infrastructure and event triggers"),
-    "event-driven": ("Event-Driven", "Asynchronous messaging, event sourcing, and reactive architectures"),
+    "monolith": (
+        "Monolith",
+        "Single deployable unit; simple to develop, test, and deploy",
+    ),
+    "modular-monolith": (
+        "Modular Monolith",
+        "Single deployment with clear module boundaries and internal APIs",
+    ),
+    "microservices": (
+        "Microservices",
+        "Independently deployable services communicating over the network",
+    ),
+    "serverless": (
+        "Serverless",
+        "Function-as-a-service with managed infrastructure and event triggers",
+    ),
+    "event-driven": (
+        "Event-Driven",
+        "Asynchronous messaging, event sourcing, and reactive architectures",
+    ),
 }
 
 CLOUD_DESCRIPTIONS: dict[str, tuple[str, str]] = {
-    "aws": ("Amazon Web Services", "EC2, Lambda, S3, RDS, DynamoDB, and the broader AWS ecosystem"),
-    "azure": ("Microsoft Azure", "App Service, Functions, Blob Storage, Cosmos DB, and Azure DevOps"),
-    "gcp": ("Google Cloud Platform", "Cloud Run, Cloud Functions, GCS, Firestore, and BigQuery"),
-    "self-hosted": ("Self-Hosted / On-Prem", "Docker, Kubernetes, bare-metal, or private cloud deployments"),
+    "aws": (
+        "Amazon Web Services",
+        "EC2, Lambda, S3, RDS, DynamoDB, and the broader AWS ecosystem",
+    ),
+    "azure": (
+        "Microsoft Azure",
+        "App Service, Functions, Blob Storage, Cosmos DB, and Azure DevOps",
+    ),
+    "gcp": (
+        "Google Cloud Platform",
+        "Cloud Run, Cloud Functions, GCS, Firestore, and BigQuery",
+    ),
+    "self-hosted": (
+        "Self-Hosted / On-Prem",
+        "Docker, Kubernetes, bare-metal, or private cloud deployments",
+    ),
 }
 
 CARD_STYLE = f"""

@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-037 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-07 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -21,14 +21,14 @@ Add a new top-level "Library Manager" screen to Foundry's main window that provi
 
 ### In Scope
 - New "Library Manager" entry in the main window sidebar navigation
-- Tree view widget (QTreeView or QTreeWidget) that scans the configured library path
-- Top-level categories in the tree: Personas, Stacks, Shared Templates, Workflows, Claude (with sub-nodes for Commands, Skills, Hooks)
-- Expanding a category shows its children (e.g., Personas > team-lead, developer, ...)
-- Expanding a persona shows its files (persona.md, outputs.md, prompts.md, templates/)
-- Clicking a markdown file shows its content in a read-only text pane (plain text is fine for now — the Markdown Editor Widget in BEAN-038 will replace this)
-- Refresh button or auto-refresh when the screen is shown
+- Tree view widget (QTreeWidget) that scans the configured library path
+- Top-level categories in the tree: Personas, Stacks, Shared Templates, Workflows, Claude Commands, Claude Skills, Claude Hooks
+- Expanding a category shows its children (directories and files)
+- Expanding a directory shows its files recursively
+- Clicking a file shows its content in a read-only text pane
+- Auto-refresh when the screen is shown (via showEvent)
 - Graceful handling when library path is not configured or doesn't exist
-- Integration with the existing library indexer service where applicable
+- Integration with Catppuccin Mocha theme styling
 
 ### Out of Scope
 - Editing, creating, or deleting any content (handled by BEAN-038 through BEAN-042)
@@ -38,27 +38,28 @@ Add a new top-level "Library Manager" screen to Foundry's main window that provi
 
 ## Acceptance Criteria
 
-- [ ] "Library Manager" appears as a screen option in the main window sidebar
-- [ ] Tree view displays the full library hierarchy with correct nesting
-- [ ] Clicking a `.md` file in the tree shows its content in the preview pane
-- [ ] Tree auto-refreshes when the screen is navigated to
-- [ ] Empty/missing library path shows a helpful message pointing to Settings
-- [ ] Screen follows existing Catppuccin Mocha theme styling
-- [ ] All existing tests pass (`uv run pytest`)
-- [ ] New tests cover tree building logic and screen instantiation
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] "Library Manager" appears as a screen option in the main window sidebar
+- [x] Tree view displays the full library hierarchy with correct nesting
+- [x] Clicking a `.md` file in the tree shows its content in the preview pane
+- [x] Tree auto-refreshes when the screen is navigated to
+- [x] Empty/missing library path shows a helpful message pointing to Settings
+- [x] Screen follows existing Catppuccin Mocha theme styling
+- [x] All existing tests pass (`uv run pytest`)
+- [x] New tests cover tree building logic and screen instantiation
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Create library_manager.py with tree browser + preview pane | developer | — | Done |
+| 2 | Add Library entry to main window SCREENS | developer | 1 | Done |
+| 3 | Write tests for tree building logic and screen | tech-qa | 1 | Done |
+| 4 | Run tests and lint | tech-qa | 1,2,3 | Done |
 
 ## Notes
 
 - This is the first bean in the Library Manager feature set. BEAN-038 through BEAN-042 all depend on this screen shell existing.
-- The tree scanning logic should be flexible enough to discover new content types without code changes (directory-driven discovery).
-- Consider reusing `build_library_index()` from `library_indexer.py` for the top-level structure, but the tree needs to go deeper (individual files within each item).
+- The tree scanning logic is directory-driven — it discovers new content types automatically.
+- Pure `_build_file_tree()` function is separated from UI for testability.
+- Hidden files (starting with `.`) are skipped in the tree.

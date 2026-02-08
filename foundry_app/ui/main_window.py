@@ -19,84 +19,89 @@ from PySide6.QtWidgets import (
 )
 
 from foundry_app.core.settings import FoundrySettings
+from foundry_app.ui import theme
+from foundry_app.ui.widgets.branded_empty_state import BrandedEmptyState
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Stylesheet
+# Stylesheet — built from centralised theme constants
 # ---------------------------------------------------------------------------
 
-STYLESHEET = """
-QMainWindow {
-    background-color: #1e1e2e;
-}
+STYLESHEET = f"""
+QMainWindow {{{{
+    background-color: {theme.BG_BASE};
+}}}}
 
-/* Sidebar */
-#sidebar {
-    background-color: #181825;
-    border-right: 1px solid #313244;
-}
-#sidebar QListWidget {
+/* Sidebar — darker recessed panel, control-room feel */
+#sidebar {{{{
+    background-color: {theme.BG_INSET};
+    border-right: 1px solid {theme.BORDER_DEFAULT};
+}}}}
+#sidebar QListWidget {{{{
     background-color: transparent;
     border: none;
     outline: none;
-    font-size: 14px;
-    color: #cdd6f4;
-    padding: 8px 0;
-}
-#sidebar QListWidget::item {
-    padding: 12px 20px;
+    font-size: {theme.FONT_SIZE_MD}px;
+    color: {theme.TEXT_PRIMARY};
+    padding: {theme.SPACE_SM}px 0;
+}}}}
+#sidebar QListWidget::item {{{{
+    padding: {theme.SPACE_MD}px {theme.SPACE_XL}px;
     border-radius: 0;
-}
-#sidebar QListWidget::item:selected {
-    background-color: #313244;
-    color: #cba6f7;
-    font-weight: bold;
-}
-#sidebar QListWidget::item:hover:!selected {
-    background-color: #1e1e2e;
-}
+}}}}
+#sidebar QListWidget::item:selected {{{{
+    background-color: {theme.BG_SURFACE};
+    color: {theme.ACCENT_PRIMARY};
+    font-weight: {theme.FONT_WEIGHT_BOLD};
+    border-left: 3px solid {theme.ACCENT_PRIMARY};
+}}}}
+#sidebar QListWidget::item:hover:!selected {{{{
+    background-color: {theme.BG_BASE};
+    color: {theme.ACCENT_PRIMARY_HOVER};
+}}}}
 
-/* Brand label */
-#brand-label {
-    color: #cba6f7;
-    font-size: 20px;
-    font-weight: bold;
-    padding: 20px 20px 12px 20px;
-}
+/* Brand label — brass accent header */
+#brand-label {{{{
+    color: {theme.ACCENT_PRIMARY};
+    font-size: {theme.FONT_SIZE_XL}px;
+    font-weight: {theme.FONT_WEIGHT_BOLD};
+    padding: {theme.SPACE_XL}px {theme.SPACE_XL}px {theme.SPACE_MD}px {theme.SPACE_XL}px;
+    border-bottom: 1px solid {theme.BORDER_SUBTLE};
+}}}}
 
 /* Content area */
-#content-stack {
-    background-color: #1e1e2e;
-}
+#content-stack {{{{
+    background-color: {theme.BG_BASE};
+}}}}
 
 /* Placeholder screens */
-.placeholder-screen {
-    background-color: #1e1e2e;
-}
-.placeholder-screen QLabel {
-    color: #6c7086;
-    font-size: 16px;
-}
+.placeholder-screen {{{{
+    background-color: {theme.BG_BASE};
+}}}}
+.placeholder-screen QLabel {{{{
+    color: {theme.TEXT_DISABLED};
+    font-size: {theme.FONT_SIZE_LG}px;
+}}}}
 
 /* Menu bar */
-QMenuBar {
-    background-color: #181825;
-    color: #cdd6f4;
-    border-bottom: 1px solid #313244;
+QMenuBar {{{{
+    background-color: {theme.BG_INSET};
+    color: {theme.TEXT_PRIMARY};
+    border-bottom: 1px solid {theme.BORDER_DEFAULT};
     padding: 2px;
-}
-QMenuBar::item:selected {
-    background-color: #313244;
-}
-QMenu {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
-    border: 1px solid #313244;
-}
-QMenu::item:selected {
-    background-color: #313244;
-}
+}}}}
+QMenuBar::item:selected {{{{
+    background-color: {theme.BG_SURFACE};
+}}}}
+QMenu {{{{
+    background-color: {theme.BG_SURFACE};
+    color: {theme.TEXT_PRIMARY};
+    border: 1px solid {theme.BORDER_DEFAULT};
+}}}}
+QMenu::item:selected {{{{
+    background-color: {theme.BG_OVERLAY};
+}}}}
 """
 
 
@@ -114,11 +119,13 @@ def _placeholder(title: str, description: str) -> QWidget:
     heading = QLabel(title)
     heading.setFont(QFont("", 22, QFont.Weight.Bold))
     heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    heading.setStyleSheet("color: #cdd6f4;")
+    heading.setStyleSheet(f"color: {theme.TEXT_PRIMARY};")
 
     subtitle = QLabel(description)
     subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    subtitle.setStyleSheet("color: #6c7086; font-size: 14px;")
+    subtitle.setStyleSheet(
+        f"color: {theme.TEXT_SECONDARY}; font-size: {theme.FONT_SIZE_MD}px;"
+    )
 
     layout.addWidget(heading)
     layout.addWidget(subtitle)
@@ -131,6 +138,7 @@ def _placeholder(title: str, description: str) -> QWidget:
 
 SCREENS: list[tuple[str, str, str]] = [
     ("Builder", "Project Builder", "Create a new Claude Code project from building blocks."),
+    ("Library", "Library Manager", "Browse and explore the library structure."),
     ("History", "Generation History", "View past generation runs and their manifests."),
     ("Settings", "Settings", "Configure library paths, workspace root, and preferences."),
 ]
@@ -201,8 +209,15 @@ class MainWindow(QMainWindow):
         # --- Content stack ---
         self._stack = QStackedWidget()
         self._stack.setObjectName("content-stack")
-        for _, title, desc in SCREENS:
-            self._stack.addWidget(_placeholder(title, desc))
+        for label, title, desc in SCREENS:
+            if label == "Builder":
+                self._stack.addWidget(BrandedEmptyState(
+                    heading="Welcome to Foundry",
+                    description="Create a new Claude Code project from reusable building blocks.\n"
+                    "Select a composition to get started.",
+                ))
+            else:
+                self._stack.addWidget(_placeholder(title, desc))
 
         root_layout.addWidget(sidebar)
         root_layout.addWidget(self._stack, stretch=1)
@@ -253,10 +268,31 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
 
         from foundry_app import __version__
+        from foundry_app.core.resources import logo_icon_path
+
+        logo_html = ""
+        logo_file = logo_icon_path()
+        if logo_file.is_file():
+            logo_html = f'<p align="center"><img src="{logo_file}" width="64" height="64"></p>'
 
         QMessageBox.about(
             self,
             "About Foundry",
-            f"<h3>Foundry v{__version__}</h3>"
-            "<p>Generate Claude Code project folders from reusable building blocks.</p>",
+            f"{logo_html}"
+            f"<h3 style='color: {theme.ACCENT_PRIMARY};'>Foundry v{__version__}</h3>"
+            f"<p style='color: {theme.TEXT_PRIMARY};'>"
+            "Foundry is a desktop application for generating fully configured "
+            "Claude Code project folders from a library of reusable building blocks. "
+            "Instead of hand-crafting project scaffolding from scratch each time, "
+            "compose a project by selecting from curated <b>personas</b>, "
+            "<b>technology stacks</b>, and <b>templates</b> that encode team "
+            "conventions and best practices.</p>"
+            f"<p style='color: {theme.TEXT_PRIMARY};'>"
+            "A Foundry composition defines the AI team personas that will collaborate "
+            "on your project, the language and framework stack to target, and the "
+            "directory templates that seed your repository with the right structure. "
+            "When you generate, Foundry compiles these selections into a complete "
+            "Claude Code workspace\u2014ready for agents to pick up and start building.</p>"
+            f"<p style='color: {theme.TEXT_PRIMARY};'>"
+            "Built with PySide6 and Python. Licensed under MIT.</p>",
         )

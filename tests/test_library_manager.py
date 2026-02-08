@@ -540,16 +540,12 @@ class TestButtonState:
                 break
         assert screen.new_button.isEnabled()
 
-    def test_new_disabled_for_non_editable_category(self, tmp_path: Path):
+    def test_new_disabled_when_no_selection(self, tmp_path: Path):
         lib = _create_library(tmp_path)
         screen = LibraryManagerScreen()
         screen.set_library_root(lib)
-        # Select "Stacks" — not editable
-        for i in range(screen.tree.topLevelItemCount()):
-            item = screen.tree.topLevelItem(i)
-            if item.text(0) == "Stacks":
-                screen.tree.setCurrentItem(item)
-                break
+        # No item selected — button should be disabled
+        screen.tree.setCurrentItem(None)
         assert not screen.new_button.isEnabled()
 
     def test_delete_enabled_for_file_in_editable_category(self, tmp_path: Path):
@@ -1410,4 +1406,218 @@ class TestTemplateVisualDistinction:
                     assert not tpl.font(0).italic(), (
                         f"Persona template '{tpl.text(0)}' should not be italic"
                     )
+                break
+
+
+# ---------------------------------------------------------------------------
+# Stack CRUD — create operations
+# ---------------------------------------------------------------------------
+
+
+class TestStackCreate:
+
+    def test_create_stack_at_category_level(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item)
+                break
+        with patch(_INPUT_DIALOG, return_value=("rust-actix", True)):
+            screen._on_new_asset()
+        stack_dir = lib / "stacks" / "rust-actix"
+        assert stack_dir.is_dir()
+        conv = stack_dir / "conventions.md"
+        assert conv.is_file()
+        content = conv.read_text(encoding="utf-8")
+        assert "Rust Actix Stack Conventions" in content
+
+    def test_create_new_file_from_stack_dir(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item.child(0))  # python-fastapi dir
+                break
+        with patch(_INPUT_DIALOG, return_value=("security", True)):
+            screen._on_new_asset()
+        created = lib / "stacks" / "python-fastapi" / "security.md"
+        assert created.is_file()
+        content = created.read_text(encoding="utf-8")
+        assert "# Security" in content
+        assert "## Guidelines" in content
+
+    def test_create_new_file_from_file_inside_stack(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                stack_dir = item.child(0)  # python-fastapi
+                screen.tree.setCurrentItem(stack_dir.child(0))  # conventions.md
+                break
+        with patch(_INPUT_DIALOG, return_value=("performance", True)):
+            screen._on_new_asset()
+        created = lib / "stacks" / "python-fastapi" / "performance.md"
+        assert created.is_file()
+
+    def test_create_duplicate_stack_shows_warning(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item)
+                break
+        with (
+            patch(_INPUT_DIALOG, return_value=("python-fastapi", True)),
+            patch(_MSG_WARNING) as mock_warn,
+        ):
+            screen._on_new_asset()
+        mock_warn.assert_called_once()
+
+    def test_create_duplicate_stack_file_shows_warning(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item.child(0))  # python-fastapi dir
+                break
+        with (
+            patch(_INPUT_DIALOG, return_value=("conventions", True)),
+            patch(_MSG_WARNING) as mock_warn,
+        ):
+            screen._on_new_asset()
+        mock_warn.assert_called_once()
+
+    def test_create_stack_invalid_name_shows_warning(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item)
+                break
+        with (
+            patch(_INPUT_DIALOG, return_value=("Bad Name!", True)),
+            patch(_MSG_WARNING) as mock_warn,
+        ):
+            screen._on_new_asset()
+        mock_warn.assert_called_once()
+        assert not (lib / "stacks" / "Bad Name!").exists()
+
+    def test_create_stack_cancelled_does_nothing(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item)
+                break
+        before_count = len(list((lib / "stacks").iterdir()))
+        with patch(_INPUT_DIALOG, return_value=("", False)):
+            screen._on_new_asset()
+        assert len(list((lib / "stacks").iterdir())) == before_count
+
+    def test_tree_refreshes_after_stack_create(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                before = item.childCount()
+                screen.tree.setCurrentItem(item)
+                break
+        with patch(_INPUT_DIALOG, return_value=("new-stack", True)):
+            screen._on_new_asset()
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                assert item.childCount() == before + 1
+                break
+
+
+# ---------------------------------------------------------------------------
+# Stack CRUD — delete operations
+# ---------------------------------------------------------------------------
+
+
+class TestStackDelete:
+
+    def test_delete_stack_directory(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        target = lib / "stacks" / "python-fastapi"
+        assert target.is_dir()
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item.child(0))  # python-fastapi dir
+                break
+        with patch(_MSG_QUESTION, return_value=QMessageBox.StandardButton.Yes):
+            screen._on_delete_asset()
+        assert not target.exists()
+
+    def test_delete_stack_file(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        target = lib / "stacks" / "python-fastapi" / "testing.md"
+        assert target.is_file()
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                stack_dir = item.child(0)
+                for j in range(stack_dir.childCount()):
+                    child = stack_dir.child(j)
+                    if child.text(0) == "testing.md":
+                        screen.tree.setCurrentItem(child)
+                        break
+                break
+        with patch(_MSG_QUESTION, return_value=QMessageBox.StandardButton.Yes):
+            screen._on_delete_asset()
+        assert not target.exists()
+
+    def test_delete_stack_cancelled_keeps_dir(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        target = lib / "stacks" / "python-fastapi"
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item.child(0))
+                break
+        with patch(_MSG_QUESTION, return_value=QMessageBox.StandardButton.No):
+            screen._on_delete_asset()
+        assert target.is_dir()
+
+    def test_tree_refreshes_after_stack_delete(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                assert item.childCount() == 1
+                screen.tree.setCurrentItem(item.child(0))
+                break
+        with patch(_MSG_QUESTION, return_value=QMessageBox.StandardButton.Yes):
+            screen._on_delete_asset()
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                assert item.childCount() == 0
                 break

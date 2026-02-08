@@ -809,6 +809,44 @@ class LibraryManagerScreen(QWidget):
         )
         self._delete_btn.setEnabled(editable and (has_file or is_asset_dir))
 
+    # -- Stack helpers -----------------------------------------------------
+
+    def _is_stack_subitem(self, item: QTreeWidgetItem | None) -> bool:
+        """Return True if *item* is inside a specific stack (dir or file).
+
+        A stack subitem is a node under the Stacks category whose parent is
+        *not* the top-level category node itself -- i.e. it sits inside one
+        of the stack directories.
+        """
+        if item is None:
+            return False
+        cat = self._get_category_for_item(item)
+        if cat != "Stacks":
+            return False
+        return item.parent() is not None and item.parent().parent() is not None
+
+    def _get_stack_dir_for_item(self, item: QTreeWidgetItem) -> Path | None:
+        """Return the filesystem path of the stack directory for *item*.
+
+        Walks up to the stack-directory node (direct child of the Stacks
+        category) and resolves the path.
+        """
+        if self._library_root is None:
+            return None
+        cat = self._get_category_for_item(item)
+        if cat != "Stacks":
+            return None
+
+        node = item
+        while node.parent() is not None and node.parent().parent() is not None:
+            node = node.parent()
+
+        if node.parent() is None:
+            return None  # category node itself
+
+        rel_path = _EDITABLE_CATEGORIES["Stacks"]
+        return self._library_root / rel_path / node.text(0)
+
     # -- Create / Delete operations ----------------------------------------
 
     def _on_new_asset(self) -> None:
@@ -829,18 +867,28 @@ class LibraryManagerScreen(QWidget):
                 self._create_template(tpl_dir)
             return
 
-        label = {
-            "Personas": "persona",
-            "Workflows": "workflow",
-            "Claude Commands": "command",
-            "Claude Skills": "skill",
-            "Claude Hooks": "hook pack",
-        }.get(cat, "file")
+        # Determine whether we are adding a file *inside* an existing stack
+        adding_to_stack = cat == "Stacks" and self._is_stack_subitem(item)
+
+        if adding_to_stack:
+            prompt_title = "New Stack File"
+            prompt_label = "Enter filename (lowercase, hyphens, no extension):"
+        elif cat == "Stacks":
+            prompt_title = "New Stack"
+            prompt_label = "Enter stack name (lowercase, hyphens):"
+        else:
+            label = {
+                "Personas": "persona",
+                "Workflows": "workflow",
+                "Claude Commands": "command",
+                "Claude Skills": "skill",
+                "Claude Hooks": "hook pack",
+            }.get(cat, "file")
+            prompt_title = f"New {label.title()}"
+            prompt_label = f"Enter {label} name (lowercase, hyphens):"
 
         name, ok = QInputDialog.getText(
-            self,
-            f"New {label.title()}",
-            f"Enter {label} name (lowercase, hyphens):",
+            self, prompt_title, prompt_label,
         )
         if not ok or not name:
             return
@@ -867,6 +915,39 @@ class LibraryManagerScreen(QWidget):
             for filename, content in persona_starter_files(name).items():
                 (persona_dir / filename).write_text(content, encoding="utf-8")
             logger.info("Created persona %s", persona_dir)
+            self.refresh_tree()
+            return
+
+        # --- Stack: add file to existing stack ---
+        if adding_to_stack:
+            stack_dir = self._get_stack_dir_for_item(item)
+            if stack_dir is None:
+                return
+            dest = stack_dir / f"{name}.md"
+            if dest.exists():
+                QMessageBox.warning(
+                    self, "Duplicate", f"File '{name}.md' already exists."
+                )
+                return
+            content = starter_content("Stacks:file", name)
+            dest.write_text(content, encoding="utf-8")
+            logger.info("Created %s", dest)
+            self.refresh_tree()
+            return
+
+        # --- Stack: create new stack directory with conventions.md ---
+        if cat == "Stacks":
+            stack_dir = target_dir / name
+            if stack_dir.exists():
+                QMessageBox.warning(
+                    self, "Duplicate", f"Stack '{name}' already exists."
+                )
+                return
+            stack_dir.mkdir(parents=True, exist_ok=True)
+            dest = stack_dir / "conventions.md"
+            content = starter_content("Stacks", name)
+            dest.write_text(content, encoding="utf-8")
+            logger.info("Created stack %s", stack_dir)
             self.refresh_tree()
             return
 

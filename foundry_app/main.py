@@ -7,9 +7,13 @@ import sys
 
 def main() -> None:
     """Bootstrap the QApplication and show the main window."""
-    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import Qt
+    from PySide6.QtGui import QColor, QFont, QPixmap
+    from PySide6.QtWidgets import QApplication, QSplashScreen
 
+    from foundry_app import __version__
     from foundry_app.core.logging_config import setup_logging
+    from foundry_app.core.resources import splash_image_path
     from foundry_app.core.settings import FoundrySettings
     from foundry_app.ui.main_window import MainWindow
 
@@ -19,9 +23,32 @@ def main() -> None:
     app.setApplicationName("Foundry")
     app.setOrganizationName("Foundry")
 
+    # -- Splash screen -----------------------------------------------------
+    splash: QSplashScreen | None = None
+    img_path = splash_image_path()
+    if img_path.is_file():
+        pixmap = QPixmap(str(img_path)).scaled(
+            720, 405,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+        splash = QSplashScreen(pixmap)
+        splash.setFont(QFont("", 12))
+        splash.showMessage(
+            f"Foundry v{__version__}",
+            Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter,
+            QColor(205, 214, 244),
+        )
+        splash.show()
+        app.processEvents()
+
+    # -- Main window -------------------------------------------------------
     settings = FoundrySettings()
     window = MainWindow(settings=settings)
     window.show()
+
+    if splash is not None:
+        splash.finish(window)
 
     # Deferred import keeps startup fast; log for diagnostics
     import logging

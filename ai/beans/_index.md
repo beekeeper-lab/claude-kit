@@ -58,7 +58,7 @@
 | BEAN-034 | CLI Interface | App | Medium | Done | team-lead |
 | BEAN-035 | Export & History Screens | App | Low | Done | team-lead |
 | BEAN-036 | Update About Dialog Text | App | Low | New | (unassigned) |
-| BEAN-037 | Library Manager — Screen Shell & Tree Browser | App | High | New | (unassigned) |
+| BEAN-037 | Library Manager — Screen Shell & Tree Browser | App | High | Done | team-lead |
 | BEAN-038 | Library Manager — Markdown Editor Widget | App | High | New | (unassigned) |
 | BEAN-039 | Library Manager — Persona Editor | App | High | New | (unassigned) |
 | BEAN-040 | Library Manager — Stack Editor | App | Medium | New | (unassigned) |

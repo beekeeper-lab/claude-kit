@@ -262,10 +262,17 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
 
         from foundry_app import __version__
+        from foundry_app.core.resources import logo_icon_path
+
+        logo_html = ""
+        logo_file = logo_icon_path()
+        if logo_file.is_file():
+            logo_html = f'<p align="center"><img src="{logo_file}" width="64" height="64"></p>'
 
         QMessageBox.about(
             self,
             "About Foundry",
+            f"{logo_html}"
             f"<h3>Foundry v{__version__}</h3>"
             "<p>Generate Claude Code project folders from reusable building blocks.</p>",
         )

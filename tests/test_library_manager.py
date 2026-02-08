@@ -1,4 +1,4 @@
-"""Tests for foundry_app.ui.screens.library_manager — tree browser and preview."""
+"""Tests for foundry_app.ui.screens.library_manager — tree browser and editor."""
 
 from pathlib import Path
 
@@ -8,6 +8,7 @@ from foundry_app.ui.screens.library_manager import (
     LibraryManagerScreen,
     _build_file_tree,
 )
+from foundry_app.ui.widgets.markdown_editor import MarkdownEditor
 
 _app = QApplication.instance() or QApplication([])
 
@@ -148,10 +149,14 @@ class TestScreenConstruction:
         screen = LibraryManagerScreen()
         assert screen.tree is not None
 
-    def test_has_preview(self):
+    def test_has_editor_widget(self):
         screen = LibraryManagerScreen()
-        assert screen.preview is not None
-        assert screen.preview.isReadOnly()
+        assert screen.editor_widget is not None
+        assert isinstance(screen.editor_widget, MarkdownEditor)
+
+    def test_preview_alias_returns_editor(self):
+        screen = LibraryManagerScreen()
+        assert screen.preview is screen.editor_widget
 
     def test_has_file_label(self):
         screen = LibraryManagerScreen()
@@ -220,35 +225,34 @@ class TestLibraryLoading:
 
 
 # ---------------------------------------------------------------------------
-# File preview
+# File selection loads into editor
 # ---------------------------------------------------------------------------
 
 
-class TestFilePreview:
+class TestFileEditing:
 
-    def test_selecting_file_shows_content(self, tmp_path: Path):
+    def test_selecting_file_loads_into_editor(self, tmp_path: Path):
         lib = _create_library(tmp_path)
         screen = LibraryManagerScreen()
         screen.set_library_root(lib)
         # Navigate to personas > developer > persona.md
         personas_item = screen.tree.topLevelItem(0)
         dev_item = personas_item.child(0)
-        # Find persona.md child
         for i in range(dev_item.childCount()):
             child = dev_item.child(i)
             if child.text(0) == "persona.md":
                 screen.tree.setCurrentItem(child)
                 break
-        assert "Developer persona" in screen.preview.toPlainText()
+        assert "Developer persona" in screen.editor_widget.editor.toPlainText()
 
-    def test_selecting_directory_clears_preview(self, tmp_path: Path):
+    def test_selecting_directory_clears_editor(self, tmp_path: Path):
         lib = _create_library(tmp_path)
         screen = LibraryManagerScreen()
         screen.set_library_root(lib)
         # Select a directory node (category)
         personas_item = screen.tree.topLevelItem(0)
         screen.tree.setCurrentItem(personas_item)
-        assert screen.preview.toPlainText() == ""
+        assert screen.editor_widget.editor.toPlainText() == ""
 
     def test_file_label_shows_path(self, tmp_path: Path):
         lib = _create_library(tmp_path)
@@ -262,3 +266,176 @@ class TestFilePreview:
                 screen.tree.setCurrentItem(child)
                 break
         assert "persona.md" in screen.file_label.text()
+
+
+# ---------------------------------------------------------------------------
+# MarkdownEditor widget tests
+# ---------------------------------------------------------------------------
+
+
+class TestMarkdownEditorWidget:
+
+    def test_instantiation(self):
+        editor = MarkdownEditor()
+        assert editor is not None
+        assert editor.dirty is False
+        assert editor.file_path is None
+
+    def test_load_content(self):
+        editor = MarkdownEditor()
+        editor.load_content("# Hello World")
+        assert editor.editor.toPlainText() == "# Hello World"
+        assert editor.dirty is False
+
+    def test_load_file(self, tmp_path: Path):
+        md_file = tmp_path / "test.md"
+        md_file.write_text("# Test File\n\nSome content.", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        assert editor.editor.toPlainText() == "# Test File\n\nSome content."
+        assert editor.file_path == md_file
+        assert editor.dirty is False
+
+    def test_load_nonexistent_file(self, tmp_path: Path):
+        editor = MarkdownEditor()
+        editor.load_file(tmp_path / "nonexistent.md")
+        assert editor.editor.toPlainText() == ""
+        assert editor.file_path is None
+
+    def test_dirty_tracking_on_edit(self):
+        editor = MarkdownEditor()
+        editor.load_content("original")
+        assert editor.dirty is False
+        editor.editor.setPlainText("modified")
+        assert editor.dirty is True
+
+    def test_dirty_false_when_restored_to_original(self):
+        editor = MarkdownEditor()
+        editor.load_content("original")
+        editor.editor.setPlainText("modified")
+        assert editor.dirty is True
+        editor.editor.setPlainText("original")
+        assert editor.dirty is False
+
+    def test_save_writes_to_disk(self, tmp_path: Path):
+        md_file = tmp_path / "save-test.md"
+        md_file.write_text("before", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        editor.editor.setPlainText("after")
+        assert editor.dirty is True
+        result = editor.save()
+        assert result is True
+        assert md_file.read_text(encoding="utf-8") == "after"
+        assert editor.dirty is False
+
+    def test_save_without_file_path_returns_false(self):
+        editor = MarkdownEditor()
+        editor.load_content("content")
+        result = editor.save()
+        assert result is False
+
+    def test_revert_reloads_from_disk(self, tmp_path: Path):
+        md_file = tmp_path / "revert-test.md"
+        md_file.write_text("original", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        editor.editor.setPlainText("modified")
+        assert editor.dirty is True
+        editor.revert()
+        assert editor.editor.toPlainText() == "original"
+        assert editor.dirty is False
+
+    def test_revert_without_file_restores_saved_content(self):
+        editor = MarkdownEditor()
+        editor.load_content("initial")
+        editor.editor.setPlainText("changed")
+        assert editor.dirty is True
+        editor.revert()
+        assert editor.editor.toPlainText() == "initial"
+        assert editor.dirty is False
+
+    def test_clear(self):
+        editor = MarkdownEditor()
+        editor.load_content("some content", file_path=Path("/tmp/fake.md"))
+        editor.clear()
+        assert editor.editor.toPlainText() == ""
+        assert editor.file_path is None
+        assert editor.dirty is False
+
+    def test_save_button_disabled_when_clean(self, tmp_path: Path):
+        md_file = tmp_path / "btn-test.md"
+        md_file.write_text("content", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        assert not editor.save_button.isEnabled()
+
+    def test_save_button_enabled_when_dirty(self, tmp_path: Path):
+        md_file = tmp_path / "btn-test.md"
+        md_file.write_text("content", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        editor.editor.setPlainText("changed")
+        assert editor.save_button.isEnabled()
+
+    def test_revert_button_disabled_when_clean(self):
+        editor = MarkdownEditor()
+        editor.load_content("content")
+        assert not editor.revert_button.isEnabled()
+
+    def test_revert_button_enabled_when_dirty(self):
+        editor = MarkdownEditor()
+        editor.load_content("content")
+        editor.editor.setPlainText("changed")
+        assert editor.revert_button.isEnabled()
+
+    def test_dirty_label_shows_modified(self):
+        editor = MarkdownEditor()
+        editor.load_content("content")
+        assert editor.dirty_label.text() == ""
+        editor.editor.setPlainText("changed")
+        assert editor.dirty_label.text() == "Modified"
+
+    def test_dirty_label_clears_on_save(self, tmp_path: Path):
+        md_file = tmp_path / "label-test.md"
+        md_file.write_text("content", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        editor.editor.setPlainText("changed")
+        assert editor.dirty_label.text() == "Modified"
+        editor.save()
+        assert editor.dirty_label.text() == ""
+
+    def test_dirty_changed_signal(self):
+        editor = MarkdownEditor()
+        editor.load_content("content")
+        signals: list[bool] = []
+        editor.dirty_changed.connect(signals.append)
+        editor.editor.setPlainText("changed")
+        assert True in signals
+
+    def test_file_saved_signal(self, tmp_path: Path):
+        md_file = tmp_path / "signal-test.md"
+        md_file.write_text("content", encoding="utf-8")
+        editor = MarkdownEditor()
+        editor.load_file(md_file)
+        editor.editor.setPlainText("changed")
+        saved_paths: list[str] = []
+        editor.file_saved.connect(saved_paths.append)
+        editor.save()
+        assert len(saved_paths) == 1
+        assert str(md_file) in saved_paths[0]
+
+    def test_preview_renders_html(self):
+        editor = MarkdownEditor()
+        editor.load_content("# Heading\n\nParagraph text.")
+        # Force immediate preview update (bypass debounce timer)
+        editor._update_preview()
+        html = editor.preview_pane.toHtml()
+        assert "Heading" in html
+
+    def test_load_content_with_file_path(self, tmp_path: Path):
+        editor = MarkdownEditor()
+        fp = tmp_path / "test.md"
+        editor.load_content("content", file_path=fp)
+        assert editor.file_path == fp

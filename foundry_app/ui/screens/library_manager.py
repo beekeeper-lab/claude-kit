@@ -10,12 +10,13 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QLabel,
     QSplitter,
-    QTextEdit,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
     QWidget,
 )
+
+from foundry_app.ui.widgets.markdown_editor import MarkdownEditor
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ def _scan_dir(directory: Path) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 class LibraryManagerScreen(QWidget):
-    """Screen for browsing the library structure with a tree and preview pane."""
+    """Screen for browsing the library structure with a tree and markdown editor pane."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -111,11 +112,11 @@ class LibraryManagerScreen(QWidget):
         title.setStyleSheet(f"color: {_TEXT};")
         layout.addWidget(title)
 
-        subtitle = QLabel("Browse the library hierarchy and preview file contents.")
+        subtitle = QLabel("Browse the library hierarchy and edit file contents.")
         subtitle.setStyleSheet(f"color: {_SUBTEXT}; font-size: 14px;")
         layout.addWidget(subtitle)
 
-        # Splitter: tree (left) + preview (right)
+        # Splitter: tree (left) + editor (right)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setStyleSheet(f"""
             QSplitter::handle {{
@@ -150,33 +151,21 @@ class LibraryManagerScreen(QWidget):
         self._tree.currentItemChanged.connect(self._on_item_selected)
         splitter.addWidget(self._tree)
 
-        # Preview pane
-        preview_container = QWidget()
-        preview_layout = QVBoxLayout(preview_container)
-        preview_layout.setContentsMargins(0, 0, 0, 0)
-        preview_layout.setSpacing(4)
+        # Editor pane (replaces the old read-only preview)
+        editor_container = QWidget()
+        editor_layout = QVBoxLayout(editor_container)
+        editor_layout.setContentsMargins(0, 0, 0, 0)
+        editor_layout.setSpacing(4)
 
         self._file_label = QLabel("")
         self._file_label.setStyleSheet(f"color: {_SUBTEXT}; font-size: 12px;")
-        preview_layout.addWidget(self._file_label)
+        editor_layout.addWidget(self._file_label)
 
-        self._preview = QTextEdit()
-        self._preview.setReadOnly(True)
-        self._preview.setStyleSheet(f"""
-            QTextEdit {{
-                background-color: {_SURFACE};
-                color: {_TEXT};
-                border: 1px solid {_SURFACE};
-                border-radius: 4px;
-                font-family: monospace;
-                font-size: 12px;
-                padding: 8px;
-            }}
-        """)
-        preview_layout.addWidget(self._preview, stretch=1)
-        splitter.addWidget(preview_container)
+        self._editor = MarkdownEditor()
+        editor_layout.addWidget(self._editor, stretch=1)
+        splitter.addWidget(editor_container)
 
-        # Default split: 1/3 tree, 2/3 preview
+        # Default split: 1/3 tree, 2/3 editor
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 2)
 
@@ -202,8 +191,14 @@ class LibraryManagerScreen(QWidget):
         return self._tree
 
     @property
-    def preview(self) -> QTextEdit:
-        return self._preview
+    def editor_widget(self) -> MarkdownEditor:
+        """The markdown editor widget."""
+        return self._editor
+
+    @property
+    def preview(self) -> MarkdownEditor:
+        """Backward-compatible alias for the editor widget."""
+        return self._editor
 
     @property
     def file_label(self) -> QLabel:
@@ -221,7 +216,7 @@ class LibraryManagerScreen(QWidget):
     def refresh_tree(self) -> None:
         """Rebuild the tree from the library directory."""
         self._tree.clear()
-        self._preview.clear()
+        self._editor.clear()
         self._file_label.setText("")
 
         if self._library_root is None or not self._library_root.is_dir():
@@ -255,28 +250,23 @@ class LibraryManagerScreen(QWidget):
             self._add_children(item, child.get("children", []))
 
     def _on_item_selected(self, current: QTreeWidgetItem | None, _prev) -> None:
-        """Show the file content when a file node is selected."""
+        """Load the file into the editor when a file node is selected."""
         if current is None:
-            self._preview.clear()
+            self._editor.clear()
             self._file_label.setText("")
             return
 
         file_path = current.data(0, Qt.ItemDataRole.UserRole)
         if file_path is None:
-            self._preview.clear()
+            self._editor.clear()
             self._file_label.setText("")
             return
 
         path = Path(file_path)
         if not path.is_file():
-            self._preview.setPlainText("File not found.")
+            self._editor.load_content("File not found.")
             self._file_label.setText(str(path))
             return
 
-        try:
-            content = path.read_text(encoding="utf-8")
-            self._preview.setPlainText(content)
-            self._file_label.setText(str(path))
-        except OSError as exc:
-            self._preview.setPlainText(f"Error reading file: {exc}")
-            self._file_label.setText(str(path))
+        self._editor.load_file(path)
+        self._file_label.setText(str(path))

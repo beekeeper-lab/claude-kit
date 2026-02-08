@@ -59,14 +59,14 @@
 | BEAN-035 | Export & History Screens | App | Low | Done | team-lead |
 | BEAN-036 | Update About Dialog Text | App | Low | New | (unassigned) |
 | BEAN-037 | Library Manager — Screen Shell & Tree Browser | App | High | Done | team-lead |
-| BEAN-038 | Library Manager — Markdown Editor Widget | App | High | New | (unassigned) |
+| BEAN-038 | Library Manager — Markdown Editor Widget | App | High | Done | team-lead |
 | BEAN-039 | Library Manager — Persona Editor | App | High | New | (unassigned) |
 | BEAN-040 | Library Manager — Stack Editor | App | Medium | New | (unassigned) |
 | BEAN-041 | Library Manager — Template Editor | App | Medium | New | (unassigned) |
 | BEAN-042 | Library Manager — Claude Assets & Workflows Editor | App | Low | New | (unassigned) |
 | BEAN-043 | Add Application Logo | App | Medium | New | (unassigned) |
 | BEAN-044 | Splash Screen & Branded Backgrounds | App | Medium | New | (unassigned) |
-| BEAN-045 | Theme Foundation & Style Constants | App | High | New | (unassigned) |
+| BEAN-045 | Theme Foundation & Style Constants | App | High | Done | team-lead |
 | BEAN-046 | Main Window & Sidebar Restyle | App | High | New | (unassigned) |
 | BEAN-047 | Icon Set for Industrial Theme | App | Medium | New | (unassigned) |
 | BEAN-048 | Wizard Card Components Restyle | App | High | New | (unassigned) |

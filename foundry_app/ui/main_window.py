@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 )
 
 from foundry_app.core.settings import FoundrySettings
+from foundry_app.ui.widgets.branded_empty_state import BrandedEmptyState
 
 logger = logging.getLogger(__name__)
 
@@ -201,8 +202,15 @@ class MainWindow(QMainWindow):
         # --- Content stack ---
         self._stack = QStackedWidget()
         self._stack.setObjectName("content-stack")
-        for _, title, desc in SCREENS:
-            self._stack.addWidget(_placeholder(title, desc))
+        for label, title, desc in SCREENS:
+            if label == "Builder":
+                self._stack.addWidget(BrandedEmptyState(
+                    heading="Welcome to Foundry",
+                    description="Create a new Claude Code project from reusable building blocks.\n"
+                    "Select a composition to get started.",
+                ))
+            else:
+                self._stack.addWidget(_placeholder(title, desc))
 
         root_layout.addWidget(sidebar)
         root_layout.addWidget(self._stack, stretch=1)

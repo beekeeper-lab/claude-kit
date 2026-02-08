@@ -28,6 +28,9 @@ foundry-cli = "foundry_app.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["foundry_app"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"resources/images" = "foundry_app/_resources/images"
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

@@ -16,9 +16,12 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QPushButton,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
+
+from foundry_app.ui.widgets.branded_empty_state import BrandedEmptyState
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +50,23 @@ class ExportScreen(QWidget):
         self.setStyleSheet(f"background-color: {_BG};")
         self._projects_root: Path | None = None
 
-        layout = QVBoxLayout(self)
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+
+        self._page_stack = QStackedWidget()
+        root_layout.addWidget(self._page_stack)
+
+        self._empty_state = BrandedEmptyState(
+            heading="No Projects to Export",
+            description=(
+                "Generated projects will appear here for export.\n"
+                "Use the Builder to create a project first."
+            ),
+        )
+        self._page_stack.addWidget(self._empty_state)
+
+        content_page = QWidget()
+        layout = QVBoxLayout(content_page)
         layout.setContentsMargins(32, 24, 32, 24)
         layout.setSpacing(16)
 
@@ -141,6 +160,9 @@ class ExportScreen(QWidget):
         # Wire selection
         self._project_list.currentRowChanged.connect(self._on_selection_changed)
 
+        self._page_stack.addWidget(content_page)
+        self._page_stack.setCurrentIndex(0)
+
     # -- Public API --------------------------------------------------------
 
     @property
@@ -168,6 +190,7 @@ class ExportScreen(QWidget):
         """Scan the projects root and populate the list."""
         self._project_list.clear()
         if self._projects_root is None or not self._projects_root.is_dir():
+            self._page_stack.setCurrentIndex(0)
             return
 
         for entry in sorted(self._projects_root.iterdir()):
@@ -180,6 +203,11 @@ class ExportScreen(QWidget):
                 item = QListWidgetItem(label)
                 item.setData(Qt.ItemDataRole.UserRole, str(entry))
                 self._project_list.addItem(item)
+
+        if self._project_list.count() > 0:
+            self._page_stack.setCurrentIndex(1)
+        else:
+            self._page_stack.setCurrentIndex(0)
 
     def selected_project_path(self) -> Path | None:
         """Return the path of the currently selected project."""

@@ -37,6 +37,24 @@ from foundry_app.core.models import (
     SecretPolicy,
     ShellPolicy,
 )
+from foundry_app.ui.theme import (
+    ACCENT_PRIMARY,
+    ACCENT_SECONDARY_MUTED,
+    BG_INSET,
+    BG_SURFACE,
+    BORDER_DEFAULT,
+    FONT_SIZE_LG,
+    FONT_SIZE_MD,
+    FONT_SIZE_SM,
+    FONT_SIZE_XL,
+    FONT_SIZE_XS,
+    FONT_WEIGHT_BOLD,
+    RADIUS_MD,
+    RADIUS_SM,
+    SPACE_MD,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,62 +71,68 @@ HOOK_PACK_DESCRIPTIONS: dict[str, tuple[str, str]] = {
 }
 
 # ---------------------------------------------------------------------------
-# Stylesheet constants (Catppuccin Mocha theme)
+# Stylesheet constants (theme-based)
 # ---------------------------------------------------------------------------
 
-CARD_STYLE = """
-QFrame#hook-card {
-    background-color: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    padding: 12px;
-}
-QFrame#hook-card:hover {
-    border-color: #585b70;
-}
+CARD_STYLE = f"""
+QFrame#hook-card {{
+    background-color: {BG_SURFACE};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_MD}px;
+    padding: {SPACE_MD}px;
+}}
+QFrame#hook-card:hover {{
+    border-color: {ACCENT_SECONDARY_MUTED};
+}}
 """
 
-CARD_SELECTED_BORDER = "border-color: #a6e3a1;"
+CARD_SELECTED_BORDER = f"border-color: {ACCENT_PRIMARY};"
 
-SECTION_STYLE = """
-QFrame#safety-section {
-    background-color: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    padding: 12px;
-}
+SECTION_STYLE = f"""
+QFrame#safety-section {{
+    background-color: {BG_SURFACE};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_MD}px;
+    padding: {SPACE_MD}px;
+}}
 """
 
-LABEL_STYLE = "color: #cdd6f4; font-size: 14px; font-weight: bold;"
-DESC_STYLE = "color: #6c7086; font-size: 12px;"
-CONFIG_LABEL_STYLE = "color: #a6adc8; font-size: 12px;"
-HEADING_STYLE = "color: #cdd6f4; font-size: 18px; font-weight: bold;"
-SUBHEADING_STYLE = "color: #6c7086; font-size: 13px;"
-SECTION_HEADING_STYLE = "color: #cdd6f4; font-size: 15px; font-weight: bold;"
-FILES_STYLE = "color: #a6adc8; font-size: 11px; font-style: italic;"
-PRESET_BTN_STYLE = """
-QPushButton {
-    background-color: #313244;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 4px;
+LABEL_STYLE = (
+    f"color: {TEXT_PRIMARY}; font-size: {FONT_SIZE_MD}px; font-weight: {FONT_WEIGHT_BOLD};"
+)
+DESC_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_SM}px;"
+CONFIG_LABEL_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_SM}px;"
+HEADING_STYLE = (
+    f"color: {TEXT_PRIMARY}; font-size: {FONT_SIZE_XL}px; font-weight: {FONT_WEIGHT_BOLD};"
+)
+SUBHEADING_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_SM}px;"
+SECTION_HEADING_STYLE = (
+    f"color: {TEXT_PRIMARY}; font-size: {FONT_SIZE_LG}px; font-weight: {FONT_WEIGHT_BOLD};"
+)
+FILES_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_XS}px; font-style: italic;"
+PRESET_BTN_STYLE = f"""
+QPushButton {{
+    background-color: {BG_SURFACE};
+    color: {TEXT_PRIMARY};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_SM}px;
     padding: 4px 12px;
-    font-size: 12px;
-}
-QPushButton:hover {
-    background-color: #45475a;
-}
+    font-size: {FONT_SIZE_SM}px;
+}}
+QPushButton:hover {{
+    background-color: {BG_INSET};
+}}
 """
 
-COMBO_STYLE = """
-QComboBox {
-    background-color: #313244;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 4px;
+COMBO_STYLE = f"""
+QComboBox {{
+    background-color: {BG_SURFACE};
+    color: {TEXT_PRIMARY};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_SM}px;
     padding: 2px 6px;
-    font-size: 12px;
-}
+    font-size: {FONT_SIZE_SM}px;
+}}
 """
 
 

@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-042 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-07 |
 | **Owner** | (unassigned) |
@@ -39,22 +39,24 @@ Add editing capabilities for Claude integration assets (hooks, skills, commands)
 
 ## Acceptance Criteria
 
-- [ ] Claude assets (commands, skills, hooks) appear correctly nested under a "Claude" node in the tree
-- [ ] Workflow documents appear under a "Workflows" node
-- [ ] Users can open and edit any file via the Markdown Editor Widget
-- [ ] "New" actions create files with appropriate starter content for each type
-- [ ] "Delete" actions show confirmation dialog before removing files
-- [ ] Filename validation prevents invalid names and duplicates
-- [ ] Tree view refreshes after create and delete operations
-- [ ] All existing tests pass (`uv run pytest`)
-- [ ] New tests cover CRUD operations for each asset type
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Claude assets (commands, skills, hooks) appear correctly nested under a "Claude" node in the tree
+- [x] Workflow documents appear under a "Workflows" node
+- [x] Users can open and edit any file via the Markdown Editor Widget
+- [x] "New" actions create files with appropriate starter content for each type
+- [x] "Delete" actions show confirmation dialog before removing files
+- [x] Filename validation prevents invalid names and duplicates
+- [x] Tree view refreshes after create and delete operations
+- [x] All existing tests pass (`uv run pytest`)
+- [x] New tests cover CRUD operations for each asset type
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add CRUD operations (New/Delete) for Claude assets & workflows | Developer | — | Done |
+| 2 | Write tests for CRUD operations (30 new tests) | Tech QA | 1 | Done |
+| 3 | Lint, test suite verification, commit | Developer | 2 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.

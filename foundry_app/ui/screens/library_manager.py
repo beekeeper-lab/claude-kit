@@ -50,6 +50,7 @@ LIBRARY_CATEGORIES: list[tuple[str, str]] = [
 _EDITABLE_CATEGORIES: dict[str, str] = {
     "Personas": "personas",
     "Stacks": "stacks",
+    "Shared Templates": "templates",
     "Workflows": "workflows",
     "Claude Commands": "claude/commands",
     "Claude Skills": "claude/skills",
@@ -389,6 +390,8 @@ def starter_content(category: str, name: str) -> str:
         return STARTER_STACK_CONVENTIONS.format(name=title)
     if category == "Stacks:file":
         return STARTER_STACK_FILE.format(name=title)
+    if category in ("Shared Templates", "_persona_template"):
+        return STARTER_TEMPLATE.format(name=title)
     return STARTER_WORKFLOW.format(name=title)
 
 
@@ -787,7 +790,8 @@ class LibraryManagerScreen(QWidget):
     def _update_button_state(self, item: QTreeWidgetItem | None) -> None:
         """Enable/disable New and Delete based on the selected item."""
         cat = self._get_category_for_item(item)
-        editable = cat in _EDITABLE_CATEGORIES
+        in_template = self._is_template_context(item)
+        editable = cat in _EDITABLE_CATEGORIES or in_template
         self._new_btn.setEnabled(editable)
 
         # Delete is enabled only when a file leaf in an editable category is selected
@@ -811,7 +815,18 @@ class LibraryManagerScreen(QWidget):
         """Prompt user for a name and create a new asset file or directory."""
         item = self._tree.currentItem()
         cat = self._get_category_for_item(item)
-        if cat not in _EDITABLE_CATEGORIES or self._library_root is None:
+        in_template = self._is_template_context(item)
+
+        if self._library_root is None:
+            return
+        if cat not in _EDITABLE_CATEGORIES and not in_template:
+            return
+
+        # Route to template creation when in a template subtree
+        if in_template:
+            tpl_dir = self._resolve_template_dir(item)
+            if tpl_dir is not None:
+                self._create_template(tpl_dir)
             return
 
         label = {

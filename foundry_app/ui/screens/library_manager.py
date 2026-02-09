@@ -910,10 +910,15 @@ class LibraryManagerScreen(QWidget):
                     self, "Duplicate", f"Persona '{name}' already exists."
                 )
                 return
-            persona_dir.mkdir(parents=True, exist_ok=True)
-            (persona_dir / "templates").mkdir(exist_ok=True)
-            for filename, content in persona_starter_files(name).items():
-                (persona_dir / filename).write_text(content, encoding="utf-8")
+            try:
+                persona_dir.mkdir(parents=True, exist_ok=True)
+                (persona_dir / "templates").mkdir(exist_ok=True)
+                for filename, content in persona_starter_files(name).items():
+                    (persona_dir / filename).write_text(content, encoding="utf-8")
+            except OSError as exc:
+                logger.error("Failed to create persona %s: %s", name, exc)
+                QMessageBox.critical(self, "Error", f"Could not create persona: {exc}")
+                return
             logger.info("Created persona %s", persona_dir)
             self.refresh_tree()
             return
@@ -930,7 +935,12 @@ class LibraryManagerScreen(QWidget):
                 )
                 return
             content = starter_content("Stacks:file", name)
-            dest.write_text(content, encoding="utf-8")
+            try:
+                dest.write_text(content, encoding="utf-8")
+            except OSError as exc:
+                logger.error("Failed to write %s: %s", dest, exc)
+                QMessageBox.critical(self, "Error", f"Could not write file: {exc}")
+                return
             logger.info("Created %s", dest)
             self.refresh_tree()
             return
@@ -943,10 +953,15 @@ class LibraryManagerScreen(QWidget):
                     self, "Duplicate", f"Stack '{name}' already exists."
                 )
                 return
-            stack_dir.mkdir(parents=True, exist_ok=True)
-            dest = stack_dir / "conventions.md"
-            content = starter_content("Stacks", name)
-            dest.write_text(content, encoding="utf-8")
+            try:
+                stack_dir.mkdir(parents=True, exist_ok=True)
+                dest = stack_dir / "conventions.md"
+                content = starter_content("Stacks", name)
+                dest.write_text(content, encoding="utf-8")
+            except OSError as exc:
+                logger.error("Failed to create stack %s: %s", name, exc)
+                QMessageBox.critical(self, "Error", f"Could not create stack: {exc}")
+                return
             logger.info("Created stack %s", stack_dir)
             self.refresh_tree()
             return
@@ -970,7 +985,12 @@ class LibraryManagerScreen(QWidget):
             dest.parent.mkdir(parents=True, exist_ok=True)
 
         content = starter_content(cat, name)
-        dest.write_text(content, encoding="utf-8")
+        try:
+            dest.write_text(content, encoding="utf-8")
+        except OSError as exc:
+            logger.error("Failed to write %s: %s", dest, exc)
+            QMessageBox.critical(self, "Error", f"Could not write file: {exc}")
+            return
         logger.info("Created %s", dest)
         self.refresh_tree()
 
@@ -993,9 +1013,14 @@ class LibraryManagerScreen(QWidget):
                 self, "Duplicate", f"Template '{name}.md' already exists."
             )
             return
-        target_dir.mkdir(parents=True, exist_ok=True)
-        content = starter_content("_persona_template", name)
-        dest.write_text(content, encoding="utf-8")
+        try:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            content = starter_content("_persona_template", name)
+            dest.write_text(content, encoding="utf-8")
+        except OSError as exc:
+            logger.error("Failed to write template %s: %s", dest, exc)
+            QMessageBox.critical(self, "Error", f"Could not write template: {exc}")
+            return
         logger.info("Created template %s", dest)
         self.refresh_tree()
 
@@ -1046,6 +1071,12 @@ class LibraryManagerScreen(QWidget):
             QMessageBox.StandardButton.No,
         )
         if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        resolved = path.resolve()
+        if not resolved.is_relative_to(self._library_root.resolve()):
+            logger.error("Refusing to delete path outside library root: %s", resolved)
+            QMessageBox.critical(self, "Error", "Cannot delete: path is outside library root.")
             return
 
         if path.is_dir():

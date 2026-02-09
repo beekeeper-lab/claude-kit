@@ -57,20 +57,34 @@
 | BEAN-033 | Generation Progress Screen | App | Medium | Done | team-lead |
 | BEAN-034 | CLI Interface | App | Medium | Done | team-lead |
 | BEAN-035 | Export & History Screens | App | Low | Done | team-lead |
-| BEAN-036 | Update About Dialog Text | App | Low | Done | team-lead |
-| BEAN-037 | Library Manager — Screen Shell & Tree Browser | App | High | Done | team-lead |
-| BEAN-038 | Library Manager — Markdown Editor Widget | App | High | Done | team-lead |
-| BEAN-039 | Library Manager — Persona Editor | App | High | Done | team-lead |
-| BEAN-040 | Library Manager — Stack Editor | App | Medium | Done | team-lead |
-| BEAN-041 | Library Manager — Template Editor | App | Medium | Done | team-lead |
-| BEAN-042 | Library Manager — Claude Assets & Workflows Editor | App | Low | Done | team-lead |
-| BEAN-043 | Add Application Logo | App | Medium | Done | team-lead |
-| BEAN-044 | Splash Screen & Branded Backgrounds | App | Medium | Done | team-lead |
-| BEAN-045 | Theme Foundation & Style Constants | App | High | Done | team-lead |
-| BEAN-046 | Main Window & Sidebar Restyle | App | High | Done | team-lead |
-| BEAN-047 | Icon Set for Industrial Theme | App | Medium | Done | team-lead |
-| BEAN-048 | Wizard Card Components Restyle | App | High | Done | team-lead |
-| BEAN-049 | Form & Input Styling | App | Medium | Done | Developer |
-| BEAN-050 | Progress & Status Screens Restyle | App | Medium | Done | team-lead |
-| BEAN-051 | Review Page & Typography System | App | Medium | Done | team-lead |
-| BEAN-052 | Accessibility & Visual Polish | App | Medium | Done | team-lead |
+| BEAN-036 | Update About Dialog Text | App | Low | New | (unassigned) |
+| BEAN-037 | Library Manager — Screen Shell & Tree Browser | App | High | New | (unassigned) |
+| BEAN-038 | Library Manager — Markdown Editor Widget | App | High | New | (unassigned) |
+| BEAN-039 | Library Manager — Persona Editor | App | High | New | (unassigned) |
+| BEAN-040 | Library Manager — Stack Editor | App | Medium | New | (unassigned) |
+| BEAN-041 | Library Manager — Template Editor | App | Medium | New | (unassigned) |
+| BEAN-042 | Library Manager — Claude Assets & Workflows Editor | App | Low | New | (unassigned) |
+| BEAN-043 | Add Application Logo | App | Medium | New | (unassigned) |
+| BEAN-044 | Splash Screen & Branded Backgrounds | App | Medium | New | (unassigned) |
+| BEAN-045 | Theme Foundation & Style Constants | App | High | New | (unassigned) |
+| BEAN-046 | Main Window & Sidebar Restyle | App | High | New | (unassigned) |
+| BEAN-047 | Icon Set for Industrial Theme | App | Medium | New | (unassigned) |
+| BEAN-048 | Wizard Card Components Restyle | App | High | New | (unassigned) |
+| BEAN-049 | Form & Input Styling | App | Medium | New | (unassigned) |
+| BEAN-050 | Progress & Status Screens Restyle | App | Medium | New | (unassigned) |
+| BEAN-051 | Review Page & Typography System | App | Medium | New | (unassigned) |
+| BEAN-052 | Accessibility & Visual Polish | App | Medium | New | (unassigned) |
+| BEAN-053 | Add Branded Spinner Graphic | App | Medium | New | (unassigned) |
+| BEAN-054 | Theme Wiring Fix | App | High | New | (unassigned) |
+| BEAN-055 | Sidebar Navigation Modernization | App | High | New | (unassigned) |
+| BEAN-056 | Remove Menu Bar | App | High | New | (unassigned) |
+| BEAN-057 | Settings Screen — Core Paths | App | High | New | (unassigned) |
+| BEAN-058 | Settings Screen — Generation & Safety Defaults | App | Medium | New | (unassigned) |
+| BEAN-059 | Settings Screen — Appearance & Advanced | App | Low | New | (unassigned) |
+| BEAN-060 | Wire Screens into Main Window | App | High | New | (unassigned) |
+| BEAN-061 | Builder Wizard Screen | App | High | New | (unassigned) |
+| BEAN-062 | Wire Compiler & Asset Copier into Pipeline | App | High | New | (unassigned) |
+| BEAN-063 | Agent Writer Service (Persona + Stack Team Members) | App | High | New | (unassigned) |
+| BEAN-064 | Workflow Hook Packs (Git & Az) | App | High | New | (unassigned) |
+| BEAN-065 | MCP Config Generation | App | Medium | New | (unassigned) |
+| BEAN-066 | Skills & Commands Copier Enhancement | App | Medium | New | (unassigned) |

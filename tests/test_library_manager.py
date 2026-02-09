@@ -39,6 +39,8 @@ def _create_library(root: Path) -> Path:
     stack_dir = lib / "stacks" / "python-fastapi"
     stack_dir.mkdir(parents=True)
     (stack_dir / "stack.md").write_text("# Python + FastAPI", encoding="utf-8")
+    (stack_dir / "conventions.md").write_text("# Conventions", encoding="utf-8")
+    (stack_dir / "testing.md").write_text("# Testing", encoding="utf-8")
 
     # Shared Templates
     tpl_dir = lib / "templates"
@@ -191,7 +193,7 @@ class TestLibraryLoading:
         screen = LibraryManagerScreen()
         screen.set_library_root(tmp_path / "nonexistent")
         assert screen.tree.topLevelItemCount() == 0
-        assert screen.empty_label.isVisible()
+        assert not screen.empty_label.isHidden()
 
     def test_valid_root_hides_empty_label(self, tmp_path: Path):
         lib = _create_library(tmp_path)
@@ -1441,7 +1443,8 @@ class TestStackCreate:
         for i in range(screen.tree.topLevelItemCount()):
             item = screen.tree.topLevelItem(i)
             if item.text(0) == "Stacks":
-                screen.tree.setCurrentItem(item.child(0))  # python-fastapi dir
+                stack_dir_node = item.child(0)  # python-fastapi dir
+                screen.tree.setCurrentItem(stack_dir_node.child(0))  # file inside
                 break
         with patch(_INPUT_DIALOG, return_value=("security", True)):
             screen._on_new_asset()
@@ -1489,7 +1492,8 @@ class TestStackCreate:
         for i in range(screen.tree.topLevelItemCount()):
             item = screen.tree.topLevelItem(i)
             if item.text(0) == "Stacks":
-                screen.tree.setCurrentItem(item.child(0))  # python-fastapi dir
+                stack_dir_node = item.child(0)  # python-fastapi dir
+                screen.tree.setCurrentItem(stack_dir_node.child(0))  # file inside
                 break
         with (
             patch(_INPUT_DIALOG, return_value=("conventions", True)),

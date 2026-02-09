@@ -275,24 +275,30 @@ class MainWindow(QMainWindow):
         if logo_file.is_file():
             logo_html = f'<p align="center"><img src="{logo_file}" width="64" height="64"></p>'
 
+        # About dialog uses a native QMessageBox with a light background,
+        # so use dark text instead of theme.TEXT_PRIMARY (which is light).
+        _about_text = "#2a2a2a"
+        _about_bold = theme.ACCENT_PRIMARY
         QMessageBox.about(
             self,
             "About Foundry",
             f"{logo_html}"
             f"<h3 style='color: {theme.ACCENT_PRIMARY};'>Foundry v{__version__}</h3>"
-            f"<p style='color: {theme.TEXT_PRIMARY};'>"
+            f"<p style='color: {_about_text};'>"
             "Foundry is a desktop application for generating fully configured "
             "Claude Code project folders from a library of reusable building blocks. "
             "Instead of hand-crafting project scaffolding from scratch each time, "
-            "compose a project by selecting from curated <b>personas</b>, "
-            "<b>technology stacks</b>, and <b>templates</b> that encode team "
+            "compose a project by selecting from curated "
+            f"<b style='color: {_about_bold};'>personas</b>, "
+            f"<b style='color: {_about_bold};'>technology stacks</b>, and "
+            f"<b style='color: {_about_bold};'>templates</b> that encode team "
             "conventions and best practices.</p>"
-            f"<p style='color: {theme.TEXT_PRIMARY};'>"
+            f"<p style='color: {_about_text};'>"
             "A Foundry composition defines the AI team personas that will collaborate "
             "on your project, the language and framework stack to target, and the "
             "directory templates that seed your repository with the right structure. "
             "When you generate, Foundry compiles these selections into a complete "
             "Claude Code workspace\u2014ready for agents to pick up and start building.</p>"
-            f"<p style='color: {theme.TEXT_PRIMARY};'>"
+            f"<p style='color: {_about_text};'>"
             "Built with PySide6 and Python. Licensed under MIT.</p>",
         )

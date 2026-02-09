@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-054 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-08 |
 | **Owner** | (unassigned) |
@@ -47,12 +47,12 @@ Add path containment validation throughout the file operation pipeline so that a
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | Add field_validator to FileAction.path in models.py | | | Pending |
-| 2 | Add path containment check in library_manager._on_delete_asset() | | | Pending |
-| 3 | Add symlink skip in asset_copier._copy_directory_files() | | | Pending |
-| 4 | Add symlink skip in generator._compare_trees() | | | Pending |
-| 5 | Write tests for path traversal rejection in test_models.py | | 1 | Pending |
-| 6 | Write tests for symlink skipping in test_asset_copier.py and test_generator.py | | 3, 4 | Pending |
+| 1 | Add field_validator to FileAction.path in models.py | Developer | | Done |
+| 2 | Add path containment check in library_manager._on_delete_asset() | Developer | | Done |
+| 3 | Add symlink skip in asset_copier._copy_directory_files() | Developer | | Done |
+| 4 | Add symlink skip in generator._compare_trees() | Developer | | Done |
+| 5 | Write tests for path traversal rejection in test_models.py | Developer | 1 | Done |
+| 6 | Write tests for symlink skipping in test_asset_copier.py and test_generator.py | Developer | 3, 4 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.

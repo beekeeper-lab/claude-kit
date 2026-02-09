@@ -19,7 +19,7 @@ Promotes a source branch into a target branch via a pull request. Runs tests, cr
 
 ## Process
 
-1. **Auto-stash** dirty working tree if needed (restored at end)
+1. **Check for uncommitted changes** — if dirty, prompt: **Commit** (stage + commit), **Stash** (stash, restore at end), or **Abort**
 2. **Determine source/target** — target `main`: source is `test`. Target `test`: source is current branch.
 3. **Push source** to remote
 4. **Run tests** (`uv run pytest`) and **ruff** (`uv run ruff check foundry_app/`) — stop if they fail
@@ -80,5 +80,6 @@ restore working tree. No further prompts.
 | Tests fail | Report failures, stop. Fix on a bean branch first. |
 | PR create fails | Check `gh auth status` and repo permissions |
 | PR merge fails | Check branch protection rules or merge conflicts |
+| Uncommitted changes | Prompted to commit, stash, or abort before proceeding |
 | User aborts | Restore stash, return to original branch |
 | Command blocked by sandbox | Prints exact command for manual execution, continues |

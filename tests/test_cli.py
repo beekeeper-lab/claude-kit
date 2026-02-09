@@ -20,7 +20,6 @@ from foundry_app.core.models import (
     ValidationResult,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -323,3 +322,49 @@ class TestGenerate:
         assert result == EXIT_VALIDATION_ERROR
         captured = capsys.readouterr()
         assert "Error loading composition" in captured.err
+
+
+# ---------------------------------------------------------------------------
+# CLI integration (real composition loading, only generator mocked)
+# ---------------------------------------------------------------------------
+
+
+class TestCLIIntegration:
+
+    @patch("foundry_app.services.generator.generate_project")
+    def test_real_composition_loading(self, mock_gen, tmp_path: Path, capsys):
+        """CLI loads a real YAML file through load_composition (not mocked)."""
+        comp = _write_composition(tmp_path)
+        lib = _make_library(tmp_path)
+        mock_gen.return_value = _mock_generate_result()
+
+        result = main([
+            "generate", str(comp),
+            "--library", str(lib),
+        ])
+
+        assert result == EXIT_SUCCESS
+        call_args = mock_gen.call_args
+        spec = call_args.kwargs["composition"]
+        assert spec.project.name == "Test"
+        assert spec.project.slug == "test"
+        assert spec.stacks[0].id == "python"
+        assert spec.team.personas[0].id == "developer"
+
+    @patch("foundry_app.services.generator.generate_project")
+    def test_real_composition_with_output_flag(self, mock_gen, tmp_path: Path, capsys):
+        """CLI passes --output through to generator with real composition."""
+        comp = _write_composition(tmp_path)
+        lib = _make_library(tmp_path)
+        out_dir = tmp_path / "custom-out"
+        mock_gen.return_value = _mock_generate_result()
+
+        result = main([
+            "generate", str(comp),
+            "--library", str(lib),
+            "--output", str(out_dir),
+        ])
+
+        assert result == EXIT_SUCCESS
+        call_args = mock_gen.call_args
+        assert call_args.kwargs["output_root"] == str(out_dir)

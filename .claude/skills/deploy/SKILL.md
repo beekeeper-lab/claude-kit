@@ -34,7 +34,12 @@ When target is `test`, the source is whatever branch you are on when you invoke 
 ### Phase 1: Preparation
 
 1. **Save current branch** — Record it so we can return at the end.
-2. **Auto-stash if dirty** — If `git status --porcelain` shows changes, run `git stash --include-untracked -m "deploy-auto-stash"`. Do NOT ask — just stash and continue.
+2. **Check for uncommitted changes** — Run `git status --porcelain`.
+   - If clean: continue to step 3.
+   - If dirty: show the list of modified/untracked files and prompt the user:
+     - **Commit** — Stage all changes and commit with a message summarizing the changes (follow the repo's commit style). Then continue.
+     - **Stash** — Run `git stash --include-untracked -m "deploy-auto-stash"`. Restore at the end.
+     - **Abort** — Stop the deploy. The user should handle uncommitted changes manually.
 3. **Determine source and target:**
    - If target is `main`: source = `test`. Checkout `test`.
    - If target is `test`: source = the saved current branch. Stay on that branch.
@@ -106,14 +111,14 @@ When target is `test`, the source is whatever branch you are on when you invoke 
 
 18. **Return to original branch** — `git checkout <original-branch>`.
 
-19. **Restore stash** — If we auto-stashed: `git stash pop`. On conflict, prefer HEAD.
+19. **Restore stash** — If the user chose "Stash" in step 2: `git stash pop`. On conflict, prefer HEAD. (No action needed if the user chose "Commit".)
 
 20. **Report success** — PR URL, merge commit, beans deployed, branches deleted (if applicable).
 
 ## Key Rules
 
 - **One approval gate.** User says "go" once. Everything after is automatic.
-- **Auto-stash, auto-restore.** Dirty working tree handled silently.
+- **Uncommitted changes prompt.** If the working tree is dirty, the user chooses: commit, stash, or abort. Nothing is silently discarded.
 - **PR is created AND merged.** Not just created — the full cycle completes.
 - **Branch cleanup only on main deploys.** Feature branches are cleaned up when promoting to main, not when merging to test.
 - **If a command is blocked by sandbox:** print the exact command for the user to run manually, then continue with the rest.

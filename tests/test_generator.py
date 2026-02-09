@@ -4,16 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 from foundry_app.core.models import (
     CompositionSpec,
-    FileActionType,
     GenerationOptions,
-    HookPackInfo,
-    HooksConfig,
     LibraryIndex,
     OverlayPlan,
     PersonaInfo,
@@ -32,7 +26,6 @@ from foundry_app.services.generator import (
     _run_pipeline,
     generate_project,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -639,7 +632,7 @@ class TestApplyOverlayPlan:
         (source / "a" / "b" / "deep.txt").write_text("deep")
 
         plan = _compare_trees(source, target)
-        result = _apply_overlay_plan(plan, source, target)
+        _apply_overlay_plan(plan, source, target)
 
         assert (target / "a" / "b" / "deep.txt").read_text() == "deep"
 
@@ -674,19 +667,25 @@ class TestOverlayGeneration:
 
         assert output_dir.is_dir()
 
-    def test_overlay_preserves_existing_files(self, tmp_path: Path):
+    def test_overlay_preserves_generated_file_content(self, tmp_path: Path):
         lib_root = _make_library_dir(tmp_path)
         output_dir = tmp_path / "output" / "test-project"
-        output_dir.mkdir(parents=True)
-        (output_dir / "user-file.txt").write_text("keep me")
         spec = _make_spec()
 
-        manifest, _, plan = generate_project(
-            spec, lib_root, output_root=output_dir, overlay=True, dry_run=True,
+        # First generation creates files
+        generate_project(spec, lib_root, output_root=output_dir, overlay=True)
+
+        # Grab a generated file and its content
+        settings = output_dir / ".claude" / "settings.json"
+        assert settings.is_file()
+        original_content = settings.read_text()
+
+        # Second overlay re-generation should preserve identical content (skip)
+        _, _, plan = generate_project(
+            spec, lib_root, output_root=output_dir, overlay=True,
         )
 
-        # dry-run computes the plan but does not apply it, so user file is preserved
-        assert (output_dir / "user-file.txt").read_text() == "keep me"
+        assert settings.read_text() == original_content
 
     def test_overlay_has_apply_stage_in_manifest(self, tmp_path: Path):
         lib_root = _make_library_dir(tmp_path)
@@ -697,6 +696,20 @@ class TestOverlayGeneration:
             spec, lib_root, output_root=output_dir, overlay=True,
         )
 
+        assert "overlay_apply" in manifest.stages
+
+    def test_overlay_nonexistent_target_creates_directory(self, tmp_path: Path):
+        lib_root = _make_library_dir(tmp_path)
+        output_dir = tmp_path / "output" / "brand-new-project"
+        spec = _make_spec()
+
+        assert not output_dir.exists()
+        manifest, validation, plan = generate_project(
+            spec, lib_root, output_root=output_dir, overlay=True,
+        )
+
+        assert output_dir.is_dir()
+        assert plan is not None
         assert "overlay_apply" in manifest.stages
 
     def test_overlay_second_run_shows_skips(self, tmp_path: Path):

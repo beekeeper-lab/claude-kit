@@ -78,7 +78,10 @@ class StackSelection(BaseModel):
 
 
 class StackOverrides(BaseModel):
-    """Optional per-stack overrides (future extensibility)."""
+    """Optional per-stack overrides — reserved for future extensibility.
+
+    TODO: Currently unused. Remove if not needed by v2.0.
+    """
 
     stack_id: str
     overrides: dict[str, Any] = Field(default_factory=dict)

@@ -15,6 +15,7 @@ def main() -> None:
     from foundry_app.core.logging_config import setup_logging
     from foundry_app.core.resources import logo_icon_path, splash_image_path
     from foundry_app.core.settings import FoundrySettings
+    from foundry_app.ui import theme
     from foundry_app.ui.main_window import MainWindow
 
     log_path = setup_logging()
@@ -22,6 +23,9 @@ def main() -> None:
     app = QApplication(sys.argv)
     app.setApplicationName("Foundry")
     app.setOrganizationName("Foundry")
+
+    # Apply dark industrial theme before any widgets are created
+    theme.apply_theme(app)
 
     # -- Application icon ------------------------------------------------------
     icon_file = logo_icon_path()

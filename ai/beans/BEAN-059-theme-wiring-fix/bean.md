@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-059 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-08 |
-| **Owner** | (unassigned) |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -27,32 +27,30 @@ The Foundry application renders with its intended dark industrial palette on sta
 - Ensure no regressions in existing styled screens (Builder wizard, Library Manager, etc.)
 
 ### Out of Scope
-- New icons or icon integration (that's BEAN-055)
-- Removing the menu bar (that's BEAN-056)
+- New icons or icon integration (that's BEAN-060)
+- Removing the menu bar (that's BEAN-061)
 - Changing the palette colors themselves (BEAN-045 palette is fine)
 
 ## Acceptance Criteria
 
-- [ ] `apply_theme(app)` is called in `main.py` before MainWindow is shown
-- [ ] Sidebar renders with dark background (`#141424` BG_INSET) on app startup
-- [ ] Navigation items show brass/gold accent on selection and hover
-- [ ] Menu bar renders dark, not light/white
-- [ ] Content area renders with dark background (`#1a1a2e` BG_BASE)
-- [ ] About dialog remains readable (dark text on light native background)
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `apply_theme(app)` is called in `main.py` before MainWindow is shown
+- [x] Sidebar renders with dark background (`#141424` BG_INSET) on app startup
+- [x] Navigation items show brass/gold accent on selection and hover
+- [x] Menu bar renders dark, not light/white
+- [x] Content area renders with dark background (`#1a1a2e` BG_BASE)
+- [x] About dialog remains readable (dark text on light native background)
+- [x] All tests pass (`uv run pytest`) — 1134 passed
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Add `theme.apply_theme(app)` to main.py | team-lead | — | Done |
+| 2 | Fix About dialog text contrast (dark text on light bg) | team-lead | — | Done |
 
 ## Notes
 
-- This is a defect fix — BEAN-045 and BEAN-046 were marked Done but the theme never rendered because `apply_theme()` was never wired into the startup sequence.
-- The _index.md shows BEAN-045/046/047 as "New" but their bean.md files say "Done" — status discrepancy in the index should be reconciled.
-- This bean should be completed before BEAN-055 and BEAN-056, as those assume a working dark theme baseline.
+- Fix was adding `from foundry_app.ui import theme` and `theme.apply_theme(app)` in `main.py` after QApplication creation, before any widgets.
+- About dialog was also fixed (separate from this bean) — text color changed from theme.TEXT_PRIMARY (light) to #2a2a2a (dark) since QMessageBox.about() uses a native light background.
+- Index status discrepancy for BEAN-045/046/047 was reconciled by another agent.

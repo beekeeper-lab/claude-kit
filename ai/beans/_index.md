@@ -80,7 +80,7 @@
 | BEAN-056 | Robustness Improvements | App | Low | Done | team-lead |
 | BEAN-057 | Test Coverage Gaps | App | Medium | Done | team-lead |
 | BEAN-058 | Add Branded Spinner Graphic | App | Medium | New | (unassigned) |
-| BEAN-059 | Theme Wiring Fix | App | High | New | (unassigned) |
+| BEAN-059 | Theme Wiring Fix | App | High | Done | team-lead |
 | BEAN-060 | Sidebar Navigation Modernization | App | High | New | (unassigned) |
 | BEAN-061 | Remove Menu Bar | App | High | New | (unassigned) |
 | BEAN-062 | Settings Screen — Core Paths | App | High | New | (unassigned) |

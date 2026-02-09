@@ -3,10 +3,10 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-057 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-08 |
-| **Owner** | (unassigned) |
+| **Owner** | Developer |
 | **Category** | App |
 
 ## Problem Statement
@@ -32,21 +32,21 @@ Add targeted tests that verify real behavior rather than mocked wiring, covering
 
 ## Acceptance Criteria
 
-- [ ] `tests/test_resources.py` exists with at least 3 test cases (dev path found, bundled fallback, neither found)
-- [ ] At least one CLI test loads a real composition YAML (not mocked) and verifies it parses correctly
-- [ ] At least one overlay test asserts that user files are preserved with correct content after overlay
-- [ ] At least one overlay test verifies behavior when target directory doesn't exist yet
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `tests/test_resources.py` exists with at least 3 test cases (dev path found, bundled fallback, neither found)
+- [x] At least one CLI test loads a real composition YAML (not mocked) and verifies it parses correctly
+- [x] At least one overlay test asserts that user files are preserved with correct content after overlay
+- [x] At least one overlay test verifies behavior when target directory doesn't exist yet
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | Create tests/test_resources.py | | | Pending |
-| 2 | Add CLI integration test with real composition loading | | | Pending |
-| 3 | Add overlay content preservation test | | | Pending |
-| 4 | Add overlay test for non-existent target directory | | | Pending |
+| 1 | Create tests/test_resources.py | Developer | | Done |
+| 2 | Add CLI integration test with real composition loading | Developer | | Done |
+| 3 | Add overlay content preservation test | Developer | | Done |
+| 4 | Add overlay test for non-existent target directory | Developer | | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.

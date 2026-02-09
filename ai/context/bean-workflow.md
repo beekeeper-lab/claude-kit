@@ -8,6 +8,7 @@ A **Bean** is a unit of work — a feature, enhancement, bug fix, or epic. Beans
 ai/beans/
   _index.md                    # Master backlog index
   _bean-template.md            # Template for creating new beans
+  _review.md                   # Generated MOC for Obsidian review (auto-generated)
   BEAN-NNN-<slug>/
     bean.md                    # Bean definition (problem, goal, scope, criteria)
     tasks/                     # Task files created during decomposition
@@ -42,6 +43,10 @@ Beans are locked by their Status + Owner fields in both `_index.md` and `bean.md
 
 ## Bean Lifecycle
 
+```
+Unapproved → Approved → In Progress → Done
+```
+
 ### 1. Creation
 
 Anyone can create a bean:
@@ -68,14 +73,26 @@ This prevents ID collisions when multiple agents create beans concurrently.
 
 ### 2. Approval
 
-Newly created beans have status `Unapproved`. The user must review and approve them before they can be executed:
+Newly created beans have status `Unapproved`. The user must review and approve them before they can be executed. This is the **approval gate** — no work begins without explicit human approval.
 
-1. **Review beans** — Use `/review-beans` to open Obsidian on the `ai/beans/` directory, or review `bean.md` files directly
-2. **Evaluate** — Check Problem Statement, Goal, Scope, Acceptance Criteria, and Priority
-3. **Approve** — Change the bean's Status from `Unapproved` to `Approved` in both `bean.md` and `_index.md`
+**Review methods:**
+
+1. **Obsidian review** (recommended) — Run `/review-beans` to generate a filtered MOC file (`ai/beans/_review.md`) with links to beans awaiting review, then open Obsidian on the `ai/beans/` directory. Edit bean files directly to:
+   - Change status from `Unapproved` to `Approved`
+   - Adjust priority, scope, or acceptance criteria
+   - Add notes or dependencies
+   - Defer beans by changing status to `Deferred`
+
+2. **Terminal review** — Edit `bean.md` and `_index.md` files directly using any editor.
+
+**Approval process:**
+
+1. **Review** — Read the bean's Problem Statement, Goal, Scope, and Acceptance Criteria
+2. **Evaluate** — Is the scope reasonable? Are criteria testable? Is the priority correct?
+3. **Approve** — Change Status from `Unapproved` to `Approved` in both `bean.md` and `_index.md`
 4. **Defer** — Optionally change status to `Deferred` for beans that should wait
 
-This gate ensures no work begins without explicit human approval.
+**What `/long-run` checks:** When the Team Lead enters autonomous mode, it only processes beans with status `Approved`. Beans with status `Unapproved` are skipped entirely. This ensures the user has reviewed and signed off on every unit of work before it begins.
 
 ### 3. Picking
 

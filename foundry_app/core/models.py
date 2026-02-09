@@ -79,7 +79,10 @@ class StackSelection(BaseModel):
 
 
 class StackOverrides(BaseModel):
-    """Optional per-stack overrides (future extensibility)."""
+    """Optional per-stack overrides — reserved for future extensibility.
+
+    TODO: Currently unused. Remove if not needed by v2.0.
+    """
 
     stack_id: str
     overrides: dict[str, Any] = Field(default_factory=dict)
@@ -452,7 +455,7 @@ class OverlayPlan(BaseModel):
 class PersonaInfo(BaseModel):
     """Metadata about a discovered persona in the library."""
 
-    id: str
+    id: str = Field(..., min_length=1)
     path: str = Field(..., description="Path to persona directory")
     has_persona_md: bool = False
     has_outputs_md: bool = False

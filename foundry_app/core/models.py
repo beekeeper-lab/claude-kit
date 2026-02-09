@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
+from pathlib import PurePosixPath
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -78,7 +79,10 @@ class StackSelection(BaseModel):
 
 
 class StackOverrides(BaseModel):
-    """Optional per-stack overrides (future extensibility)."""
+    """Optional per-stack overrides — reserved for future extensibility.
+
+    TODO: Currently unused. Remove if not needed by v2.0.
+    """
 
     stack_id: str
     overrides: dict[str, Any] = Field(default_factory=dict)
@@ -376,7 +380,7 @@ class GenerationManifest(BaseModel):
     """Complete record of a generation run."""
 
     run_id: str = Field(..., description="Unique run identifier (timestamp-based)")
-    generated_at: datetime = Field(default_factory=datetime.now)
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     library_version: str = Field(default="", description="Git short-hash of library")
     composition_snapshot: dict[str, Any] = Field(
         default_factory=dict,
@@ -410,6 +414,16 @@ class FileAction(BaseModel):
     action: FileActionType
     reason: str = Field(default="", description="Why this action was chosen")
 
+    @field_validator("path")
+    @classmethod
+    def validate_path(cls, v: str) -> str:
+        p = PurePosixPath(v)
+        if p.is_absolute():
+            raise ValueError(f"FileAction path must be relative, got: {v}")
+        if ".." in p.parts:
+            raise ValueError(f"FileAction path must not contain '..', got: {v}")
+        return v
+
 
 class OverlayPlan(BaseModel):
     """Plan for overlaying changes on an existing project."""
@@ -441,7 +455,7 @@ class OverlayPlan(BaseModel):
 class PersonaInfo(BaseModel):
     """Metadata about a discovered persona in the library."""
 
-    id: str
+    id: str = Field(..., min_length=1)
     path: str = Field(..., description="Path to persona directory")
     has_persona_md: bool = False
     has_outputs_md: bool = False

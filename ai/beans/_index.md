@@ -74,3 +74,8 @@
 | BEAN-050 | Progress & Status Screens Restyle | App | Medium | Done | team-lead |
 | BEAN-051 | Review Page & Typography System | App | Medium | Done | team-lead |
 | BEAN-052 | Accessibility & Visual Polish | App | Medium | Done | team-lead |
+| BEAN-053 | P0 Bug Fixes | App | High | Done | team-lead |
+| BEAN-054 | Security Hardening | App | High | Done | team-lead |
+| BEAN-055 | Wire Real Services & Clean Up Dead Code | App | Medium | Done | team-lead |
+| BEAN-056 | Robustness Improvements | App | Low | Done | team-lead |
+| BEAN-057 | Test Coverage Gaps | App | Medium | Done | team-lead |

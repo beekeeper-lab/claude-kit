@@ -66,12 +66,13 @@ def scaffold_project(
     for persona in spec.team.personas:
         dirs_to_create.append(root / "ai" / "outputs" / persona.id)
 
+    # Track which directories already exist so we know what we actually created
+    existing = {d for d in dirs_to_create if d.exists()}
+
     # Create all directories
     for dir_path in dirs_to_create:
-        if dir_path.exists():
-            logger.debug("Directory already exists, skipping: %s", dir_path)
-        else:
-            dir_path.mkdir(parents=True, exist_ok=True)
+        dir_path.mkdir(parents=True, exist_ok=True)
+        if dir_path not in existing:
             rel = str(dir_path.relative_to(root))
             if dir_path == root:
                 rel = "."

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 _APP_DIR = Path(__file__).resolve().parent.parent
 _PROJECT_ROOT = _APP_DIR.parent
@@ -19,6 +22,7 @@ def get_resource_path(relative: str) -> Path:
         bundled = _BUNDLED_RESOURCES / Path(*parts[1:])
         if bundled.is_file():
             return bundled
+    logger.warning("Resource not found: %s", relative)
     return dev_path
 
 

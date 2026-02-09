@@ -73,8 +73,11 @@ def _run_generate(args: argparse.Namespace) -> int:
     """Execute the generate command."""
     from pydantic import ValidationError
 
+    from foundry_app.core.logging_config import setup_logging
     from foundry_app.io.composition_io import load_composition
     from foundry_app.services.generator import generate_project
+
+    setup_logging()
 
     comp_path = Path(args.composition)
     if not comp_path.is_file():

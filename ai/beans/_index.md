@@ -86,7 +86,7 @@
 | BEAN-062 | Settings Screen — Core Paths | App | High | Done | team-lead |
 | BEAN-063 | Settings Screen — Generation & Safety Defaults | App | Medium | New | (unassigned) |
 | BEAN-064 | Settings Screen — Appearance & Advanced | App | Low | New | (unassigned) |
-| BEAN-065 | Wire Screens into Main Window | App | High | New | (unassigned) |
+| BEAN-065 | Wire Screens into Main Window | App | High | Done | team-lead |
 | BEAN-066 | Builder Wizard Screen | App | High | New | (unassigned) |
 | BEAN-067 | Wire Compiler & Asset Copier into Pipeline | App | High | Done | team-lead |
 | BEAN-068 | Agent Writer Service (Persona + Stack Team Members) | App | High | New | (unassigned) |

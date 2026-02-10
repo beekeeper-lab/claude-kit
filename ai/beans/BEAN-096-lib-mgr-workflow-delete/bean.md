@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-096 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-09 |
-| **Started** | — |
-| **Completed** | — |
+| **Started** | 2026-02-10 |
+| **Completed** | 2026-02-10 |
 | **Duration** | — |
-| **Owner** | (unassigned) |
+| **Owner** | Developer |
 | **Category** | App |
 
 ## Problem Statement
@@ -36,19 +36,19 @@ A user can select an existing workflow and delete it via the 'Delete' button wit
 
 ## Acceptance Criteria
 
-- [ ] The 'Delete' button is enabled when a workflow is selected
-- [ ] Clicking 'Delete' shows a confirmation dialog naming the workflow
-- [ ] Confirming deletes the workflow file/directory from disk
-- [ ] Tree auto-refreshes and the deleted workflow is gone
-- [ ] Cancelling the dialog preserves the workflow unchanged
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] The 'Delete' button is enabled when a workflow is selected
+- [x] Clicking 'Delete' shows a confirmation dialog naming the workflow
+- [x] Confirming deletes the workflow file/directory from disk
+- [x] Tree auto-refreshes and the deleted workflow is gone
+- [x] Cancelling the dialog preserves the workflow unchanged
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Verify existing workflow delete implementation and add headless tests | Developer | — | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.
@@ -69,7 +69,7 @@ Key files:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | 0m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |

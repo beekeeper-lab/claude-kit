@@ -25,6 +25,13 @@ Automates the manual loop of picking a bean, decomposing it into tasks, executin
 
 ## Process
 
+### Phase 0: Branch Prerequisite
+
+0. **Ensure on `test` branch** — Run `git branch --show-current`.
+   - If already on `test`: proceed.
+   - If on `main` with a clean working tree: run `git checkout test` and proceed.
+   - If on any other branch or the working tree is dirty: display "⚠ /long-run requires a clean working tree on the `test` branch. Current branch: `<branch>`. Please switch to `test` and retry." Then stop.
+
 1. **Read backlog** — Parse `ai/beans/_index.md`. Identify beans with status `Approved`.
 2. **Check for actionable beans** — If no beans are actionable (all `Done`, `Deferred`, or blocked by dependencies), report "Backlog clear — no actionable beans" and stop.
 3. **Select best bean** — Apply selection heuristics (see Options below) to choose the single best bean to work on next.
@@ -39,9 +46,9 @@ Automates the manual loop of picking a bean, decomposing it into tasks, executin
 9. **Close the bean** — Update status to `Done` in both `bean.md` and `_index.md`.
 10. **Commit on feature branch** — Stage all changed files and commit with message: `BEAN-NNN: <title>`. The commit goes on the `bean/BEAN-NNN-<slug>` branch.
 11. **Merge to test** — Execute `/merge-bean` to merge the feature branch into `test`: checkout test, pull latest, merge with `--no-ff`, push. If merge conflicts occur, report and stop. *(In parallel mode, workers do NOT merge — the orchestrator handles merging sequentially after each worker completes.)*
-12. **Return to main** — Checkout the main branch: `git checkout main`.
+12. **Stay on test** — Remain on the `test` branch (do not switch to `main`).
 13. **Report progress** — Summarize what was completed: bean title, tasks executed, branch name, merge commit, files changed.
-14. **Loop** — Go back to step 1. Continue until no actionable beans remain.
+14. **Loop** — Go back to step 1. Continue until no actionable beans remain. When complete, display: `⚠ Work is on the test branch. Run /deploy to promote to main.`
 
 ## Output
 
@@ -198,6 +205,8 @@ Team Lead reads the backlog, picks the highest-priority unblocked bean, processe
 ✓ Long run complete
   Beans processed: 4
   Backlog status: 0 actionable, 2 deferred
+
+  ⚠ Work is on the `test` branch. Run /deploy to promote to `main`.
 ```
 
 **Parallel mode with 3 workers:**
@@ -219,6 +228,8 @@ Team Lead detects tmux, selects 3 independent beans, spawns 3 child windows. Eac
 ✓ All workers idle. Long run complete.
   Beans processed: 5 (3 parallel + 2 sequential)
   Backlog status: 0 actionable
+
+  ⚠ Work is on the `test` branch. Run /deploy to promote to `main`.
 ```
 
 **Filter by category:**

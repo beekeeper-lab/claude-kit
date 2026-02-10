@@ -2491,6 +2491,13 @@ def _select_shared_template(screen: LibraryManagerScreen, filename: str):
     for i in range(screen.tree.topLevelItemCount()):
         item = screen.tree.topLevelItem(i)
         if item.text(0) == "Shared Templates":
+            for j in range(item.childCount()):
+                child = item.child(j)
+                if child.text(0) == filename:
+                    screen.tree.setCurrentItem(child)
+                    return
+
+
 # ---------------------------------------------------------------------------
 # Workflow Update — BEAN-095
 # ---------------------------------------------------------------------------

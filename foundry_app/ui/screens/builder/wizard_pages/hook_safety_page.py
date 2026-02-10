@@ -37,6 +37,29 @@ from foundry_app.core.models import (
     SecretPolicy,
     ShellPolicy,
 )
+from foundry_app.ui.theme import (
+    ACCENT_PRIMARY,
+    ACCENT_PRIMARY_HOVER,
+    ACCENT_SECONDARY_MUTED,
+    BG_INSET,
+    BG_OVERLAY,
+    BG_SURFACE,
+    BORDER_DEFAULT,
+    FONT_SIZE_LG,
+    FONT_SIZE_MD,
+    FONT_SIZE_SM,
+    FONT_SIZE_XL,
+    FONT_SIZE_XS,
+    FONT_WEIGHT_BOLD,
+    RADIUS_MD,
+    RADIUS_SM,
+    SPACE_LG,
+    SPACE_MD,
+    SPACE_SM,
+    SPACE_XL,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,70 +68,138 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 HOOK_PACK_DESCRIPTIONS: dict[str, tuple[str, str]] = {
+    # Code quality
     "pre-commit-lint": ("Pre-Commit Lint", "Linting and formatting checks before code commit"),
     "post-task-qa": ("Post-Task QA", "Output validation after task completion"),
     "security-scan": ("Security Scan", "Security and secret scanning"),
     "compliance-gate": ("Compliance Gate", "Compliance verification"),
     "hook-policy": ("Hook Policy", "Hook policy documentation"),
+    # Git workflow
+    "git-commit-branch": ("Commit Branch Guard", "Prevent direct commits to protected branches"),
+    "git-push-feature": ("Push Feature Branch", "Push feature branch with upstream tracking"),
+    "git-generate-pr": ("Generate PR", "Create pull requests via gh CLI"),
+    "git-merge-to-test": ("Merge to Test", "Merge approved PRs to test branch"),
+    "git-merge-to-prod": ("Merge to Prod", "Merge test to production with safety gates"),
+    # Azure CLI
+    "az-read-only": ("Az Read-Only", "Allow only read operations on Azure resources"),
+    "az-limited-ops": ("Az Limited-Ops", "Allow deploys, block destructive Azure operations"),
+}
+
+# Category display names
+CATEGORY_LABELS: dict[str, str] = {
+    "git": "Git Workflow",
+    "az": "Azure CLI",
+    "code-quality": "Code Quality",
+    "": "Other",
 }
 
 # ---------------------------------------------------------------------------
-# Stylesheet constants (Catppuccin Mocha theme)
+# Stylesheet constants (theme-based)
 # ---------------------------------------------------------------------------
 
-CARD_STYLE = """
-QFrame#hook-card {
-    background-color: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    padding: 12px;
-}
-QFrame#hook-card:hover {
-    border-color: #585b70;
-}
+CARD_STYLE = f"""
+QFrame#hook-card {{
+    background-color: {BG_SURFACE};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_MD}px;
+    padding: {SPACE_MD}px;
+}}
+QFrame#hook-card:hover {{
+    border-color: {ACCENT_SECONDARY_MUTED};
+}}
 """
 
-CARD_SELECTED_BORDER = "border-color: #a6e3a1;"
+CARD_SELECTED_BORDER = f"border-color: {ACCENT_PRIMARY};"
 
-SECTION_STYLE = """
-QFrame#safety-section {
-    background-color: #1e1e2e;
-    border: 1px solid #313244;
-    border-radius: 8px;
-    padding: 12px;
-}
+SECTION_STYLE = f"""
+QFrame#safety-section {{
+    background-color: {BG_SURFACE};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_MD}px;
+    padding: {SPACE_MD}px;
+}}
 """
 
-LABEL_STYLE = "color: #cdd6f4; font-size: 14px; font-weight: bold;"
-DESC_STYLE = "color: #6c7086; font-size: 12px;"
-CONFIG_LABEL_STYLE = "color: #a6adc8; font-size: 12px;"
-HEADING_STYLE = "color: #cdd6f4; font-size: 18px; font-weight: bold;"
-SUBHEADING_STYLE = "color: #6c7086; font-size: 13px;"
-SECTION_HEADING_STYLE = "color: #cdd6f4; font-size: 15px; font-weight: bold;"
-FILES_STYLE = "color: #a6adc8; font-size: 11px; font-style: italic;"
-PRESET_BTN_STYLE = """
-QPushButton {
-    background-color: #313244;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 4px;
-    padding: 4px 12px;
-    font-size: 12px;
-}
-QPushButton:hover {
-    background-color: #45475a;
-}
+LABEL_STYLE = (
+    f"color: {TEXT_PRIMARY}; font-size: {FONT_SIZE_MD}px; font-weight: {FONT_WEIGHT_BOLD};"
+)
+DESC_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_SM}px;"
+CONFIG_LABEL_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_SM}px;"
+HEADING_STYLE = (
+    f"color: {TEXT_PRIMARY}; font-size: {FONT_SIZE_XL}px; font-weight: {FONT_WEIGHT_BOLD};"
+)
+SUBHEADING_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_SM}px;"
+SECTION_HEADING_STYLE = (
+    f"color: {TEXT_PRIMARY}; font-size: {FONT_SIZE_LG}px; font-weight: {FONT_WEIGHT_BOLD};"
+)
+FILES_STYLE = f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_XS}px; font-style: italic;"
+PRESET_BTN_STYLE = f"""
+QPushButton {{
+    background-color: {BG_SURFACE};
+    color: {TEXT_PRIMARY};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_SM}px;
+    padding: {SPACE_SM // 2}px {SPACE_MD}px;
+    font-size: {FONT_SIZE_SM}px;
+}}
+QPushButton:hover {{
+    background-color: {BG_INSET};
+}}
 """
 
-COMBO_STYLE = """
-QComboBox {
-    background-color: #313244;
-    color: #cdd6f4;
-    border: 1px solid #45475a;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 12px;
-}
+COMBO_STYLE = f"""
+QComboBox {{
+    background-color: {BG_SURFACE};
+    color: {TEXT_PRIMARY};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_SM}px;
+    padding: {SPACE_SM // 2}px {SPACE_SM}px;
+    font-size: {FONT_SIZE_SM}px;
+}}
+QComboBox:focus {{
+    border-color: {ACCENT_PRIMARY};
+    border-width: 2px;
+}}
+QComboBox:hover {{
+    border-color: {ACCENT_SECONDARY_MUTED};
+}}
+QComboBox::drop-down {{
+    border: none;
+    padding-right: {SPACE_SM}px;
+}}
+QComboBox::down-arrow {{
+    image: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid {TEXT_SECONDARY};
+    margin-right: {SPACE_SM}px;
+}}
+QComboBox QAbstractItemView {{
+    background-color: {BG_OVERLAY};
+    color: {TEXT_PRIMARY};
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: {RADIUS_SM}px;
+    selection-background-color: {ACCENT_SECONDARY_MUTED};
+    selection-color: {TEXT_PRIMARY};
+    padding: {SPACE_SM // 2}px;
+}}
+"""
+
+CHECKBOX_STYLE = f"""
+QCheckBox::indicator {{
+    width: 16px;
+    height: 16px;
+    border: 1px solid {BORDER_DEFAULT};
+    border-radius: 3px;
+    background-color: {BG_INSET};
+}}
+QCheckBox::indicator:hover {{
+    border-color: {ACCENT_SECONDARY_MUTED};
+}}
+QCheckBox::indicator:checked {{
+    background-color: {ACCENT_PRIMARY};
+    border-color: {ACCENT_PRIMARY_HOVER};
+}}
 """
 
 
@@ -132,11 +223,12 @@ class HookPackCard(QFrame):
 
     def _build_ui(self) -> None:
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(10)
+        layout.setContentsMargins(SPACE_MD, SPACE_SM + 2, SPACE_MD, SPACE_SM + 2)
+        layout.setSpacing(SPACE_SM + 2)
 
         # Checkbox
         self._checkbox = QCheckBox()
+        self._checkbox.setStyleSheet(CHECKBOX_STYLE)
         self._checkbox.setChecked(True)  # enabled by default
         self._checkbox.stateChanged.connect(self._on_toggled)
         layout.addWidget(self._checkbox)
@@ -204,6 +296,7 @@ class HookPackCard(QFrame):
         """Build a HookPackSelection from the current card state."""
         return HookPackSelection(
             id=self._pack.id,
+            category=self._pack.category,
             enabled=self._checkbox.isChecked(),
             mode=self.mode,
         )
@@ -245,8 +338,8 @@ class SafetyPolicySection(QFrame):
         self.setFrameShape(QFrame.Shape.StyledPanel)
 
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(12, 10, 12, 10)
-        self._layout.setSpacing(6)
+        self._layout.setContentsMargins(SPACE_MD, SPACE_SM + 2, SPACE_MD, SPACE_SM + 2)
+        self._layout.setSpacing(SPACE_SM - 2)
 
         heading = QLabel(title)
         heading.setStyleSheet(SECTION_HEADING_STYLE)
@@ -255,9 +348,10 @@ class SafetyPolicySection(QFrame):
     def add_toggle(self, key: str, label: str, default: bool = True) -> QCheckBox:
         """Add a boolean toggle to this section."""
         row = QHBoxLayout()
-        row.setSpacing(10)
+        row.setSpacing(SPACE_SM + 2)
 
         cb = QCheckBox()
+        cb.setStyleSheet(CHECKBOX_STYLE)
         cb.setChecked(default)
         cb.stateChanged.connect(lambda _: self.changed.emit())
         row.addWidget(cb)
@@ -310,6 +404,7 @@ class HookSafetyPage(QWidget):
     ) -> None:
         super().__init__(parent)
         self._cards: dict[str, HookPackCard] = {}
+        self._category_labels: list[QLabel] = []
         self._safety_sections: dict[str, SafetyPolicySection] = {}
         self._build_ui()
         if library_index is not None:
@@ -319,8 +414,8 @@ class HookSafetyPage(QWidget):
 
     def _build_ui(self) -> None:
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(24, 20, 24, 20)
-        outer.setSpacing(12)
+        outer.setContentsMargins(SPACE_XL, SPACE_XL - 4, SPACE_XL, SPACE_XL - 4)
+        outer.setSpacing(SPACE_MD)
 
         heading = QLabel("Hook & Safety Configuration")
         heading.setStyleSheet(HEADING_STYLE)
@@ -344,7 +439,7 @@ class HookSafetyPage(QWidget):
         self._content = QWidget()
         self._content_layout = QVBoxLayout(self._content)
         self._content_layout.setContentsMargins(0, 0, 0, 0)
-        self._content_layout.setSpacing(16)
+        self._content_layout.setSpacing(SPACE_LG)
 
         # --- Hooks section ---
         self._build_hooks_section()
@@ -364,7 +459,7 @@ class HookSafetyPage(QWidget):
 
         # Posture selector row
         posture_row = QHBoxLayout()
-        posture_row.setSpacing(10)
+        posture_row.setSpacing(SPACE_SM + 2)
 
         posture_label = QLabel("Safety Posture:")
         posture_label.setStyleSheet(CONFIG_LABEL_STYLE)
@@ -385,7 +480,7 @@ class HookSafetyPage(QWidget):
         self._hook_card_container = QWidget()
         self._hook_card_layout = QVBoxLayout(self._hook_card_container)
         self._hook_card_layout.setContentsMargins(0, 0, 0, 0)
-        self._hook_card_layout.setSpacing(8)
+        self._hook_card_layout.setSpacing(SPACE_SM)
         self._content_layout.addWidget(self._hook_card_container)
 
     def _build_safety_section(self) -> None:
@@ -396,7 +491,7 @@ class HookSafetyPage(QWidget):
 
         # Preset buttons
         preset_row = QHBoxLayout()
-        preset_row.setSpacing(8)
+        preset_row.setSpacing(SPACE_SM)
 
         self._permissive_btn = QPushButton("Permissive")
         self._permissive_btn.setStyleSheet(PRESET_BTN_STYLE)
@@ -470,20 +565,49 @@ class HookSafetyPage(QWidget):
     # -- Public API ---------------------------------------------------------
 
     def load_hook_packs(self, library_index: LibraryIndex) -> None:
-        """Populate the hook pack section with packs from a LibraryIndex."""
-        # Clear existing cards
+        """Populate the hook pack section with packs from a LibraryIndex, grouped by category."""
+        # Clear existing cards and category labels
         for card in self._cards.values():
             self._hook_card_layout.removeWidget(card)
             card.deleteLater()
         self._cards.clear()
 
-        for pack in library_index.hook_packs:
-            card = HookPackCard(pack)
-            card.toggled.connect(self._on_card_toggled)
-            self._hook_card_layout.addWidget(card)
-            self._cards[pack.id] = card
+        for widget in self._category_labels:
+            self._hook_card_layout.removeWidget(widget)
+            widget.deleteLater()
+        self._category_labels.clear()
 
-        logger.info("Loaded %d hook pack cards", len(self._cards))
+        # Group packs by category
+        groups: dict[str, list[HookPackInfo]] = {}
+        for pack in library_index.hook_packs:
+            cat = pack.category or ""
+            groups.setdefault(cat, []).append(pack)
+
+        # Render groups in a stable order
+        category_order = ["git", "az", "code-quality", ""]
+        for cat in category_order:
+            packs = groups.get(cat, [])
+            if not packs:
+                continue
+
+            # Category heading
+            cat_label = CATEGORY_LABELS.get(cat, cat.replace("-", " ").title())
+            heading = QLabel(cat_label)
+            heading.setStyleSheet(
+                f"color: {TEXT_SECONDARY}; font-size: {FONT_SIZE_MD}px; "
+                f"font-weight: {FONT_WEIGHT_BOLD}; "
+                f"padding-top: {SPACE_SM}px;"
+            )
+            self._hook_card_layout.addWidget(heading)
+            self._category_labels.append(heading)
+
+            for pack in packs:
+                card = HookPackCard(pack)
+                card.toggled.connect(self._on_card_toggled)
+                self._hook_card_layout.addWidget(card)
+                self._cards[pack.id] = card
+
+        logger.info("Loaded %d hook pack cards in %d categories", len(self._cards), len(groups))
 
     def get_hooks_config(self) -> HooksConfig:
         """Return the current hook configuration."""

@@ -13,6 +13,7 @@ dependencies = [
     "pyyaml>=6.0",
     "jinja2>=3.1",
     "PySide6>=6.5",
+    "mistune>=3.0",
 ]
 
 [dependency-groups]
@@ -27,6 +28,10 @@ foundry-cli = "foundry_app.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["foundry_app"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"resources/images" = "foundry_app/_resources/images"
+"resources/icons" = "foundry_app/_resources/icons"
 
 [tool.ruff]
 line-length = 100

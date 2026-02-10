@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-036 |
-| **Status** | New |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-07 |
 | **Owner** | (unassigned) |
@@ -33,22 +33,22 @@ Replace the minimal About text with 2-3 developer-focused paragraphs that explai
 
 ## Acceptance Criteria
 
-- [ ] About dialog displays 2-3 substantive paragraphs (not just a tagline)
-- [ ] Text mentions personas, technology stacks, and templates
-- [ ] Tone is developer-focused and technical
-- [ ] Version number (`__version__`) is still prominently displayed
-- [ ] Dialog still uses `QMessageBox.about()` — no new widgets or files
-- [ ] No new dependencies introduced
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] About dialog displays 2-3 substantive paragraphs (not just a tagline)
+- [x] Text mentions personas, technology stacks, and templates
+- [x] Tone is developer-focused and technical
+- [x] Version number (`__version__`) is still prominently displayed
+- [x] Dialog still uses `QMessageBox.about()` — no new widgets or files
+- [x] No new dependencies introduced
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | Draft About text (2-3 paragraphs) | developer | | Pending |
-| 2 | Update `_show_about()` in main_window.py | developer | 1 | Pending |
-| 3 | Verify dialog renders correctly | tech-qa | 2 | Pending |
+| 1 | Draft About text (2-3 paragraphs) | developer | | Done |
+| 2 | Update `_show_about()` in main_window.py | developer | 1 | Done |
+| 3 | Verify dialog renders correctly | tech-qa | 2 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.

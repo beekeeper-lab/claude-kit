@@ -4,16 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 from foundry_app.core.models import (
     CompositionSpec,
-    FileActionType,
     GenerationOptions,
-    HookPackInfo,
-    HooksConfig,
     LibraryIndex,
     OverlayPlan,
     PersonaInfo,
@@ -32,7 +26,6 @@ from foundry_app.services.generator import (
     _run_pipeline,
     generate_project,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -220,7 +213,7 @@ class TestStandardGeneration:
         assert manifest.composition_snapshot != {}
         assert manifest.composition_snapshot["project"]["slug"] == "test-project"
 
-    def test_stub_stages_included_in_manifest(self, tmp_path: Path):
+    def test_service_stages_included_in_manifest(self, tmp_path: Path):
         lib_root = _make_library_dir(tmp_path)
         output_dir = tmp_path / "output" / "test-project"
         spec = _make_spec()
@@ -538,6 +531,38 @@ class TestCompareTrees:
         assert len(plan.skips) == 1
         assert len(plan.deletes) == 1
 
+    def test_skips_symlinks_in_source(self, tmp_path: Path):
+        source = tmp_path / "source"
+        target = tmp_path / "target"
+        source.mkdir()
+        target.mkdir()
+
+        (source / "real.txt").write_text("real content")
+        outside = tmp_path / "outside.txt"
+        outside.write_text("outside content")
+        (source / "link.txt").symlink_to(outside)
+
+        plan = _compare_trees(source, target)
+
+        paths = [a.path for a in plan.actions]
+        assert "real.txt" in paths
+        assert "link.txt" not in paths
+
+    def test_skips_symlinks_in_target(self, tmp_path: Path):
+        source = tmp_path / "source"
+        target = tmp_path / "target"
+        source.mkdir()
+        target.mkdir()
+
+        outside = tmp_path / "outside.txt"
+        outside.write_text("outside content")
+        (target / "link.txt").symlink_to(outside)
+
+        plan = _compare_trees(source, target)
+
+        paths = [a.path for a in plan.actions]
+        assert "link.txt" not in paths
+
 
 # ---------------------------------------------------------------------------
 # Apply overlay plan
@@ -607,7 +632,7 @@ class TestApplyOverlayPlan:
         (source / "a" / "b" / "deep.txt").write_text("deep")
 
         plan = _compare_trees(source, target)
-        result = _apply_overlay_plan(plan, source, target)
+        _apply_overlay_plan(plan, source, target)
 
         assert (target / "a" / "b" / "deep.txt").read_text() == "deep"
 
@@ -642,20 +667,25 @@ class TestOverlayGeneration:
 
         assert output_dir.is_dir()
 
-    def test_overlay_preserves_existing_files(self, tmp_path: Path):
+    def test_overlay_preserves_generated_file_content(self, tmp_path: Path):
         lib_root = _make_library_dir(tmp_path)
         output_dir = tmp_path / "output" / "test-project"
-        output_dir.mkdir(parents=True)
-        (output_dir / "user-file.txt").write_text("keep me")
         spec = _make_spec()
 
-        manifest, _, plan = generate_project(
+        # First generation creates files
+        generate_project(spec, lib_root, output_root=output_dir, overlay=True)
+
+        # Grab a generated file and its content
+        settings = output_dir / ".claude" / "settings.json"
+        assert settings.is_file()
+        original_content = settings.read_text()
+
+        # Second overlay re-generation should preserve identical content (skip)
+        _, _, plan = generate_project(
             spec, lib_root, output_root=output_dir, overlay=True,
         )
 
-        # user-file.txt should be in the delete list (not in source)
-        # but it was generated, so the overlay plan handles it
-        assert (output_dir / "user-file.txt").exists() or not (output_dir / "user-file.txt").exists()
+        assert settings.read_text() == original_content
 
     def test_overlay_has_apply_stage_in_manifest(self, tmp_path: Path):
         lib_root = _make_library_dir(tmp_path)
@@ -666,6 +696,20 @@ class TestOverlayGeneration:
             spec, lib_root, output_root=output_dir, overlay=True,
         )
 
+        assert "overlay_apply" in manifest.stages
+
+    def test_overlay_nonexistent_target_creates_directory(self, tmp_path: Path):
+        lib_root = _make_library_dir(tmp_path)
+        output_dir = tmp_path / "output" / "brand-new-project"
+        spec = _make_spec()
+
+        assert not output_dir.exists()
+        manifest, validation, plan = generate_project(
+            spec, lib_root, output_root=output_dir, overlay=True,
+        )
+
+        assert output_dir.is_dir()
+        assert plan is not None
         assert "overlay_apply" in manifest.stages
 
     def test_overlay_second_run_shows_skips(self, tmp_path: Path):
@@ -753,6 +797,7 @@ class TestPipelineExecution:
 
     def test_pipeline_runs_all_stages(self, tmp_path: Path):
         lib = _make_library(tmp_path)
+        lib_root = Path(lib.library_root)
         output_dir = tmp_path / "pipeline-output"
         output_dir.mkdir()
         spec = _make_spec(
@@ -762,7 +807,7 @@ class TestPipelineExecution:
             ),
         )
 
-        stages = _run_pipeline(spec, lib, output_dir)
+        stages = _run_pipeline(spec, lib, lib_root, output_dir)
 
         assert "scaffold" in stages
         assert "compile" in stages
@@ -773,6 +818,7 @@ class TestPipelineExecution:
 
     def test_pipeline_optional_stages_controlled_by_spec(self, tmp_path: Path):
         lib = _make_library(tmp_path)
+        lib_root = Path(lib.library_root)
         output_dir = tmp_path / "pipeline-output"
         output_dir.mkdir()
         spec = _make_spec(
@@ -782,23 +828,23 @@ class TestPipelineExecution:
             ),
         )
 
-        stages = _run_pipeline(spec, lib, output_dir)
+        stages = _run_pipeline(spec, lib, lib_root, output_dir)
 
         assert "seed_tasks" not in stages
         assert "diff_report" not in stages
 
-    def test_stub_stages_return_empty_results(self, tmp_path: Path):
+    def test_real_services_produce_output(self, tmp_path: Path):
         lib = _make_library(tmp_path)
+        lib_root = Path(lib.library_root)
         output_dir = tmp_path / "pipeline-output"
         output_dir.mkdir()
         spec = _make_spec()
 
-        stages = _run_pipeline(spec, lib, output_dir)
+        stages = _run_pipeline(spec, lib, lib_root, output_dir)
 
-        assert stages["compile"].wrote == []
-        assert stages["compile"].warnings == []
-        assert stages["copy_assets"].wrote == []
-        # Safety writer now delegates to real implementation (BEAN-030)
+        # Compile now produces CLAUDE.md via real compiler service
+        assert "CLAUDE.md" in stages["compile"].wrote
+        # Safety writer produces real output
         assert ".claude/settings.json" in stages["safety"].wrote
 
 

@@ -4,99 +4,103 @@ from __future__ import annotations
 
 import logging
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QFont
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QFont, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
-    QMenuBar,
+    QPushButton,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
 
 from foundry_app.core.settings import FoundrySettings
+from foundry_app.ui import theme
+from foundry_app.ui.icons import icon_path
+from foundry_app.ui.screens.builder_screen import BuilderScreen
+from foundry_app.ui.screens.history_screen import HistoryScreen
+from foundry_app.ui.screens.library_manager import LibraryManagerScreen
+from foundry_app.ui.screens.settings_screen import SettingsScreen
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Stylesheet
+# Stylesheet — built from centralised theme constants
 # ---------------------------------------------------------------------------
 
-STYLESHEET = """
-QMainWindow {
-    background-color: #1e1e2e;
-}
+STYLESHEET = f"""
+QMainWindow {{{{
+    background-color: {theme.BG_BASE};
+}}}}
 
-/* Sidebar */
-#sidebar {
-    background-color: #181825;
-    border-right: 1px solid #313244;
-}
-#sidebar QListWidget {
+/* Sidebar — darker recessed panel, control-room feel */
+#sidebar {{{{
+    background-color: {theme.BG_INSET};
+    border-right: 1px solid {theme.BORDER_DEFAULT};
+}}}}
+#sidebar QListWidget {{{{
     background-color: transparent;
     border: none;
     outline: none;
-    font-size: 14px;
-    color: #cdd6f4;
-    padding: 8px 0;
-}
-#sidebar QListWidget::item {
-    padding: 12px 20px;
+    font-size: {theme.FONT_SIZE_MD}px;
+    color: {theme.TEXT_PRIMARY};
+    padding: {theme.SPACE_LG}px 0 {theme.SPACE_SM}px 0;
+}}}}
+#sidebar QListWidget::item {{{{
+    padding: {theme.SPACE_MD}px {theme.SPACE_LG}px;
+    margin: 2px 0;
     border-radius: 0;
-}
-#sidebar QListWidget::item:selected {
-    background-color: #313244;
-    color: #cba6f7;
-    font-weight: bold;
-}
-#sidebar QListWidget::item:hover:!selected {
-    background-color: #1e1e2e;
-}
+}}}}
+#sidebar QListWidget::item:selected {{{{
+    background-color: {theme.BG_SURFACE};
+    color: {theme.ACCENT_PRIMARY};
+    font-weight: {theme.FONT_WEIGHT_BOLD};
+    border-left: 3px solid {theme.ACCENT_PRIMARY};
+}}}}
+#sidebar QListWidget::item:hover:!selected {{{{
+    background-color: {theme.BG_BASE};
+    color: {theme.ACCENT_PRIMARY_HOVER};
+}}}}
 
-/* Brand label */
-#brand-label {
-    color: #cba6f7;
-    font-size: 20px;
-    font-weight: bold;
-    padding: 20px 20px 12px 20px;
-}
+/* Sidebar footer — version & info */
+#sidebar-footer {{{{
+    border-top: 1px solid {theme.BORDER_SUBTLE};
+    padding: {theme.SPACE_SM}px {theme.SPACE_LG}px;
+}}}}
+#sidebar-footer QLabel {{{{
+    color: {theme.TEXT_DISABLED};
+    font-size: {theme.FONT_SIZE_XS}px;
+}}}}
+#sidebar-footer QPushButton {{{{
+    background: transparent;
+    border: none;
+    color: {theme.TEXT_DISABLED};
+    font-size: {theme.FONT_SIZE_XS}px;
+    text-align: left;
+    padding: {theme.SPACE_XS}px 0;
+}}}}
+#sidebar-footer QPushButton:hover {{{{
+    color: {theme.ACCENT_PRIMARY_HOVER};
+}}}}
 
 /* Content area */
-#content-stack {
-    background-color: #1e1e2e;
-}
+#content-stack {{{{
+    background-color: {theme.BG_BASE};
+}}}}
 
 /* Placeholder screens */
-.placeholder-screen {
-    background-color: #1e1e2e;
-}
-.placeholder-screen QLabel {
-    color: #6c7086;
-    font-size: 16px;
-}
+.placeholder-screen {{{{
+    background-color: {theme.BG_BASE};
+}}}}
+.placeholder-screen QLabel {{{{
+    color: {theme.TEXT_DISABLED};
+    font-size: {theme.FONT_SIZE_LG}px;
+}}}}
 
-/* Menu bar */
-QMenuBar {
-    background-color: #181825;
-    color: #cdd6f4;
-    border-bottom: 1px solid #313244;
-    padding: 2px;
-}
-QMenuBar::item:selected {
-    background-color: #313244;
-}
-QMenu {
-    background-color: #1e1e2e;
-    color: #cdd6f4;
-    border: 1px solid #313244;
-}
-QMenu::item:selected {
-    background-color: #313244;
-}
 """
 
 
@@ -114,11 +118,13 @@ def _placeholder(title: str, description: str) -> QWidget:
     heading = QLabel(title)
     heading.setFont(QFont("", 22, QFont.Weight.Bold))
     heading.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    heading.setStyleSheet("color: #cdd6f4;")
+    heading.setStyleSheet(f"color: {theme.TEXT_PRIMARY};")
 
     subtitle = QLabel(description)
     subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    subtitle.setStyleSheet("color: #6c7086; font-size: 14px;")
+    subtitle.setStyleSheet(
+        f"color: {theme.TEXT_SECONDARY}; font-size: {theme.FONT_SIZE_MD}px;"
+    )
 
     layout.addWidget(heading)
     layout.addWidget(subtitle)
@@ -129,10 +135,16 @@ def _placeholder(title: str, description: str) -> QWidget:
 # Screen registry
 # ---------------------------------------------------------------------------
 
-SCREENS: list[tuple[str, str, str]] = [
-    ("Builder", "Project Builder", "Create a new Claude Code project from building blocks."),
-    ("History", "Generation History", "View past generation runs and their manifests."),
-    ("Settings", "Settings", "Configure library paths, workspace root, and preferences."),
+# (label, icon_name, screen_title, screen_description)
+SCREENS: list[tuple[str, str, str, str]] = [
+    ("Builder", "builder", "Project Builder",
+     "Create a new Claude Code project from building blocks."),
+    ("Library", "library", "Library Manager",
+     "Browse and explore the library structure."),
+    ("History", "history", "Generation History",
+     "View past generation runs and their manifests."),
+    ("Settings", "settings", "Settings",
+     "Configure library paths, workspace root, and preferences."),
 ]
 
 
@@ -150,27 +162,17 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(900, 600)
         self.setStyleSheet(STYLESHEET)
 
-        self._build_menu_bar()
         self._build_ui()
+        self._setup_shortcuts()
         self._restore_geometry()
+        self._apply_initial_settings()
         logger.info("MainWindow initialised")
 
     # -- UI construction ---------------------------------------------------
 
-    def _build_menu_bar(self) -> None:
-        menu_bar = QMenuBar(self)
-        self.setMenuBar(menu_bar)
-
-        file_menu = menu_bar.addMenu("&File")
-        quit_action = QAction("&Quit", self)
-        quit_action.setShortcut("Ctrl+Q")
-        quit_action.triggered.connect(self.close)
-        file_menu.addAction(quit_action)
-
-        help_menu = menu_bar.addMenu("&Help")
-        about_action = QAction("&About Foundry", self)
-        about_action.triggered.connect(self._show_about)
-        help_menu.addAction(about_action)
+    def _setup_shortcuts(self) -> None:
+        quit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
+        quit_shortcut.activated.connect(self.close)
 
     def _build_ui(self) -> None:
         central = QWidget()
@@ -187,22 +189,55 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
 
-        brand = QLabel("Foundry")
-        brand.setObjectName("brand-label")
-        sidebar_layout.addWidget(brand)
-
         self._nav_list = QListWidget()
-        for label, _, _ in SCREENS:
+        self._nav_list.setIconSize(QSize(20, 20))
+        for label, icon_name, _, _ in SCREENS:
             item = QListWidgetItem(label)
+            try:
+                item.setIcon(QIcon(str(icon_path(icon_name))))
+            except FileNotFoundError:
+                logger.warning("Icon not found for nav item: %s", icon_name)
             self._nav_list.addItem(item)
         sidebar_layout.addWidget(self._nav_list, stretch=1)
-        sidebar_layout.addStretch(0)
+
+        # --- Sidebar footer: version + about ---
+        footer = QWidget()
+        footer.setObjectName("sidebar-footer")
+        footer_layout = QHBoxLayout(footer)
+        footer_layout.setContentsMargins(0, 0, 0, 0)
+        footer_layout.setSpacing(theme.SPACE_XS)
+
+        from foundry_app import __version__
+
+        about_btn = QPushButton(f"v{__version__}")
+        about_btn.setObjectName("sidebar-about-btn")
+        about_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        about_btn.setToolTip("About Foundry")
+        about_btn.clicked.connect(self._show_about)
+        footer_layout.addWidget(about_btn)
+        footer_layout.addStretch()
+        sidebar_layout.addWidget(footer)
 
         # --- Content stack ---
         self._stack = QStackedWidget()
         self._stack.setObjectName("content-stack")
-        for _, title, desc in SCREENS:
-            self._stack.addWidget(_placeholder(title, desc))
+
+        # Index 0: Builder wizard
+        self._builder_screen = BuilderScreen()
+        self._stack.addWidget(self._builder_screen)
+
+        # Index 1: Library Manager
+        self._library_screen = LibraryManagerScreen()
+        self._stack.addWidget(self._library_screen)
+
+        # Index 2: History
+        self._history_screen = HistoryScreen()
+        self._stack.addWidget(self._history_screen)
+
+        # Index 3: Settings
+        self._settings_screen = SettingsScreen(settings=self._settings)
+        self._settings_screen.settings_changed.connect(self._on_library_root_changed)
+        self._stack.addWidget(self._settings_screen)
 
         root_layout.addWidget(sidebar)
         root_layout.addWidget(self._stack, stretch=1)
@@ -210,6 +245,38 @@ class MainWindow(QMainWindow):
         # Wire navigation
         self._nav_list.currentRowChanged.connect(self._stack.setCurrentIndex)
         self._nav_list.setCurrentRow(0)
+
+    def _apply_initial_settings(self) -> None:
+        """Pass persisted settings to screens on startup."""
+        lib_root = self._settings.library_root
+        if lib_root:
+            self._library_screen.set_library_root(lib_root)
+            self._load_builder_library(lib_root)
+            logger.info("Library root loaded from settings: %s", lib_root)
+
+        ws_root = self._settings.workspace_root
+        if ws_root:
+            self._history_screen.set_projects_root(ws_root)
+
+    def _on_library_root_changed(self, path: str) -> None:
+        """React to library root changes from the settings screen."""
+        self._library_screen.set_library_root(path)
+        self._load_builder_library(path)
+        logger.info("Library root updated: %s", path)
+
+    def _load_builder_library(self, path: str) -> None:
+        """Index the library and load it into the builder wizard."""
+        from pathlib import Path
+
+        from foundry_app.services.library_indexer import build_library_index
+
+        lib_path = Path(path)
+        if lib_path.is_dir():
+            try:
+                index = build_library_index(lib_path)
+                self._builder_screen.set_library_index(index)
+            except Exception:
+                logger.warning("Failed to index library at %s", path, exc_info=True)
 
     # -- Public API --------------------------------------------------------
 
@@ -222,6 +289,22 @@ class MainWindow(QMainWindow):
     def nav_list(self) -> QListWidget:
         """Access the navigation list for programmatic control."""
         return self._nav_list
+
+    @property
+    def builder_screen(self) -> BuilderScreen:
+        return self._builder_screen
+
+    @property
+    def library_screen(self) -> LibraryManagerScreen:
+        return self._library_screen
+
+    @property
+    def history_screen(self) -> HistoryScreen:
+        return self._history_screen
+
+    @property
+    def settings_screen(self) -> SettingsScreen:
+        return self._settings_screen
 
     def replace_screen(self, index: int, widget: QWidget) -> None:
         """Replace a placeholder screen at *index* with a real widget."""
@@ -253,10 +336,37 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
 
         from foundry_app import __version__
+        from foundry_app.core.resources import logo_icon_path
 
+        logo_html = ""
+        logo_file = logo_icon_path()
+        if logo_file.is_file():
+            logo_html = f'<p align="center"><img src="{logo_file}" width="64" height="64"></p>'
+
+        # About dialog uses a native QMessageBox with a light background,
+        # so use dark text instead of theme.TEXT_PRIMARY (which is light).
+        _about_text = "#2a2a2a"
+        _about_bold = theme.ACCENT_PRIMARY
         QMessageBox.about(
             self,
             "About Foundry",
-            f"<h3>Foundry v{__version__}</h3>"
-            "<p>Generate Claude Code project folders from reusable building blocks.</p>",
+            f"{logo_html}"
+            f"<h3 style='color: {theme.ACCENT_PRIMARY};'>Foundry v{__version__}</h3>"
+            f"<p style='color: {_about_text};'>"
+            "Foundry is a desktop application for generating fully configured "
+            "Claude Code project folders from a library of reusable building blocks. "
+            "Instead of hand-crafting project scaffolding from scratch each time, "
+            "compose a project by selecting from curated "
+            f"<b style='color: {_about_bold};'>personas</b>, "
+            f"<b style='color: {_about_bold};'>technology stacks</b>, and "
+            f"<b style='color: {_about_bold};'>templates</b> that encode team "
+            "conventions and best practices.</p>"
+            f"<p style='color: {_about_text};'>"
+            "A Foundry composition defines the AI team personas that will collaborate "
+            "on your project, the language and framework stack to target, and the "
+            "directory templates that seed your repository with the right structure. "
+            "When you generate, Foundry compiles these selections into a complete "
+            "Claude Code workspace\u2014ready for agents to pick up and start building.</p>"
+            f"<p style='color: {_about_text};'>"
+            "Built with PySide6 and Python. Licensed under MIT.</p>",
         )

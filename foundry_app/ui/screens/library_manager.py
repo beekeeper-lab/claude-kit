@@ -1075,6 +1075,7 @@ class LibraryManagerScreen(QWidget):
             return
         logger.info("Created template %s", dest)
         self.refresh_tree()
+        self._select_file_in_tree(str(dest))
 
     def _on_delete_asset(self) -> None:
         """Delete the selected file (or asset directory) after confirmation."""

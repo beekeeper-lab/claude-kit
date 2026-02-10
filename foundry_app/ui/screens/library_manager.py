@@ -1060,6 +1060,11 @@ class LibraryManagerScreen(QWidget):
                 f"Delete persona '{display}' and all its files? "
                 "This cannot be undone."
             )
+        elif cat == "Stacks" and is_asset_dir:
+            msg = (
+                f"Delete stack '{display}' and all its files? "
+                "This cannot be undone."
+            )
         else:
             msg = f"Delete '{display}'? This cannot be undone."
 

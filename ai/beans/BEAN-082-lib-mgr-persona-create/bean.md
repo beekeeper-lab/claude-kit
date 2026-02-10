@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-082 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-09 |
-| **Started** | — |
-| **Completed** | — |
+| **Started** | 2026-02-10 |
+| **Completed** | 2026-02-10 |
 | **Duration** | — |
-| **Owner** | (unassigned) |
+| **Owner** | developer |
 | **Category** | App |
 
 ## Problem Statement
@@ -36,19 +36,21 @@ A user can create a new persona via the 'New...' button, providing a name, and t
 
 ## Acceptance Criteria
 
-- [ ] Clicking 'New...' on Persona category opens a name input dialog
-- [ ] Entering a valid name creates the persona with starter content on disk
-- [ ] Tree auto-refreshes and the new persona is visible
-- [ ] Selecting the new persona shows its starter content in the editor
-- [ ] Duplicate name detection prevents overwriting existing personas
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Clicking 'New...' on Persona category opens a name input dialog
+- [x] Entering a valid name creates the persona with starter content on disk
+- [x] Tree auto-refreshes and the new persona is visible
+- [x] Selecting the new persona shows its starter content in the editor
+- [x] Duplicate name detection prevents overwriting existing personas
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add auto-select after persona creation | developer | — | Done |
+| 2 | Add test for auto-select behavior | developer | 1 | Done |
+| 3 | Run tests, lint, finalize | developer | 2 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.
@@ -69,7 +71,7 @@ Key files:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | 0m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |

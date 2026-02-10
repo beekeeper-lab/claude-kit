@@ -950,6 +950,18 @@ class TestCreatePersona:
         personas_item = screen.tree.topLevelItem(0)
         assert personas_item.childCount() == before + 1
 
+    def test_new_persona_auto_selected_in_editor(self, tmp_path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        screen.tree.setCurrentItem(screen.tree.topLevelItem(0))
+        with patch(_INPUT_DIALOG2, return_value=("my-agent", True)):
+            screen._on_new_asset()
+        # The new persona's persona.md should be loaded in the editor
+        editor_text = screen.editor_widget.editor.toPlainText()
+        assert "# Persona: My Agent" in editor_text
+        assert "persona.md" in screen.file_label.text()
+
 
 # ---------------------------------------------------------------------------
 # Persona CRUD -- delete operations

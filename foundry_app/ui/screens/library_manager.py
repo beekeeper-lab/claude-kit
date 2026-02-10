@@ -660,6 +660,31 @@ class LibraryManagerScreen(QWidget):
                 cat_item, cat.get("children", []), template_style=style
             )
 
+    def _select_file_in_tree(self, file_path: Path) -> None:
+        """Find and select a tree item whose UserRole data matches *file_path*."""
+        target = str(file_path)
+
+        def _walk(parent_item: QTreeWidgetItem) -> QTreeWidgetItem | None:
+            for i in range(parent_item.childCount()):
+                child = parent_item.child(i)
+                if child.data(0, Qt.ItemDataRole.UserRole) == target:
+                    return child
+                found = _walk(child)
+                if found is not None:
+                    return found
+            return None
+
+        for i in range(self._tree.topLevelItemCount()):
+            top = self._tree.topLevelItem(i)
+            found = _walk(top)
+            if found is not None:
+                ancestor = found.parent()
+                while ancestor is not None:
+                    ancestor.setExpanded(True)
+                    ancestor = ancestor.parent()
+                self._tree.setCurrentItem(found)
+                return
+
     def showEvent(self, event) -> None:  # noqa: N802
         """Auto-refresh the tree when the screen becomes visible."""
         super().showEvent(event)
@@ -921,6 +946,7 @@ class LibraryManagerScreen(QWidget):
                 return
             logger.info("Created persona %s", persona_dir)
             self.refresh_tree()
+            self._select_file_in_tree(persona_dir / "persona.md")
             return
 
         # --- Stack: add file to existing stack ---

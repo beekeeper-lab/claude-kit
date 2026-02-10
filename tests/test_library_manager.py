@@ -733,6 +733,52 @@ class TestCreateAsset:
                 break
         assert hooks_item.childCount() == before + 1
 
+    def test_create_hook_auto_selects_new_item(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Claude Hooks":
+                screen.tree.setCurrentItem(item)
+                break
+        with patch(_INPUT_DIALOG, return_value=("auto-select-hook", True)):
+            screen._on_new_asset()
+        current = screen.tree.currentItem()
+        assert current is not None
+        assert current.text(0) == "auto-select-hook.md"
+
+    def test_create_hook_shows_content_in_editor(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Claude Hooks":
+                screen.tree.setCurrentItem(item)
+                break
+        with patch(_INPUT_DIALOG, return_value=("editor-hook", True)):
+            screen._on_new_asset()
+        editor_text = screen.editor_widget.editor.toPlainText()
+        assert "Hook Pack: Editor Hook" in editor_text
+        assert "## Hooks" in editor_text
+
+    def test_create_hook_duplicate_shows_warning(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Claude Hooks":
+                screen.tree.setCurrentItem(item)
+                break
+        with (
+            patch(_INPUT_DIALOG, return_value=("pre-commit-lint", True)),
+            patch(_MSG_WARNING) as mock_warn,
+        ):
+            screen._on_new_asset()
+        mock_warn.assert_called_once()
+
 
 # ---------------------------------------------------------------------------
 # Screen CRUD — delete operations

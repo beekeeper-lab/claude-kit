@@ -993,7 +993,37 @@ class LibraryManagerScreen(QWidget):
             return
         logger.info("Created %s", dest)
         self.refresh_tree()
+        self._select_item_by_file_path(str(dest))
 
+    def _find_tree_item_by_path(self, target_path: str) -> QTreeWidgetItem | None:
+        """Walk the tree and return the item whose UserRole data matches *target_path*."""
+
+        def _search(parent_item: QTreeWidgetItem) -> QTreeWidgetItem | None:
+            for i in range(parent_item.childCount()):
+                child = parent_item.child(i)
+                if child.data(0, Qt.ItemDataRole.UserRole) == target_path:
+                    return child
+                found = _search(child)
+                if found is not None:
+                    return found
+            return None
+
+        for i in range(self._tree.topLevelItemCount()):
+            top = self._tree.topLevelItem(i)
+            found = _search(top)
+            if found is not None:
+                return found
+        return None
+
+    def _select_item_by_file_path(self, target_path: str) -> None:
+        """Find a tree item by file path and select it, expanding parents."""
+        item = self._find_tree_item_by_path(target_path)
+        if item is not None:
+            parent = item.parent()
+            while parent is not None:
+                parent.setExpanded(True)
+                parent = parent.parent()
+            self._tree.setCurrentItem(item)
 
     def _create_template(self, target_dir: Path) -> None:
         """Prompt user and create a new template file in *target_dir*."""

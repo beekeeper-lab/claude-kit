@@ -23,9 +23,13 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 
 ## Process
 
-### Phase 0: Mode Detection
+### Phase 0: Branch Prerequisite & Mode Detection
 
-0. **Check mode** — If `fast` input is provided, go to **Parallel Mode** (below). Otherwise, continue with sequential mode (Phase 1).
+0a. **Ensure on `test` branch** — Run `git branch --show-current`.
+   - If already on `test`: proceed.
+   - If on `main` with a clean working tree: run `git checkout test` and proceed.
+   - If on any other branch or the working tree is dirty: display "⚠ /long-run requires a clean working tree on the `test` branch. Current branch: `<branch>`. Please switch to `test` and retry." Then stop.
+0b. **Check mode** — If `fast` input is provided, go to **Parallel Mode** (below). Otherwise, continue with sequential mode (Phase 1).
 
 ### Phase 1: Backlog Assessment
 
@@ -82,12 +86,12 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
     - Checkout `test`, pull latest, merge `bean/BEAN-NNN-<slug>` with `--no-ff`, push.
     - If merge conflicts occur: report the conflicts, abort the merge, leave the bean on its feature branch, and stop the loop.
     - If merge succeeds: continue.
-18. **Return to main** — Checkout the main branch: `git checkout main`.
+18. **Stay on test** — Remain on the `test` branch (do not switch to `main`).
 19. **Report progress** — Print the **Completion Summary** from the Team Lead Communication Template: bean title, task counts, branch name, files changed, notes, and remaining backlog status.
 
 ### Phase 6: Loop
 
-20. **Return to Phase 1** — Read the backlog again. If actionable beans remain, process the next one. If not, report final summary and exit.
+20. **Return to Phase 1** — Read the backlog again. If actionable beans remain, process the next one. If not, report final summary including: `⚠ Work is on the test branch. Run /deploy to promote to main.` Then exit.
 
 ---
 
@@ -95,9 +99,10 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 
 When `fast N` is provided, the Team Lead orchestrates N parallel workers instead of processing beans sequentially.
 
-### Parallel Phase 1: tmux Detection
+### Parallel Phase 1: Prerequisites
 
-1. **Check tmux** — Verify `$TMUX` environment variable is set.
+1. **Ensure on `test` branch** — Same check as Phase 0a above. Must be on `test` with a clean working tree, or on `main` (auto-checkout to `test`). Otherwise stop.
+2. **Check tmux** — Verify `$TMUX` environment variable is set.
    - If not set: display "Parallel mode requires tmux. Please restart Claude Code inside a tmux session and re-run `/long-run --fast N`." Then exit.
    - If set: proceed.
 
@@ -173,7 +178,7 @@ When `fast N` is provided, the Team Lead orchestrates N parallel workers instead
 ### Parallel Phase 5: Completion
 
 13. **Check termination** — When all workers are done (status files show `done` or all windows closed) and no actionable beans remain, exit the dashboard loop.
-14. **Final report** — Output: total beans processed, parallel vs sequential breakdown, all branch names created, remaining backlog status.
+14. **Final report** — Output: total beans processed, parallel vs sequential breakdown, all branch names created, remaining backlog status. End with: `⚠ Work is on the test branch. Run /deploy to promote to main.`
 15. **Cleanup** — Remove status files: `rm -f /tmp/foundry-worker-*.status`. Run `git worktree prune` to clean up any stale worktree references.
 
 ### Bean Assignment Rules

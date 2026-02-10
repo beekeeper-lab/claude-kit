@@ -704,6 +704,23 @@ class LibraryManagerScreen(QWidget):
                 item, child.get("children", []), template_style=child_style
             )
 
+    def _select_path_in_tree(self, target_path: str) -> None:
+        """Find and select the tree item whose file path matches *target_path*."""
+
+        def _search(parent: QTreeWidgetItem) -> bool:
+            for i in range(parent.childCount()):
+                child = parent.child(i)
+                if child.data(0, Qt.ItemDataRole.UserRole) == target_path:
+                    self._tree.setCurrentItem(child)
+                    return True
+                if _search(child):
+                    return True
+            return False
+
+        for i in range(self._tree.topLevelItemCount()):
+            if _search(self._tree.topLevelItem(i)):
+                return
+
     def _on_item_selected(self, current: QTreeWidgetItem | None, _prev) -> None:
         """Load the file into the editor when a file node is selected."""
         self._update_button_state(current)
@@ -993,6 +1010,7 @@ class LibraryManagerScreen(QWidget):
             return
         logger.info("Created %s", dest)
         self.refresh_tree()
+        self._select_path_in_tree(str(dest))
 
 
     def _create_template(self, target_dir: Path) -> None:

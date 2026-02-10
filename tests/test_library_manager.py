@@ -1625,3 +1625,136 @@ class TestStackDelete:
             if item.text(0) == "Stacks":
                 assert item.childCount() == 0
                 break
+
+
+# ---------------------------------------------------------------------------
+# Skill update — end-to-end editing flow (BEAN-103)
+# ---------------------------------------------------------------------------
+
+
+def _select_skill_file(screen: LibraryManagerScreen) -> None:
+    """Navigate the tree to Claude Skills > handoff > SKILL.md and select it."""
+    for i in range(screen.tree.topLevelItemCount()):
+        item = screen.tree.topLevelItem(i)
+        if item.text(0) == "Claude Skills":
+            handoff_dir = item.child(0)  # "handoff" directory node
+            for j in range(handoff_dir.childCount()):
+                child = handoff_dir.child(j)
+                if child.text(0) == "SKILL.md":
+                    screen.tree.setCurrentItem(child)
+                    return
+    raise AssertionError("SKILL.md not found in tree")
+
+
+class TestSkillUpdate:
+
+    def test_selecting_skill_loads_content(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        assert "Handoff skill" in screen.editor_widget.editor.toPlainText()
+
+    def test_selecting_skill_sets_file_label(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        assert "SKILL.md" in screen.file_label.text()
+
+    def test_editing_skill_triggers_dirty_state(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        assert screen.editor_widget.dirty is False
+        screen.editor_widget.editor.setPlainText("# Updated skill content")
+        assert screen.editor_widget.dirty is True
+        assert screen.editor_widget.dirty_label.text() == "Modified"
+
+    def test_save_persists_skill_to_disk(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        new_content = "# Updated Handoff Skill\n\nNew description."
+        screen.editor_widget.editor.setPlainText(new_content)
+        assert screen.editor_widget.dirty is True
+        result = screen.editor_widget.save()
+        assert result is True
+        assert screen.editor_widget.dirty is False
+        assert screen.editor_widget.dirty_label.text() == ""
+        # Verify on disk
+        disk_content = (lib / "claude" / "skills" / "handoff" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        assert disk_content == new_content
+
+    def test_revert_restores_original_skill_content(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        original = screen.editor_widget.editor.toPlainText()
+        screen.editor_widget.editor.setPlainText("# Totally different content")
+        assert screen.editor_widget.dirty is True
+        screen.editor_widget.revert()
+        assert screen.editor_widget.editor.toPlainText() == original
+        assert screen.editor_widget.dirty is False
+        assert screen.editor_widget.dirty_label.text() == ""
+
+    def test_revert_after_disk_change_reads_current_disk(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        screen.editor_widget.editor.setPlainText("unsaved edits")
+        # Simulate external edit on disk
+        skill_path = lib / "claude" / "skills" / "handoff" / "SKILL.md"
+        skill_path.write_text("# Externally modified", encoding="utf-8")
+        screen.editor_widget.revert()
+        assert screen.editor_widget.editor.toPlainText() == "# Externally modified"
+
+    def test_live_preview_updates_on_edit(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        screen.editor_widget.editor.setPlainText("# Preview Test\n\nVisible text.")
+        # Force immediate preview update (bypass debounce timer)
+        screen.editor_widget._update_preview()
+        html = screen.editor_widget.preview_pane.toHtml()
+        assert "Preview Test" in html
+
+    def test_save_button_enabled_when_skill_dirty(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        assert not screen.editor_widget.save_button.isEnabled()
+        screen.editor_widget.editor.setPlainText("changed")
+        assert screen.editor_widget.save_button.isEnabled()
+
+    def test_save_button_disabled_after_save(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        _select_skill_file(screen)
+        screen.editor_widget.editor.setPlainText("changed")
+        screen.editor_widget.save()
+        assert not screen.editor_widget.save_button.isEnabled()
+
+    def test_selecting_skill_dir_clears_editor(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        # First select the skill file to load content
+        _select_skill_file(screen)
+        assert screen.editor_widget.editor.toPlainText() != ""
+        # Now select the skill directory node (no file path)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Claude Skills":
+                screen.tree.setCurrentItem(item.child(0))  # handoff dir
+                break
+        assert screen.editor_widget.editor.toPlainText() == ""

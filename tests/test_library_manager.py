@@ -823,6 +823,24 @@ class TestCreateAsset:
 class TestWorkflowCreate:
 
     def test_create_workflow_file_on_disk(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Workflows":
+                screen.tree.setCurrentItem(item)
+                break
+        with patch(_INPUT_DIALOG, return_value=("deploy-guide", True)):
+            screen._on_new_asset()
+        created = lib / "workflows" / "deploy-guide.md"
+        assert created.is_file()
+        content = created.read_text(encoding="utf-8")
+        assert "# Deploy Guide" in content
+        assert "## Overview" in content
+
+
+# ---------------------------------------------------------------------------
 # Skill create — auto-selection and editor integration
 # ---------------------------------------------------------------------------
 
@@ -862,16 +880,6 @@ class TestSkillCreateAutoSelect:
         assert current.text(0) == "ci-pipeline.md"
 
     def test_create_workflow_shows_content_in_editor(self, tmp_path: Path):
-            if item.text(0) == "Claude Skills":
-                screen.tree.setCurrentItem(item)
-                break
-        with patch(_INPUT_DIALOG, return_value=("deploy-hook", True)):
-            screen._on_new_asset()
-        current = screen.tree.currentItem()
-        assert current is not None
-        assert current.text(0) == "SKILL.md"
-
-    def test_skill_create_shows_content_in_editor(self, tmp_path: Path):
         lib = _create_library(tmp_path)
         screen = LibraryManagerScreen()
         screen.set_library_root(lib)
@@ -886,7 +894,12 @@ class TestSkillCreateAutoSelect:
         assert "# Release Process" in editor_text
         assert "## Overview" in editor_text
 
-    def test_create_workflow_tree_shows_new_item(self, tmp_path: Path):
+    def test_skill_create_shows_content_in_editor(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
             if item.text(0) == "Claude Skills":
                 screen.tree.setCurrentItem(item)
                 break
@@ -896,7 +909,7 @@ class TestSkillCreateAutoSelect:
         assert "Skill: Deploy Hook" in editor_text
         assert "/deploy-hook" in editor_text
 
-    def test_skill_create_updates_file_label(self, tmp_path: Path):
+    def test_create_workflow_tree_shows_new_item(self, tmp_path: Path):
         lib = _create_library(tmp_path)
         screen = LibraryManagerScreen()
         screen.set_library_root(lib)
@@ -915,6 +928,19 @@ class TestSkillCreateAutoSelect:
                 child_names = [item.child(j).text(0) for j in range(item.childCount())]
                 assert "hotfix-guide.md" in child_names
                 break
+
+    def test_skill_create_updates_file_label(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Claude Skills":
+                screen.tree.setCurrentItem(item)
+                break
+        with patch(_INPUT_DIALOG, return_value=("deploy-hook", True)):
+            screen._on_new_asset()
+        assert "SKILL.md" in screen.file_label.text()
 
     def test_create_duplicate_workflow_shows_warning(self, tmp_path: Path):
         lib = _create_library(tmp_path)
@@ -976,12 +1002,6 @@ class TestSkillCreateAutoSelect:
         with patch(_INPUT_DIALOG, return_value=("branching-strategy", True)):
             screen._on_new_asset()
         assert "branching-strategy.md" in screen.file_label.text()
-            if item.text(0) == "Claude Skills":
-                screen.tree.setCurrentItem(item)
-                break
-        with patch(_INPUT_DIALOG, return_value=("deploy-hook", True)):
-            screen._on_new_asset()
-        assert "SKILL.md" in screen.file_label.text()
 
     def test_skill_create_from_existing_skill_node(self, tmp_path: Path):
         """Creating a skill while a sibling skill node is selected."""

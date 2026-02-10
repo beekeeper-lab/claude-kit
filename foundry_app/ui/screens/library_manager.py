@@ -889,6 +889,14 @@ class LibraryManagerScreen(QWidget):
                     self._tree.setCurrentItem(child)
                     return True
                 if _search(child):
+                    return True
+            return False
+
+        for i in range(self._tree.topLevelItemCount()):
+            top = self._tree.topLevelItem(i)
+            if _search(top):
+                return
+
     def _select_item_by_path(self, file_path: str) -> bool:
         """Walk the tree and select the item whose UserRole data matches *file_path*.
 
@@ -907,8 +915,6 @@ class LibraryManagerScreen(QWidget):
 
         for i in range(self._tree.topLevelItemCount()):
             top = self._tree.topLevelItem(i)
-            if _search(top):
-                return
             if _walk(top):
                 return True
         return False

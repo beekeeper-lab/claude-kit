@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-088 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-09 |
-| **Started** | — |
-| **Completed** | — |
+| **Started** | 2026-02-10 |
+| **Completed** | 2026-02-10 |
 | **Duration** | — |
-| **Owner** | (unassigned) |
+| **Owner** | developer |
 | **Category** | App |
 
 ## Problem Statement
@@ -36,13 +36,13 @@ A user can select an existing stack and delete it via the 'Delete' button with a
 
 ## Acceptance Criteria
 
-- [ ] The 'Delete' button is enabled when a stack is selected
-- [ ] Clicking 'Delete' shows a confirmation dialog naming the stack
-- [ ] Confirming deletes the stack file/directory from disk
-- [ ] Tree auto-refreshes and the deleted stack is gone
-- [ ] Cancelling the dialog preserves the stack unchanged
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] The 'Delete' button is enabled when a stack is selected
+- [x] Clicking 'Delete' shows a confirmation dialog naming the stack
+- [x] Confirming deletes the stack file/directory from disk
+- [x] Tree auto-refreshes and the deleted stack is gone
+- [x] Cancelling the dialog preserves the stack unchanged
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
@@ -69,7 +69,7 @@ Key files:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | 0m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |

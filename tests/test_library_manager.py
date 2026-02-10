@@ -2595,3 +2595,62 @@ class TestTemplateUpdate:
         screen.set_library_root(lib)
         _select_shared_template(screen, "CLAUDE.md.j2")
         assert "CLAUDE.md.j2" in screen.file_label.text()
+    def test_delete_stack_confirmation_message(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item.child(0))
+                break
+        with patch(
+            _MSG_QUESTION, return_value=QMessageBox.StandardButton.No
+        ) as mock_q:
+            screen._on_delete_asset()
+        call_args = mock_q.call_args
+        msg = call_args[0][2]
+        assert "python-fastapi" in msg
+        assert "all its files" in msg
+
+
+# ---------------------------------------------------------------------------
+# Stack button state
+# ---------------------------------------------------------------------------
+
+
+class TestStackButtonState:
+
+    def test_delete_enabled_for_stack_directory(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item.child(0))
+                break
+        assert screen.delete_button.isEnabled()
+
+    def test_delete_enabled_for_stack_file(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                stack_dir = item.child(0)
+                screen.tree.setCurrentItem(stack_dir.child(0))
+                break
+        assert screen.delete_button.isEnabled()
+
+    def test_new_enabled_for_stacks_category(self, tmp_path: Path):
+        lib = _create_library(tmp_path)
+        screen = LibraryManagerScreen()
+        screen.set_library_root(lib)
+        for i in range(screen.tree.topLevelItemCount()):
+            item = screen.tree.topLevelItem(i)
+            if item.text(0) == "Stacks":
+                screen.tree.setCurrentItem(item)
+                break
+        assert screen.new_button.isEnabled()

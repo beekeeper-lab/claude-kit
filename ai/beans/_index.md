@@ -111,7 +111,10 @@
 | BEAN-084 | Library Manager — Persona Delete | App | Medium | Approved | (unassigned) |
 | BEAN-085 | Library Manager — Stack Read | App | High | Done | Developer |
 | BEAN-086 | Library Manager — Stack Create | App | Medium | Done | developer |
-| BEAN-087 | Library Manager — Stack Update | App | Medium | Approved | (unassigned) |
+| BEAN-087 | Library Manager — Stack Update | App | Medium | Done | team-lead |
+| BEAN-085 | Library Manager — Stack Read | App | High | Done | team-lead |
+| BEAN-086 | Library Manager — Stack Create | App | Medium | Done | team-lead |
+| BEAN-087 | Library Manager — Stack Update | App | Medium | Done | developer |
 | BEAN-088 | Library Manager — Stack Delete | App | Medium | Approved | (unassigned) |
 | BEAN-089 | Library Manager — Template Read | App | High | Done | Developer |
 | BEAN-090 | Library Manager — Template Create | App | Medium | Done | developer |

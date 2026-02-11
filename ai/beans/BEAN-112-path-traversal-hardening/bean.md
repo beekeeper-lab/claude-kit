@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-112 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-10 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-10 |
+| **Completed** | 2026-02-10 20:41 |
+| **Duration** | 0m |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -39,25 +39,24 @@ All path-sensitive fields in the composition spec are validated to prevent direc
 
 ## Acceptance Criteria
 
-- [ ] `PersonaSelection.id` rejects values containing `..` or `/` (e.g., `../../evil`)
-- [ ] `StackSelection.id` rejects values containing `..` or `/`
-- [ ] `HookPackSelection.id` rejects values containing `..` or `/`
-- [ ] `ProjectIdentity.output_root` rejects paths with `..` in parts
-- [ ] `ProjectIdentity.output_folder` rejects paths with `..` or `/` in them
-- [ ] `generate_project()` resolves and validates the final output directory against a containment boundary before writing
-- [ ] Integration test: composition with `output_root: "../../../tmp"` is rejected
-- [ ] Integration test: composition with `persona.id: "../../evil"` is rejected
-- [ ] All existing tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `PersonaSelection.id` rejects values containing `..` or `/` (e.g., `../../evil`)
+- [x] `StackSelection.id` rejects values containing `..` or `/`
+- [x] `HookPackSelection.id` rejects values containing `..` or `/`
+- [x] `ProjectIdentity.output_root` rejects paths with `..` in parts
+- [x] `ProjectIdentity.output_folder` rejects paths with `..` or `/` in them
+- [x] `generate_project()` resolves and validates the final output directory against a containment boundary before writing
+- [x] Integration test: composition with `output_root: "../../../tmp"` is rejected
+- [x] Integration test: composition with `persona.id: "../../evil"` is rejected
+- [x] All existing tests pass (`uv run pytest`) — 410 passed
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Add path validators to models.py | Developer | — | Done |
+| 2 | Add containment check in generator.py | Developer | 1 | Done |
+| 3 | Add security tests (24 tests) | Tech-QA | 2 | Done |
 
 ## Notes
 
@@ -74,7 +73,7 @@ All path-sensitive fields in the composition spec are validated to prevent direc
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | 0m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |

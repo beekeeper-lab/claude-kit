@@ -247,6 +247,19 @@ def generate_project(
             / composition.project.resolved_output_folder
         )
 
+    # Containment check: resolve the output path and verify no traversal escape.
+    # The resolved path must be within its own parent (output_root or cwd).
+    resolved_output = output_dir.resolve()
+    if output_root is not None:
+        containment_base = Path(output_root).resolve()
+    else:
+        containment_base = Path(composition.project.output_root).resolve()
+    if not resolved_output.is_relative_to(containment_base):
+        raise ValueError(
+            f"Output directory {output_dir} resolves outside its root "
+            f"({containment_base}). Refusing to generate."
+        )
+
     # Step 1: Index the library
     library = build_library_index(library_path)
 

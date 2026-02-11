@@ -45,31 +45,31 @@ QMainWindow {{{{
 }}}}
 
 /* Nav buttons — icon-over-text, large targets */
-.nav-button {{{{
+#sidebar QToolButton {{{{
     background-color: transparent;
     border: none;
     border-left: 3px solid transparent;
-    color: {theme.TEXT_SECONDARY};
+    color: {theme.TEXT_PRIMARY};
     font-size: {theme.FONT_SIZE_SM}px;
     padding: {theme.SPACE_MD}px {theme.SPACE_SM}px;
     margin: 2px 0;
     text-align: center;
 }}}}
-.nav-button:hover {{{{
+#sidebar QToolButton:hover {{{{
     background-color: {theme.BG_BASE};
     color: {theme.ACCENT_PRIMARY_HOVER};
 }}}}
-.nav-button:checked {{{{
-    background-color: {theme.BG_SURFACE};
+#sidebar QToolButton:checked {{{{
+    background-color: {theme.BG_OVERLAY};
     color: {theme.ACCENT_PRIMARY};
     font-weight: {theme.FONT_WEIGHT_BOLD};
     border-left: 3px solid {theme.ACCENT_PRIMARY};
 }}}}
-.nav-button:focus {{{{
+#sidebar QToolButton:focus {{{{
     outline: none;
     border-left: 3px solid {theme.ACCENT_SECONDARY};
 }}}}
-.nav-button:checked:focus {{{{
+#sidebar QToolButton:checked:focus {{{{
     border-left: 3px solid {theme.ACCENT_PRIMARY};
 }}}}
 

@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-109 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-10 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-10 16:19 |
+| **Completed** | 2026-02-10 16:24 |
+| **Duration** | 5m |
 | **Owner** | (unassigned) |
 | **Category** | App |
 
@@ -33,20 +33,19 @@ Add test coverage for the two missing Library Manager CRUD combinations so that 
 
 ## Acceptance Criteria
 
-- [ ] `tests/test_skill_delete.py` exists and tests skill deletion end-to-end (confirmation dialog, file/directory removal, tree update)
-- [ ] `tests/test_hook_create.py` exists and tests hook creation end-to-end (name input, starter content written, tree auto-select)
-- [ ] Both test files follow existing patterns from sibling test files
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `tests/test_skill_delete.py` exists and tests skill deletion end-to-end (confirmation dialog, file/directory removal, tree update)
+- [x] `tests/test_hook_create.py` exists and tests hook creation end-to-end (name input, starter content written, tree auto-select)
+- [x] Both test files follow existing patterns from sibling test files
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Create tests/test_skill_delete.py | Developer | — | Done |
+| 2 | Create tests/test_hook_create.py | Developer | — | Done |
+| 3 | Run all tests and lint | Tech-QA | 1, 2 | Done |
 
 ## Notes
 
@@ -58,11 +57,13 @@ Add test coverage for the two missing Library Manager CRUD combinations so that 
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out |
 |---|------|-------|----------|-----------|------------|
-| 1 |      |       |          |           |            |
+| 1 | All tasks | team-lead | 1m | — | — |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | 5m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |
+
+> Duration backfilled from git timestamps (commit→merge, 80s).

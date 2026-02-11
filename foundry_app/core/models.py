@@ -47,20 +47,58 @@ class FileActionType(str, Enum):
 # Project identity
 # ---------------------------------------------------------------------------
 
+def _validate_safe_id(v: str, field_name: str) -> str:
+    """Reject IDs containing path traversal sequences or path separators."""
+    if ".." in v or "/" in v or "\\" in v:
+        raise ValueError(
+            f"{field_name} must not contain '..', '/', or '\\', got: {v!r}"
+        )
+    return v
+
+
+def _validate_safe_path(v: str, field_name: str) -> str:
+    """Reject paths with '..' components (but allow relative and absolute)."""
+    from pathlib import PurePosixPath
+
+    parts = PurePosixPath(v).parts
+    if ".." in parts:
+        raise ValueError(
+            f"{field_name} must not contain '..' path components, got: {v!r}"
+        )
+    return v
+
+
 class ProjectIdentity(BaseModel):
     """Top-level project metadata."""
 
-    name: str = Field(..., min_length=1, description="Human-readable project name")
-    slug: str = Field(..., min_length=1, pattern=r"^[a-z0-9][a-z0-9-]*$",
-                      description="URL/filesystem-safe identifier")
+    name: str = Field(
+        ..., min_length=1, max_length=200,
+        description="Human-readable project name",
+    )
+    slug: str = Field(
+        ..., min_length=1, max_length=100, pattern=r"^[a-z0-9][a-z0-9-]*$",
+        description="URL/filesystem-safe identifier",
+    )
     output_root: str = Field(
-        default="./generated-projects",
+        default="./generated-projects", max_length=500,
         description="Parent directory for generated output",
     )
     output_folder: str | None = Field(
-        default=None,
+        default=None, max_length=200,
         description="Specific subfolder name; defaults to slug if omitted",
     )
+
+    @field_validator("output_root")
+    @classmethod
+    def validate_output_root(cls, v: str) -> str:
+        return _validate_safe_path(v, "output_root")
+
+    @field_validator("output_folder")
+    @classmethod
+    def validate_output_folder(cls, v: str | None) -> str | None:
+        if v is not None:
+            _validate_safe_id(v, "output_folder")
+        return v
 
     @property
     def resolved_output_folder(self) -> str:
@@ -74,8 +112,16 @@ class ProjectIdentity(BaseModel):
 class StackSelection(BaseModel):
     """A single tech-stack pack chosen for the project."""
 
-    id: str = Field(..., min_length=1, description="Stack identifier (e.g. 'python')")
+    id: str = Field(
+        ..., min_length=1, max_length=100,
+        description="Stack identifier (e.g. 'python')",
+    )
     order: int = Field(default=0, description="Sort order when compiling prompts")
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, v: str) -> str:
+        return _validate_safe_id(v, "stack id")
 
 
 class StackOverrides(BaseModel):
@@ -127,7 +173,15 @@ class ArchitectureConfig(BaseModel):
 class PersonaSelection(BaseModel):
     """A single persona chosen for the project team."""
 
-    id: str = Field(..., min_length=1, description="Persona identifier (e.g. 'developer')")
+    id: str = Field(
+        ..., min_length=1, max_length=100,
+        description="Persona identifier (e.g. 'developer')",
+    )
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, v: str) -> str:
+        return _validate_safe_id(v, "persona id")
     include_agent: bool = Field(default=True, description="Generate .claude/agents/ file")
     include_templates: bool = Field(default=True, description="Copy persona templates")
     strictness: Strictness = Field(
@@ -152,7 +206,12 @@ class TeamConfig(BaseModel):
 class HookPackSelection(BaseModel):
     """A single hook pack chosen for the project."""
 
-    id: str = Field(..., min_length=1, description="Hook pack identifier")
+    id: str = Field(..., min_length=1, max_length=100, description="Hook pack identifier")
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, v: str) -> str:
+        return _validate_safe_id(v, "hook pack id")
     category: str = Field(default="", description="Hook category (git, az, code-quality)")
     enabled: bool = Field(default=True)
     mode: HookMode = Field(default=HookMode.ENFORCING)
@@ -212,6 +271,20 @@ class SecretPolicy(BaseModel):
     scan_for_secrets: bool = Field(default=True)
     block_on_secret: bool = Field(default=True)
     secret_patterns: list[str] = Field(default_factory=list)
+
+    @field_validator("secret_patterns")
+    @classmethod
+    def validate_secret_patterns(cls, v: list[str]) -> list[str]:
+        import re
+
+        for i, pattern in enumerate(v):
+            try:
+                re.compile(pattern)
+            except re.error as exc:
+                raise ValueError(
+                    f"secret_patterns[{i}] is not a valid regex: {exc}"
+                ) from exc
+        return v
 
 
 class DestructiveOpsPolicy(BaseModel):

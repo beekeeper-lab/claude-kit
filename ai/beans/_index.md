@@ -130,4 +130,11 @@
 | BEAN-106 | Library Manager — Hook Create | App | Medium | Done | developer |
 | BEAN-107 | Library Manager — Hook Update | App | Medium | Done | developer |
 | BEAN-108 | Library Manager — Hook Delete | App | Medium | Done | developer |
-| BEAN-109 | Library Manager — Missing CRUD Test Coverage | App | Medium | Approved | (unassigned) |
+| BEAN-109 | Library Manager — Missing CRUD Test Coverage | App | Medium | Done | developer |
+| BEAN-110 | Sidebar Nav Button Contrast Fix | App | High | Done | team-lead |
+| BEAN-111 | Wire Generate Button to Pipeline with Progress | App | High | Done | team-lead |
+| BEAN-112 | Path Traversal Hardening | App | High | Done | team-lead |
+| BEAN-113 | Input Bounds & Error Sanitization | App | Medium | Done | team-lead |
+| BEAN-114 | Telemetry Backfill from Git History | Process | High | Done | team-lead |
+| BEAN-115 | Live Telemetry Capture Fix | Process | High | Done | team-lead |
+| BEAN-116 | Telemetry Summary Report Command | Process | Medium | Done | team-lead |

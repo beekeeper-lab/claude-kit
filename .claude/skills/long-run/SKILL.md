@@ -171,6 +171,7 @@ When `fast N` is provided, the Team Lead orchestrates N parallel workers instead
 11. **Report completions** — As each worker finishes (status file shows `done` or window disappears), report in the dashboard.
 12. **Merge, update index, and assign next bean** — When a worker completes:
     - Remove the worktree: `git worktree remove --force /tmp/foundry-worktree-BEAN-NNN`
+    - Sync before merging: `git fetch origin && git pull origin test` — worktrees push to the remote, so the orchestrator's local `test` may be behind.
     - Merge the bean: run `/merge-bean NNN` from the main repo (merges feature branch into `test`).
     - Update `_index.md` on `test`: set the bean's status to `Done`. Commit and push. (The orchestrator is the sole writer of `_index.md`.)
     - Re-read the backlog for newly unblocked beans.
@@ -183,6 +184,10 @@ When `fast N` is provided, the Team Lead orchestrates N parallel workers instead
 13. **Check termination** — When all workers are done (status files show `done` or all windows closed) and no actionable beans remain, exit the dashboard loop.
 14. **Final report** — Output: total beans processed, parallel vs sequential breakdown, all branch names created, remaining backlog status. End with: `⚠ Work is on the test branch. Run /deploy to promote to main.`
 15. **Cleanup** — Remove status files: `rm -f /tmp/foundry-worker-*.status`. Run `git worktree prune` to clean up any stale worktree references.
+16. **Sync local branches** — Worktrees pushed to the remote, so the original repo's refs are stale. Bring them up to date:
+    - `git fetch origin && git pull origin test` (the orchestrator is already on `test`).
+    - If local `main` is behind `origin/main`: `git branch -f main origin/main`.
+    - This ensures the repo that launched `/long-run` has current refs when the user resumes work.
 
 ### Bean Assignment Rules
 

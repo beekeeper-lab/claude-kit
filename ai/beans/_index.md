@@ -137,4 +137,4 @@
 | BEAN-113 | Input Bounds & Error Sanitization | App | Medium | Done | team-lead |
 | BEAN-114 | Telemetry Backfill from Git History | Process | High | Done | team-lead |
 | BEAN-115 | Live Telemetry Capture Fix | Process | High | Done | team-lead |
-| BEAN-116 | Telemetry Summary Report Command | Process | Medium | In Progress | team-lead |
+| BEAN-116 | Telemetry Summary Report Command | Process | Medium | Done | team-lead |

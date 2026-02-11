@@ -133,3 +133,6 @@
 | BEAN-109 | Library Manager — Missing CRUD Test Coverage | App | Medium | Done | developer |
 | BEAN-110 | Sidebar Nav Button Contrast Fix | App | High | Done | team-lead |
 | BEAN-111 | Wire Generate Button to Pipeline with Progress | App | High | Done | team-lead |
+| BEAN-112 | Path Traversal Hardening | App | High | Approved | — |
+| BEAN-113 | Input Bounds & Error Sanitization | App | Medium | Approved | — |
+| BEAN-114 | Telemetry Backfill from Git History | Process | High | Unapproved | (unassigned) |

@@ -976,6 +976,36 @@ class TestEdgeCases:
 
 
 # ---------------------------------------------------------------------------
+# Slug → output folder mapping
+# ---------------------------------------------------------------------------
+
+
+class TestSlugOutputFolder:
+    """Verify the generated project subfolder name matches the spec's slug."""
+
+    def test_output_folder_matches_slug(self, tmp_path: Path):
+        lib = _make_library(tmp_path)
+        lib_root = Path(lib.library_root)
+        slug = "my-cool-project"
+        spec = _make_spec(
+            project=ProjectIdentity(
+                name="My Cool Project",
+                slug=slug,
+                output_root=str(tmp_path / "generated"),
+            ),
+        )
+
+        manifest, validation, _ = generate_project(spec, lib_root)
+
+        assert validation.is_valid, f"Validation failed: {validation.errors}"
+        expected_dir = tmp_path / "generated" / slug
+        assert expected_dir.is_dir(), (
+            f"Expected output dir {expected_dir} to exist"
+        )
+        assert manifest.stages, "Manifest should record at least one stage"
+
+
+# ---------------------------------------------------------------------------
 # End-to-end: real library, real composition YAML
 # ---------------------------------------------------------------------------
 

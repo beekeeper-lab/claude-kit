@@ -149,6 +149,425 @@ def git_branch_duration() -> str | None:
         return None
 
 
+def parse_duration_to_seconds(dur: str) -> int | None:
+    """Parse a duration string like '< 1m', '5m', '1h 30m' to seconds."""
+    dur = dur.strip()
+    if dur == "< 1m":
+        return 30  # approximate
+    m = re.match(r"^(?:(\d+)h)?\s*(?:(\d+)m)?$", dur)
+    if m and (m.group(1) or m.group(2)):
+        hours = int(m.group(1) or 0)
+        minutes = int(m.group(2) or 0)
+        return hours * 3600 + minutes * 60
+    return None
+
+
+def parse_tasks_table(content: str) -> list[tuple[str, str, str]]:
+    """Parse the Tasks table in a bean.md.
+
+    Returns list of (num, task_name, owner) for rows with non-empty task names.
+    """
+    rows: list[tuple[str, str, str]] = []
+    in_tasks = False
+    separator_seen = False
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("## Tasks"):
+            in_tasks = True
+            continue
+        if in_tasks and stripped.startswith("##"):
+            break
+        if not in_tasks:
+            continue
+        if not stripped.startswith("|"):
+            if separator_seen and stripped and not stripped.startswith(">"):
+                break
+            continue
+        if re.match(r"^\|[\s\-|]+\|$", stripped):
+            separator_seen = True
+            continue
+        if not separator_seen:
+            continue
+        cells = [c.strip() for c in stripped.split("|")]
+        cells = [c for c in cells if c]
+        if len(cells) >= 3 and cells[1]:
+            rows.append((cells[0], cells[1], cells[2]))
+    return rows
+
+
+def find_telemetry_table(content: str) -> tuple[int, int, list[str]]:
+    """Find the per-task Telemetry table in a bean.md.
+
+    Returns (first_data_line_idx, last_data_line_idx+1, data_row_lines).
+    Returns (-1, -1, []) if not found.
+    """
+    lines = content.splitlines()
+    in_telemetry = False
+    separator_idx = -1
+    data_rows: list[tuple[int, str]] = []
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("## Telemetry"):
+            in_telemetry = True
+            continue
+        if in_telemetry and stripped.startswith("##"):
+            break
+        if not in_telemetry:
+            continue
+        # Identify the per-task header (has "Duration" — the summary table has "Metric")
+        if stripped.startswith("|") and "Duration" in stripped and "Task" in stripped:
+            continue
+        if separator_idx < 0 and re.match(r"^\|[\s\-|]+\|$", stripped):
+            separator_idx = i
+            continue
+        if separator_idx >= 0 and stripped.startswith("|"):
+            # Stop at the summary table (has "Metric" or bold fields)
+            if "**" in stripped or "Metric" in stripped:
+                break
+            data_rows.append((i, stripped))
+        elif separator_idx >= 0 and not stripped.startswith("|"):
+            if stripped:
+                break
+
+    if separator_idx < 0:
+        return -1, -1, []
+
+    if not data_rows:
+        return separator_idx + 1, separator_idx + 1, []
+
+    return data_rows[0][0], data_rows[-1][0] + 1, [row for _, row in data_rows]
+
+
+def telemetry_row_nums(rows: list[str]) -> set[str]:
+    """Extract task numbers from telemetry table rows."""
+    nums: set[str] = set()
+    for row in rows:
+        cells = [c.strip() for c in row.split("|")]
+        cells = [c for c in cells if c]
+        if cells and cells[0] and cells[0] not in ("", SENTINEL):
+            nums.add(cells[0])
+    return nums
+
+
+def is_empty_template_row(row: str) -> bool:
+    """Check if a telemetry row is the empty template row."""
+    cells = [c.strip() for c in row.split("|")]
+    cells = [c for c in cells if c]
+    return all(not c or c == SENTINEL for c in cells[1:])
+
+
+def sync_telemetry_table(content: str) -> tuple[str, list[str]]:
+    """Sync the Telemetry per-task table with the Tasks table.
+
+    Adds rows for tasks not yet in the Telemetry table.
+    Returns (new_content, actions_taken).
+    """
+    tasks = parse_tasks_table(content)
+    if not tasks:
+        return content, []
+
+    lines = content.splitlines()
+    first_data, end_data, existing_rows = find_telemetry_table(content)
+    if first_data < 0:
+        return content, []
+
+    # If only an empty template row exists, treat it as no existing data
+    has_only_template = (
+        len(existing_rows) == 1 and is_empty_template_row(existing_rows[0])
+    )
+    existing_nums = set() if has_only_template else telemetry_row_nums(existing_rows)
+
+    new_rows: list[str] = []
+    actions: list[str] = []
+    for num, name, owner in tasks:
+        if num not in existing_nums:
+            new_rows.append(f"| {num} | {name} | {owner} | {SENTINEL} | {SENTINEL} | {SENTINEL} |")
+            actions.append(f"Telem row {num}")
+
+    if not new_rows:
+        return content, []
+
+    if has_only_template:
+        # Replace the empty template row with real data
+        lines[first_data:end_data] = new_rows
+    else:
+        # Append after existing rows
+        for idx, row in enumerate(new_rows):
+            lines.insert(end_data + idx, row)
+
+    return "\n".join(lines), actions
+
+
+def update_telemetry_row_duration(
+    content: str, task_num: str, duration: str,
+) -> tuple[str, bool]:
+    """Update the Duration column of a specific telemetry row.
+
+    Returns (new_content, changed).
+    """
+    lines = content.splitlines()
+    in_telemetry = False
+    separator_seen = False
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("## Telemetry"):
+            in_telemetry = True
+            continue
+        if in_telemetry and stripped.startswith("##"):
+            break
+        if not in_telemetry:
+            continue
+        if re.match(r"^\|[\s\-|]+\|$", stripped):
+            separator_seen = True
+            continue
+        if not separator_seen or not stripped.startswith("|"):
+            continue
+        if "**" in stripped or "Metric" in stripped:
+            break
+
+        cells = [c.strip() for c in stripped.split("|")]
+        cells = [c for c in cells if c]
+        if cells and cells[0] == task_num and len(cells) >= 4:
+            if cells[3] == SENTINEL:
+                cells[3] = duration
+                lines[i] = "| " + " | ".join(cells) + " |"
+                return "\n".join(lines), True
+
+    return content, False
+
+
+def sum_telemetry_durations(content: str) -> str | None:
+    """Sum per-task durations from the Telemetry table."""
+    _, _, rows = find_telemetry_table(content)
+    total_seconds = 0
+    found_any = False
+
+    for row in rows:
+        cells = [c.strip() for c in row.split("|")]
+        cells = [c for c in cells if c]
+        if len(cells) >= 4:
+            dur = cells[3]
+            if dur and dur != SENTINEL:
+                secs = parse_duration_to_seconds(dur)
+                if secs is not None:
+                    total_seconds += secs
+                    found_any = True
+
+    if not found_any:
+        return None
+    return format_seconds(total_seconds)
+
+
+def extract_task_number(filename: str) -> str | None:
+    """Extract task number from a task filename like '01-developer-slug.md'."""
+    m = re.match(r"^(\d+)-", filename)
+    if m:
+        return str(int(m.group(1)))
+    return None
+
+
+def find_session_jsonl() -> Path | None:
+    """Find the JSONL conversation file for the current Claude Code session.
+
+    Looks in ~/.claude/projects/<project-hash>/ for the most recently
+    modified .jsonl file (excluding subagents/).
+    Returns the path, or None if not found.
+    """
+    try:
+        claude_dir = Path.home() / ".claude" / "projects"
+        if not claude_dir.exists():
+            return None
+
+        # Find the project directory matching the current working directory
+        cwd_hash = str(Path.cwd()).replace("/", "-")
+        # Claude Code uses the path with leading slash replaced by dash
+        if cwd_hash.startswith("-"):
+            pass  # already has leading dash
+        else:
+            cwd_hash = "-" + cwd_hash
+
+        project_dir = claude_dir / cwd_hash
+        if not project_dir.exists():
+            # Try all project dirs, use the one containing recent .jsonl
+            candidates = []
+            for d in claude_dir.iterdir():
+                if d.is_dir() and not d.name.startswith("."):
+                    candidates.append(d)
+            if not candidates:
+                return None
+            project_dir = max(candidates, key=lambda d: d.stat().st_mtime)
+
+        # Find most recently modified .jsonl file (not in subagents/)
+        jsonl_files = [
+            f for f in project_dir.iterdir()
+            if f.is_file() and f.suffix == ".jsonl"
+        ]
+        if not jsonl_files:
+            return None
+
+        return max(jsonl_files, key=lambda f: f.stat().st_mtime)
+
+    except Exception:
+        return None
+
+
+def sum_session_tokens(jsonl_path: Path) -> tuple[int, int]:
+    """Sum cumulative input and output tokens from a JSONL conversation file.
+
+    Parses all assistant messages and sums their usage.input_tokens and
+    usage.output_tokens fields.
+    Returns (total_input, total_output).
+    """
+    total_in = 0
+    total_out = 0
+    try:
+        with jsonl_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    msg = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if msg.get("type") != "assistant":
+                    continue
+                usage = msg.get("message", {}).get("usage", {})
+                total_in += usage.get("input_tokens", 0)
+                total_out += usage.get("output_tokens", 0)
+    except Exception:
+        pass
+    return total_in, total_out
+
+
+def watermark_path(bean_dir: Path) -> Path:
+    """Return the path to the .telemetry.json watermark file."""
+    return bean_dir / ".telemetry.json"
+
+
+def save_watermark(
+    bean_dir: Path, task_num: str, tokens_in: int, tokens_out: int,
+) -> None:
+    """Save a token watermark for a task start."""
+    wm_path = watermark_path(bean_dir)
+    data: dict = {}
+    if wm_path.exists():
+        try:
+            data = json.loads(wm_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            data = {}
+    data[f"task_{task_num}_start_in"] = tokens_in
+    data[f"task_{task_num}_start_out"] = tokens_out
+    wm_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def load_watermark(
+    bean_dir: Path, task_num: str,
+) -> tuple[int, int] | None:
+    """Load a token watermark for a task.
+
+    Returns (start_tokens_in, start_tokens_out) or None if not found.
+    """
+    wm_path = watermark_path(bean_dir)
+    if not wm_path.exists():
+        return None
+    try:
+        data = json.loads(wm_path.read_text(encoding="utf-8"))
+        key_in = f"task_{task_num}_start_in"
+        key_out = f"task_{task_num}_start_out"
+        if key_in in data and key_out in data:
+            return data[key_in], data[key_out]
+    except (json.JSONDecodeError, OSError):
+        pass
+    return None
+
+
+def format_tokens(count: int) -> str:
+    """Format a token count with comma separators."""
+    return f"{count:,}"
+
+
+def update_telemetry_row_tokens(
+    content: str, task_num: str, tokens_in: str, tokens_out: str,
+) -> tuple[str, bool]:
+    """Update Tokens In and Tokens Out columns of a specific telemetry row.
+
+    Returns (new_content, changed).
+    """
+    lines = content.splitlines()
+    in_telemetry = False
+    separator_seen = False
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("## Telemetry"):
+            in_telemetry = True
+            continue
+        if in_telemetry and stripped.startswith("##"):
+            break
+        if not in_telemetry:
+            continue
+        if re.match(r"^\|[\s\-|]+\|$", stripped):
+            separator_seen = True
+            continue
+        if not separator_seen or not stripped.startswith("|"):
+            continue
+        if "**" in stripped or "Metric" in stripped:
+            break
+
+        cells = [c.strip() for c in stripped.split("|")]
+        cells = [c for c in cells if c]
+        if cells and cells[0] == task_num and len(cells) >= 6:
+            changed = False
+            if cells[4] == SENTINEL:
+                cells[4] = tokens_in
+                changed = True
+            if cells[5] == SENTINEL:
+                cells[5] = tokens_out
+                changed = True
+            if changed:
+                lines[i] = "| " + " | ".join(cells) + " |"
+                return "\n".join(lines), True
+
+    return content, False
+
+
+def sum_telemetry_tokens(content: str) -> tuple[str | None, str | None]:
+    """Sum per-task token values from the Telemetry table.
+
+    Returns (total_in_str, total_out_str) or (None, None) if no data.
+    """
+    _, _, rows = find_telemetry_table(content)
+    total_in = 0
+    total_out = 0
+    found_any = False
+
+    for row in rows:
+        cells = [c.strip() for c in row.split("|")]
+        cells = [c for c in cells if c]
+        if len(cells) >= 6:
+            tok_in = cells[4].replace(",", "")
+            tok_out = cells[5].replace(",", "")
+            if tok_in and tok_in != SENTINEL:
+                try:
+                    total_in += int(tok_in)
+                    found_any = True
+                except ValueError:
+                    pass
+            if tok_out and tok_out != SENTINEL:
+                try:
+                    total_out += int(tok_out)
+                    found_any = True
+                except ValueError:
+                    pass
+
+    if not found_any:
+        return None, None
+    return format_tokens(total_in), format_tokens(total_out)
+
+
 def count_done_tasks(content: str) -> int:
     """Count rows with 'Done' status in the Tasks table of a bean.md.
 
@@ -270,8 +689,11 @@ def handle_bean_file(path: Path, now: str) -> list[str]:
 
         total_dur_val = parse_metadata_field(content, "Total Duration")
         if total_dur_val == SENTINEL:
-            # Prefer git-based duration; fall back to Started/Completed
-            total_dur = git_branch_duration()
+            # Prefer sum of per-task durations; fall back to git; then
+            # Started/Completed
+            total_dur = sum_telemetry_durations(content)
+            if not total_dur:
+                total_dur = git_branch_duration()
             if not total_dur:
                 final_started = parse_metadata_field(content, "Started")
                 final_completed = parse_metadata_field(content, "Completed")
@@ -285,6 +707,26 @@ def handle_bean_file(path: Path, now: str) -> list[str]:
                     content, "Total Duration", total_dur
                 )
                 actions.append(f"Total Duration={total_dur}")
+
+        # Fill Total Tokens In / Total Tokens Out
+        total_tok_in_val = parse_metadata_field(content, "Total Tokens In")
+        total_tok_out_val = parse_metadata_field(content, "Total Tokens Out")
+        if total_tok_in_val == SENTINEL or total_tok_out_val == SENTINEL:
+            tok_in_sum, tok_out_sum = sum_telemetry_tokens(content)
+            if tok_in_sum and total_tok_in_val == SENTINEL:
+                content = replace_metadata_field(
+                    content, "Total Tokens In", tok_in_sum,
+                )
+                actions.append(f"Total Tokens In={tok_in_sum}")
+            if tok_out_sum and total_tok_out_val == SENTINEL:
+                content = replace_metadata_field(
+                    content, "Total Tokens Out", tok_out_sum,
+                )
+                actions.append(f"Total Tokens Out={tok_out_sum}")
+
+    # Sync telemetry table with tasks table (add missing rows)
+    content, sync_actions = sync_telemetry_table(content)
+    actions.extend(sync_actions)
 
     if content != original:
         path.write_text(content, encoding="utf-8")
@@ -305,10 +747,24 @@ def handle_task_file(path: Path, now: str) -> list[str]:
     started = parse_metadata_field(content, "Started")
     completed = parse_metadata_field(content, "Completed")
 
+    bean_dir = path.parent.parent  # ai/beans/BEAN-NNN-slug/
+    task_num = extract_task_number(path.name)
+
     # Status = "In Progress" + Started = sentinel → stamp Started
     if status and status.lower() == "in progress" and started == SENTINEL:
         content = replace_metadata_field(content, "Started", now)
         actions.append("Started")
+
+        # Record token watermark at task start
+        if task_num:
+            try:
+                jsonl_path = find_session_jsonl()
+                if jsonl_path:
+                    tok_in, tok_out = sum_session_tokens(jsonl_path)
+                    save_watermark(bean_dir, task_num, tok_in, tok_out)
+                    actions.append(f"Watermark task {task_num}")
+            except Exception:
+                pass  # Best-effort
 
     # Status = "Done" + Completed = sentinel → stamp Completed + Duration
     if status and status.lower() == "done" and completed == SENTINEL:
@@ -326,6 +782,61 @@ def handle_task_file(path: Path, now: str) -> list[str]:
             duration = format_duration(cur_started, now)
             content = replace_metadata_field(content, "Duration", duration)
             actions.append(f"Duration={duration}")
+
+        # Propagate per-task duration and tokens to bean.md telemetry table
+        if task_num:
+            final_dur = parse_metadata_field(content, "Duration")
+            bean_path = bean_dir / "bean.md"
+
+            # Compute token delta from watermark
+            tok_in_str = None
+            tok_out_str = None
+            try:
+                jsonl_path = find_session_jsonl()
+                if jsonl_path:
+                    wm = load_watermark(bean_dir, task_num)
+                    cur_in, cur_out = sum_session_tokens(jsonl_path)
+                    if wm:
+                        start_in, start_out = wm
+                        delta_in = max(0, cur_in - start_in)
+                        delta_out = max(0, cur_out - start_out)
+                    else:
+                        # No watermark — use full session tokens as fallback
+                        delta_in = cur_in
+                        delta_out = cur_out
+                    tok_in_str = format_tokens(delta_in)
+                    tok_out_str = format_tokens(delta_out)
+            except Exception:
+                pass  # Best-effort
+
+            if bean_path.exists():
+                try:
+                    bean_content = bean_path.read_text(encoding="utf-8")
+                    changed_any = False
+
+                    if final_dur and final_dur != SENTINEL:
+                        bean_content, changed = update_telemetry_row_duration(
+                            bean_content, task_num, final_dur,
+                        )
+                        if changed:
+                            changed_any = True
+                            actions.append(f"Bean telem row {task_num}")
+
+                    if tok_in_str and tok_out_str:
+                        bean_content, changed = update_telemetry_row_tokens(
+                            bean_content, task_num, tok_in_str, tok_out_str,
+                        )
+                        if changed:
+                            changed_any = True
+                            actions.append(
+                                f"Tokens task {task_num}: "
+                                f"in={tok_in_str} out={tok_out_str}"
+                            )
+
+                    if changed_any:
+                        bean_path.write_text(bean_content, encoding="utf-8")
+                except Exception:
+                    pass  # Best-effort; don't fail the task stamp
 
     if content != original:
         path.write_text(content, encoding="utf-8")

@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-124 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-15 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-16 00:13 |
+| **Completed** | 2026-02-16 00:21 |
+| **Duration** | 8m |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -35,22 +35,21 @@ When generation completes, only the hook files corresponding to the hook packs s
 
 ## Acceptance Criteria
 
-- [ ] Only hook files matching the selected hook packs are copied to the output
-- [ ] If no hook packs are selected, no hook files are copied
-- [ ] Commands and skills are still copied in full regardless of selections
-- [ ] Existing asset copier tests updated to cover selective behavior
-- [ ] New tests verify hook filtering with various pack combinations
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Only hook files matching the selected hook packs are copied to the output
+- [x] If no hook packs are selected, no hook files are copied
+- [x] Commands and skills are still copied in full regardless of selections
+- [x] Existing asset copier tests updated to cover selective behavior
+- [x] New tests verify hook filtering with various pack combinations
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
-
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+| 1 | Implement selective hook copying | developer | — | Done |
+| 2 | Update tests for selective hook copying | tech-qa | T01 | Done |
+| 3 | Final verification | tech-qa | T01, T02 | Done |
 
 ## Notes
 
@@ -62,11 +61,13 @@ When generation completes, only the hook files corresponding to the hook packs s
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out |
 |---|------|-------|----------|-----------|------------|
-| 1 |      |       |          |           |            |
+| 1 | Implement selective hook copying | developer | — | — | — |
+| 2 | Update tests for selective hook copying | tech-qa | — | — | — |
+| 3 | Final verification | tech-qa | — | — | — |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 3 |
+| **Total Duration** | 8m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |

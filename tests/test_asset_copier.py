@@ -4,6 +4,8 @@ from pathlib import Path
 
 from foundry_app.core.models import (
     CompositionSpec,
+    HookPackSelection,
+    HooksConfig,
     LibraryIndex,
     PersonaInfo,
     PersonaSelection,
@@ -18,8 +20,21 @@ from foundry_app.services.asset_copier import copy_assets
 # ---------------------------------------------------------------------------
 
 
+def _all_hooks_config() -> HooksConfig:
+    """Return a HooksConfig with both test hook packs enabled."""
+    return HooksConfig(packs=[
+        HookPackSelection(id="pre-commit-lint", enabled=True),
+        HookPackSelection(id="security-scan", enabled=True),
+    ])
+
+
 def _make_spec(**kwargs) -> CompositionSpec:
-    """Build a CompositionSpec with sensible defaults."""
+    """Build a CompositionSpec with sensible defaults.
+
+    NOTE: By default, no hook packs are selected (hooks.packs is empty),
+    which means no hooks will be copied.  Pass ``hooks=_all_hooks_config()``
+    to enable hook copying in tests that need it.
+    """
     defaults = dict(
         project=ProjectIdentity(name="Test Project", slug="test-project"),
         stacks=[StackSelection(id="python")],
@@ -284,27 +299,29 @@ class TestCommandCopying:
 
 class TestHookCopying:
 
-    def test_copies_hooks_from_library(self, tmp_path: Path):
+    def test_copies_hooks_when_packs_enabled(self, tmp_path: Path):
         lib = _make_library(tmp_path)
         idx = _make_index(lib)
         output = tmp_path / "project"
         output.mkdir()
         (output / ".claude" / "hooks").mkdir(parents=True)
 
-        result = copy_assets(_make_spec(), idx, lib, output)
+        spec = _make_spec(hooks=_all_hooks_config())
+        result = copy_assets(spec, idx, lib, output)
 
         assert (output / ".claude" / "hooks" / "pre-commit-lint.md").is_file()
         assert (output / ".claude" / "hooks" / "security-scan.md").is_file()
         assert ".claude/hooks/pre-commit-lint.md" in result.wrote
         assert ".claude/hooks/security-scan.md" in result.wrote
 
-    def test_creates_hooks_dir_if_missing(self, tmp_path: Path):
+    def test_creates_hooks_dir_when_packs_enabled(self, tmp_path: Path):
         lib = _make_library(tmp_path)
         idx = _make_index(lib)
         output = tmp_path / "project"
         output.mkdir()
 
-        copy_assets(_make_spec(), idx, lib, output)
+        spec = _make_spec(hooks=_all_hooks_config())
+        copy_assets(spec, idx, lib, output)
 
         assert (output / ".claude" / "hooks").is_dir()
 
@@ -314,11 +331,72 @@ class TestHookCopying:
         output = tmp_path / "project"
         output.mkdir()
 
-        copy_assets(_make_spec(), idx, lib, output)
+        spec = _make_spec(hooks=_all_hooks_config())
+        copy_assets(spec, idx, lib, output)
 
         src = (lib / "claude" / "hooks" / "security-scan.md").read_text()
         dest = (output / ".claude" / "hooks" / "security-scan.md").read_text()
         assert src == dest
+
+    def test_copies_only_selected_hooks(self, tmp_path: Path):
+        lib = _make_library(tmp_path)
+        idx = _make_index(lib)
+        output = tmp_path / "project"
+        output.mkdir()
+
+        spec = _make_spec(hooks=HooksConfig(packs=[
+            HookPackSelection(id="pre-commit-lint", enabled=True),
+            HookPackSelection(id="security-scan", enabled=False),
+        ]))
+        result = copy_assets(spec, idx, lib, output)
+
+        assert (output / ".claude" / "hooks" / "pre-commit-lint.md").is_file()
+        assert not (output / ".claude" / "hooks" / "security-scan.md").exists()
+        assert ".claude/hooks/pre-commit-lint.md" in result.wrote
+        assert ".claude/hooks/security-scan.md" not in result.wrote
+
+    def test_no_hooks_copied_when_no_packs_selected(self, tmp_path: Path):
+        lib = _make_library(tmp_path)
+        idx = _make_index(lib)
+        output = tmp_path / "project"
+        output.mkdir()
+
+        spec = _make_spec(hooks=HooksConfig(packs=[]))
+        result = copy_assets(spec, idx, lib, output)
+
+        assert not (output / ".claude" / "hooks").exists()
+        hook_writes = [w for w in result.wrote if ".claude/hooks" in w]
+        assert hook_writes == []
+
+    def test_no_hooks_copied_when_all_packs_disabled(self, tmp_path: Path):
+        lib = _make_library(tmp_path)
+        idx = _make_index(lib)
+        output = tmp_path / "project"
+        output.mkdir()
+
+        spec = _make_spec(hooks=HooksConfig(packs=[
+            HookPackSelection(id="pre-commit-lint", enabled=False),
+            HookPackSelection(id="security-scan", enabled=False),
+        ]))
+        result = copy_assets(spec, idx, lib, output)
+
+        assert not (output / ".claude" / "hooks").exists()
+        hook_writes = [w for w in result.wrote if ".claude/hooks" in w]
+        assert hook_writes == []
+
+    def test_commands_and_skills_copied_regardless_of_hook_selection(self, tmp_path: Path):
+        lib = _make_library(tmp_path)
+        idx = _make_index(lib)
+        output = tmp_path / "project"
+        output.mkdir()
+
+        spec = _make_spec(hooks=HooksConfig(packs=[]))
+        result = copy_assets(spec, idx, lib, output)
+
+        assert ".claude/commands/validate-repo.md" in result.wrote
+        assert ".claude/commands/seed-tasks.md" in result.wrote
+        assert ".claude/skills/review-pr.md" in result.wrote
+        assert ".claude/skills/deploy.md" in result.wrote
 
 
 # ---------------------------------------------------------------------------
@@ -421,12 +499,14 @@ class TestOverlayMode:
         output = tmp_path / "project"
         output.mkdir()
 
+        spec = _make_spec(hooks=_all_hooks_config())
+
         # First run copies everything
-        result1 = copy_assets(_make_spec(), idx, lib, output)
+        result1 = copy_assets(spec, idx, lib, output)
         assert len(result1.wrote) > 0
 
         # Second run copies nothing (all identical)
-        result2 = copy_assets(_make_spec(), idx, lib, output)
+        result2 = copy_assets(spec, idx, lib, output)
         assert result2.wrote == []
         assert result2.warnings == []
 
@@ -459,6 +539,7 @@ class TestStageResult:
             team=TeamConfig(
                 personas=[PersonaSelection(id="developer", include_templates=True)]
             ),
+            hooks=_all_hooks_config(),
         )
         result = copy_assets(spec, idx, lib, output)
 
@@ -559,10 +640,10 @@ class TestEdgeCases:
         output = tmp_path / "project"
         output.mkdir()
 
-        spec = _make_spec(team=TeamConfig(personas=[]))
+        spec = _make_spec(team=TeamConfig(personas=[]), hooks=_all_hooks_config())
         result = copy_assets(spec, idx, lib, output)
 
-        # Still copies commands and hooks
+        # Still copies commands, skills, and selected hooks
         assert ".claude/commands/validate-repo.md" in result.wrote
         assert ".claude/hooks/pre-commit-lint.md" in result.wrote
         # No template paths
@@ -603,7 +684,8 @@ class TestEdgeCases:
         output = tmp_path / "project"
         # Don't create output dir or subdirs — copy_assets should handle it
 
-        result = copy_assets(_make_spec(), idx, lib, output)
+        spec = _make_spec(hooks=_all_hooks_config())
+        result = copy_assets(spec, idx, lib, output)
 
         assert (output / ".claude" / "commands").is_dir()
         assert (output / ".claude" / "hooks").is_dir()

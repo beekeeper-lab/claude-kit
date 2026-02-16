@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-125 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-15 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-16 00:00 |
+| **Completed** | 2026-02-16 |
+| **Duration** | <1 day |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -35,21 +35,21 @@ Generated projects include Obsidian and Trello MCP server entries in `.claude/mc
 
 ## Acceptance Criteria
 
-- [ ] Generated `mcp.json` includes an Obsidian MCP server entry with correct package and args
-- [ ] Generated `mcp.json` includes a Trello MCP server entry with correct package and args
-- [ ] Existing filesystem and stack-specific servers are unchanged
-- [ ] MCP writer tests updated to verify new server entries
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Generated `mcp.json` includes an Obsidian MCP server entry with correct package and args
+- [x] Generated `mcp.json` includes a Trello MCP server entry with correct package and args
+- [x] Existing filesystem and stack-specific servers are unchanged
+- [x] MCP writer tests updated to verify new server entries
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add Obsidian & Trello MCP server definitions | developer | — | Done |
+| 2 | Update MCP writer tests | tech-qa | 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Task files in `tasks/` subdirectory.
 
 ## Notes
 
@@ -61,11 +61,12 @@ Generated projects include Obsidian and Trello MCP server entries in `.claude/mc
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out |
 |---|------|-------|----------|-----------|------------|
-| 1 |      |       |          |           |            |
+| 1 | Add Obsidian & Trello MCP server definitions | developer | — | — | — |
+| 2 | Update MCP writer tests | tech-qa | — | — | — |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | < 1m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |

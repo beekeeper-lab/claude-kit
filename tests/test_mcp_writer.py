@@ -109,8 +109,8 @@ class TestWriteMcpConfig:
         write_mcp_config(spec, output)
 
         config = json.loads((output / ".claude" / "mcp.json").read_text())
-        # Only baseline server
-        assert list(config["mcpServers"].keys()) == ["filesystem"]
+        # Only baseline servers (filesystem, obsidian, trello)
+        assert list(config["mcpServers"].keys()) == ["filesystem", "obsidian", "trello"]
 
     def test_multiple_stacks(self, tmp_path: Path):
         spec = _make_spec(stacks=[
@@ -138,7 +138,35 @@ class TestWriteMcpConfig:
         assert len(result.wrote) == 1
         assert result.warnings == []
         config = json.loads((output / ".claude" / "mcp.json").read_text())
-        assert len(config["mcpServers"]) == 1
+        assert len(config["mcpServers"]) == 3  # filesystem, obsidian, trello
+
+    def test_baseline_obsidian_server_always_present(self, tmp_path: Path):
+        spec = _make_spec(stacks=[])
+        output = tmp_path / "output"
+        output.mkdir()
+
+        write_mcp_config(spec, output)
+
+        config = json.loads((output / ".claude" / "mcp.json").read_text())
+        assert "obsidian" in config["mcpServers"]
+        obsidian = config["mcpServers"]["obsidian"]
+        assert obsidian["type"] == "stdio"
+        assert obsidian["command"] == "uvx"
+        assert obsidian["args"] == ["mcp-obsidian"]
+
+    def test_baseline_trello_server_always_present(self, tmp_path: Path):
+        spec = _make_spec(stacks=[])
+        output = tmp_path / "output"
+        output.mkdir()
+
+        write_mcp_config(spec, output)
+
+        config = json.loads((output / ".claude" / "mcp.json").read_text())
+        assert "trello" in config["mcpServers"]
+        trello = config["mcpServers"]["trello"]
+        assert trello["type"] == "stdio"
+        assert trello["command"] == "npx"
+        assert trello["args"] == ["-y", "@delorenj/mcp-server-trello"]
 
     def test_no_warnings_for_valid_spec(self, tmp_path: Path):
         spec = _make_spec(stacks=[StackSelection(id="python")])

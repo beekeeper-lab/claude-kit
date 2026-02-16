@@ -14,12 +14,22 @@ logger = logging.getLogger(__name__)
 # Stack-to-MCP-server mappings
 # ---------------------------------------------------------------------------
 
-# Baseline server included in every generated project.
+# Baseline servers included in every generated project.
 _BASELINE_SERVERS: dict[str, dict] = {
     "filesystem": {
         "type": "stdio",
         "command": "npx",
         "args": ["-y", "@anthropic/mcp-filesystem"],
+    },
+    "obsidian": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["mcp-obsidian"],
+    },
+    "trello": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@delorenj/mcp-server-trello"],
     },
 }
 

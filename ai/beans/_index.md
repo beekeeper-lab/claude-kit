@@ -145,9 +145,10 @@
 | BEAN-121 | Token Usage Capture via JSONL Parsing | Process | High | Done | team-lead |
 | BEAN-122 | Structured Trello Linkage in Bean Template | Process | High | Done | team-lead |
 | BEAN-123 | Project Slug Output Folder Test | App | Medium | Done | team-lead |
-| BEAN-124 | Hook-Selective Asset Copier | App | High | Approved | (unassigned) |
-| BEAN-125 | MCP Config — Obsidian & Trello Servers | App | Medium | Approved | (unassigned) |
-| BEAN-126 | Generate Native Claude Code Hooks | App | High | Approved | (unassigned) |
-| BEAN-127 | Scaffold Skills Directory | App | Low | Approved | (unassigned) |
+| BEAN-124 | Hook-Selective Asset Copier | App | High | Done | team-lead |
+| BEAN-125 | MCP Config — Obsidian & Trello Servers | App | Medium | Done | team-lead |
+| BEAN-126 | Generate Native Claude Code Hooks | App | High | Done | team-lead |
+| BEAN-127 | Scaffold Skills Directory | App | Low | Done | team-lead |
 | BEAN-128 | Generation Progress UI — Missing Stages | App | Low | Approved | (unassigned) |
-| BEAN-129 | Seeder Templates for All Personas | App | Medium | Approved | (unassigned) |
+| BEAN-129 | Seeder Templates for All Personas | App | Medium | Done | team-lead |
+| BEAN-130 | Telemetry Cost Estimation | Process | Medium | Done | team-lead |

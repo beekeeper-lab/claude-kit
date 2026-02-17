@@ -56,6 +56,7 @@ uv run ruff check foundry_app/         # Lint check
 uv run ruff check foundry_app/ --fix   # Lint auto-fix
 uv run foundry                         # Launch GUI
 uv run foundry-cli generate <yml> --library ai-team-library  # CLI generation
+/bg <command> [args...]                # Run any slash command in a background tmux window
 ```
 
 ## Rules

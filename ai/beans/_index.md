@@ -155,7 +155,7 @@
 | BEAN-131 | Analyze Backlog Refinement Command | Process | High | Done | team-lead |
 | BEAN-132 | Analyze Long Run Command | Process | High | Done | team-lead |
 | BEAN-133 | Analyze Show Backlog Command | Process | High | Done | team-lead |
-| BEAN-134 | Analyze Backlog Consolidate Command | Process | High | In Progress | team-lead |
+| BEAN-134 | Analyze Backlog Consolidate Command | Process | High | Done | team-lead |
 | BEAN-135 | Analyze Deploy Command | Process | High | Done | team-lead |
 | BEAN-136 | Analyze Trello Load Command | Process | High | In Progress | team-lead |
 | BEAN-137 | Team Member Assignment Analysis | Process | High | In Progress | team-lead |

@@ -157,9 +157,9 @@
 | BEAN-133 | Analyze Show Backlog Command | Process | High | Done | team-lead |
 | BEAN-134 | Analyze Backlog Consolidate Command | Process | High | Done | team-lead |
 | BEAN-135 | Analyze Deploy Command | Process | High | Done | team-lead |
-| BEAN-136 | Analyze Trello Load Command | Process | High | In Progress | team-lead |
+| BEAN-136 | Analyze Trello Load Command | Process | High | Done | team-lead |
 | BEAN-137 | Team Member Assignment Analysis | Process | High | In Progress | team-lead |
 | BEAN-138 | Team Member Participation Decisions | Process | High | In Progress | team-lead |
 | BEAN-139 | Team Member Assignment Recommendations | Process | High | Approved | (unassigned) |
-| BEAN-140 | Trello-Bean Lifecycle Mapping | Process | High | Approved | (unassigned) |
+| BEAN-140 | Trello-Bean Lifecycle Mapping | Process | High | In Progress | team-lead |
 | BEAN-141 | Token Usage Optimization Analysis | Process | High | In Progress | team-lead |

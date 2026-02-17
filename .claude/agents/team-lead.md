@@ -70,11 +70,14 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 5. Update the bean's Telemetry table with the task's row (task number, name, owner, duration, tokens in, tokens out)
 6. Use `/status-report` to update progress
 
-**Closing a bean:**
+**Closing a bean (VDD gate required):**
 1. Use `/close-loop` on the final task
 2. Run `/internal:validate-repo` as a structural health check
-3. Verify tests pass: `uv run pytest`
-4. Verify lint is clean: `uv run ruff check foundry_app/`
+3. **Apply the VDD gate** (see `ai/context/vdd-policy.md`): review each acceptance criterion against concrete evidence. Use the category-specific checklist:
+   - **App:** tests pass, lint clean, new code has tests, UI verified if applicable
+   - **Process:** documents exist, cross-references valid, instructions actionable, no contradictions
+   - **Infra:** hooks execute, git operations succeed, no regressions, configs parse
+4. If any criterion lacks evidence, return the bean for rework — it stays In Progress
 5. Record bean `Completed` timestamp and compute `Duration` in the bean header metadata table
 6. Fill in the Telemetry summary table with totals (Total Tasks, Total Duration, Total Tokens In, Total Tokens Out)
 7. Update bean status to `Done` in both `bean.md` and `_index.md`

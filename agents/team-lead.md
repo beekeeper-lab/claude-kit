@@ -30,6 +30,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 | `/close-loop` | After a persona marks their task done. Verify their outputs against the task's acceptance criteria before allowing the next persona to start. If criteria fail, return the task with specific actionable feedback. |
 | `/handoff` | After `/close-loop` passes. Package the completed persona's artifacts, decisions, and context into a structured handoff doc at `ai/handoffs/`. This ensures the next persona has everything they need without asking clarifying questions. |
 | `/validate-repo` | Before closing a bean. Run a structural health check to ensure the project is sound after all changes. |
+| `/bg` | When the user wants to run any command in a background tmux window. Spawns a new tmux window with Claude running the specified command, so the user can continue working. Usage: `/bg <command> [args...]`. |
 
 ### Workflow with skills integrated:
 

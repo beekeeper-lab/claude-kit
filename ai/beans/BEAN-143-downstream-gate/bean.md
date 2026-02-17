@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-143 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-17 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-17 04:01 |
+| **Completed** | 2026-02-17 04:03 |
+| **Duration** | 2m |
+| **Owner** | team-lead |
 | **Category** | Process |
 
 ## Problem Statement
@@ -33,20 +33,20 @@ Add a "Downstream Gate" step to the bean workflow or backlog-refinement process 
 
 ## Acceptance Criteria
 
-- [ ] Backlog-refinement or bean workflow includes a downstream impact analysis step
-- [ ] The step requires listing impacted systems (tests, CI, build, deployment, docs, migrations, monitoring)
-- [ ] Each impacted system has an explicit verification command
-- [ ] Missing verifications are flagged and must be added before proceeding
-- [ ] Documentation is clear and actionable
+- [x] Backlog-refinement or bean workflow includes a downstream impact analysis step
+- [x] The step requires listing impacted systems (tests, CI, build, deployment, docs, migrations, monitoring)
+- [x] Each impacted system has an explicit verification command
+- [x] Missing verifications are flagged and must be added before proceeding
+- [x] Documentation is clear and actionable
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add Downstream Gate step to backlog-refinement skill | Developer | — | Done |
+| 2 | Verify documentation is clear, complete, and actionable | Tech-QA | Task 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default)
 
 ## Notes
 
@@ -67,12 +67,13 @@ Source Trello card description: "This effects /backlog-refinement. Before making
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Add Downstream Gate step to backlog-refinement skill | Developer | < 1m | 44 | 1,832 | $0.14 |
+| 2 | Verify documentation is clear, complete, and actionable | Tech-QA | < 1m | 63 | 3,013 | $0.23 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | 1m |
+| **Total Tokens In** | 107 |
+| **Total Tokens Out** | 4,845 |
+| **Total Cost** | $0.37 |

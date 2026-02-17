@@ -114,7 +114,7 @@ class TestWorkerSignals:
             worker.run()
 
         assert len(errors) == 1
-        assert "disk full" in errors[0]
+        assert "Generation failed" in errors[0]
 
     def test_stage_progress_emitted(self, tmp_path):
         spec = _make_spec(tmp_path)

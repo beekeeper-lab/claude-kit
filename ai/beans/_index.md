@@ -152,3 +152,14 @@
 | BEAN-128 | Generation Progress UI — Missing Stages | App | Low | Done | team-lead |
 | BEAN-129 | Seeder Templates for All Personas | App | Medium | Done | team-lead |
 | BEAN-130 | Telemetry Cost Estimation | Process | Medium | Done | team-lead |
+| BEAN-131 | Analyze Backlog Refinement Command | Process | High | Done | team-lead |
+| BEAN-132 | Analyze Long Run Command | Process | High | Done | team-lead |
+| BEAN-133 | Analyze Show Backlog Command | Process | High | Done | team-lead |
+| BEAN-134 | Analyze Backlog Consolidate Command | Process | High | Done | team-lead |
+| BEAN-135 | Analyze Deploy Command | Process | High | Done | team-lead |
+| BEAN-136 | Analyze Trello Load Command | Process | High | Done | team-lead |
+| BEAN-137 | Team Member Assignment Analysis | Process | High | Done | team-lead |
+| BEAN-138 | Team Member Participation Decisions | Process | High | Done | team-lead |
+| BEAN-139 | Team Member Assignment Recommendations | Process | High | Done | team-lead |
+| BEAN-140 | Trello-Bean Lifecycle Mapping | Process | High | Done | team-lead |
+| BEAN-141 | Token Usage Optimization Analysis | Process | High | Done | team-lead |

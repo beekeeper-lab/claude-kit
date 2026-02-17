@@ -633,7 +633,7 @@ class TestCreateAsset:
         with patch(_INPUT_DIALOG, return_value=("deploy-app", True)):
             screen._on_new_asset()
         # The editor should show the starter content with the command name
-        editor_text = screen.editor_widget.toPlainText()
+        editor_text = screen.editor_widget.editor.toPlainText()
         assert "/deploy-app" in editor_text
 
     def test_create_skill(self, tmp_path: Path):
@@ -2817,14 +2817,21 @@ class TestStackUpdate:
 
 def _select_shared_template(screen: LibraryManagerScreen, filename: str):
     """Helper: select a file node under the Shared Templates category."""
+    def _search_children(parent):
+        for j in range(parent.childCount()):
+            child = parent.child(j)
+            if child.text(0) == filename:
+                screen.tree.setCurrentItem(child)
+                return True
+            if _search_children(child):
+                return True
+        return False
+
     for i in range(screen.tree.topLevelItemCount()):
         item = screen.tree.topLevelItem(i)
         if item.text(0) == "Shared Templates":
-            for j in range(item.childCount()):
-                child = item.child(j)
-                if child.text(0) == filename:
-                    screen.tree.setCurrentItem(child)
-                    return
+            if _search_children(item):
+                return
 
 
 # ---------------------------------------------------------------------------
@@ -2926,7 +2933,7 @@ class TestTemplateUpdate:
         _select_command_file(screen)
         assert not screen.editor_widget.save_button.isEnabled()
         screen.editor_widget.editor.setPlainText("# Changed")
-        assert screen.editor_widget.dirty_label.text() == ""
+        assert screen.editor_widget.dirty_label.text() == "Modified"
 
     def test_revert_after_disk_change_reads_current_disk(self, tmp_path: Path):
         lib = _create_library(tmp_path)
@@ -3034,7 +3041,11 @@ class TestTemplateUpdate:
         screen.set_library_root(lib)
         _select_shared_template(screen, "CLAUDE.md.j2")
         screen.editor_widget.editor.setPlainText("changed")
-        return None
+        saved_paths: list[str] = []
+        screen.editor_widget.file_saved.connect(saved_paths.append)
+        screen.editor_widget.save()
+        assert len(saved_paths) == 1
+        assert "CLAUDE.md.j2" in saved_paths[0]
 
 
 class TestWorkflowUpdate:
@@ -3111,7 +3122,7 @@ class TestWorkflowUpdate:
         screen.editor_widget.file_saved.connect(saved_paths.append)
         screen.editor_widget.save()
         assert len(saved_paths) == 1
-        assert "CLAUDE.md.j2" in saved_paths[0]
+        assert "default.md" in saved_paths[0]
 
     def test_dirty_changed_signal_on_template_edit(self, tmp_path: Path):
         lib = _create_library(tmp_path)
@@ -3215,7 +3226,6 @@ class TestStackButtonState:
                 screen.tree.setCurrentItem(item)
                 break
         assert screen.new_button.isEnabled()
-        assert "default.md" in saved_paths[0]
 
     def test_reverting_workflow_restores_original_content(self, tmp_path: Path):
         lib = _create_library(tmp_path)

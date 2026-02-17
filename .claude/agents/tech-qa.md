@@ -71,6 +71,32 @@ Use these skills at the specified points in your work. Skills are in `.claude/sk
 - **Coverage is a metric, not a goal.** Measure coverage to find gaps, not to hit a number.
 - **Trace everything.** Use `/internal:build-traceability` to ensure every requirement has a test and every test has a requirement.
 
+## VDD Verification Checklist
+
+Tech-QA is responsible for producing the verification evidence required by the VDD policy (`ai/context/vdd-policy.md`). Apply the category-specific checklist for every bean:
+
+**App beans:**
+- [ ] `uv run pytest` passes with zero failures
+- [ ] `uv run ruff check foundry_app/` produces clean output
+- [ ] New functions/methods have corresponding test cases
+- [ ] Bug fixes include regression tests
+- [ ] UI changes verified visually (when applicable)
+
+**Process beans:**
+- [ ] All new/updated documents exist at stated paths
+- [ ] Cross-references point to real files and sections
+- [ ] Instructions are specific and actionable (concrete verb + target)
+- [ ] No contradictions with existing documentation
+- [ ] Workflow walkthrough confirms end-to-end coherence
+
+**Infra beans:**
+- [ ] New/modified hooks and scripts execute correctly
+- [ ] Git operations succeed with expected behavior
+- [ ] Existing hooks and workflows still function
+- [ ] Configuration files parse without errors
+
+For every criterion, record **concrete evidence** (command output, file path, observation). Evidence that is vague, outdated, or non-reproducible does not satisfy the VDD gate.
+
 ## Project Context — Foundry Test Infrastructure
 
 **Test suite:** 300 tests in `tests/test_*.py`, run with `uv run pytest`

@@ -154,18 +154,22 @@ Each persona claims their task(s) in dependency order:
 3. Update the task file with completion status
 4. Create a handoff note for downstream tasks if needed
 
-### 6. Verification
+### 6. Verification (VDD Gate)
 
-The Team Lead reviews completed work:
+The Team Lead applies the **Verification-Driven Development (VDD) gate** before closing any bean. See `ai/context/vdd-policy.md` for the full policy.
 
 1. Check each task's Definition of Done
-2. Verify outputs match the bean's Acceptance Criteria
-3. Run tests (`uv run pytest`) and lint (`uv run ruff check foundry_app/`)
-4. Flag any gaps for rework
+2. Verify outputs match the bean's Acceptance Criteria with **concrete evidence** per the VDD policy
+3. Run category-specific verification checks:
+   - **App beans:** `uv run pytest` (all pass), `uv run ruff check foundry_app/` (clean), new code has tests
+   - **Process beans:** documents exist, cross-references valid, instructions actionable, no contradictions
+   - **Infra beans:** hooks/scripts execute, git operations succeed, no regressions
+4. For each acceptance criterion, confirm evidence is concrete, reproducible, and current
+5. Flag any gaps for rework — a bean that fails the VDD gate stays In Progress
 
 ### 7. Closure
 
-Once all acceptance criteria are met:
+Once the VDD gate passes (all acceptance criteria verified with evidence):
 
 1. Update bean status to `Done`
 2. Update `ai/beans/_index.md`

@@ -666,8 +666,13 @@ class TestFileBadge:
 
 class TestHookPackDescriptions:
     def test_known_packs_have_descriptions(self):
-        expected = {"pre-commit-lint", "post-task-qa", "security-scan",
-                    "compliance-gate", "hook-policy"}
+        expected = {
+            "pre-commit-lint", "post-task-qa", "security-scan",
+            "compliance-gate", "hook-policy",
+            "git-commit-branch", "git-push-feature", "git-generate-pr",
+            "git-merge-to-test", "git-merge-to-prod",
+            "az-read-only", "az-limited-ops",
+        }
         assert set(HOOK_PACK_DESCRIPTIONS.keys()) == expected
 
     def test_descriptions_are_tuples(self):

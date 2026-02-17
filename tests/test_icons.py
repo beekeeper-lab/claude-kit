@@ -67,20 +67,25 @@ class TestTintSvg:
         assert result == svg
 
 
+# Card graphics (240x56) are not standard 24x24 monochrome icons
+_CARD_GRAPHICS = {"builder", "history", "settings", "library"}
+_STANDARD_ICONS = [n for n in ICON_NAMES if n not in _CARD_GRAPHICS]
+
+
 class TestSvgFileQuality:
     """Verify SVG files are well-formed and consistent."""
 
-    @pytest.mark.parametrize("name", ICON_NAMES)
+    @pytest.mark.parametrize("name", _STANDARD_ICONS)
     def test_svg_has_viewbox(self, name: str):
         content = icon_path(name).read_text()
         assert 'viewBox="0 0 24 24"' in content
 
-    @pytest.mark.parametrize("name", ICON_NAMES)
+    @pytest.mark.parametrize("name", _STANDARD_ICONS)
     def test_svg_is_monochrome_white(self, name: str):
         content = icon_path(name).read_text()
         assert 'stroke="#ffffff"' in content
 
-    @pytest.mark.parametrize("name", ICON_NAMES)
+    @pytest.mark.parametrize("name", _STANDARD_ICONS)
     def test_svg_has_consistent_stroke_width(self, name: str):
         content = icon_path(name).read_text()
         assert 'stroke-width="2"' in content

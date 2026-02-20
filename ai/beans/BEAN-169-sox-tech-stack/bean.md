@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-169 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-20 22:27 |
+| **Completed** | 2026-02-20 22:33 |
+| **Duration** | 6m |
 | **Owner** | (unassigned) |
 | **Category** | App |
 
@@ -45,10 +45,10 @@ Add a new tech stack option in the ai-team-library for SOX compliance. Include d
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Create SOX Compliance Tech Stack | Developer | — | Done |
+| 2 | Verify SOX Compliance Tech Stack | Tech-QA | 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default — straightforward library addition)
 
 ## Changes
 
@@ -77,12 +77,13 @@ Add a new tech stack option in the ai-team-library for SOX compliance. Include d
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Create SOX Compliance Tech Stack | Developer | 5m | 2,050,490 | 7,519 | $6.34 |
+| 2 | Verify SOX Compliance Tech Stack | Tech-QA | 1m | 368,624 | 129 | $0.64 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | 6m |
+| **Total Tokens In** | 2,419,114 |
+| **Total Tokens Out** | 7,648 |
+| **Total Cost** | $6.98 |

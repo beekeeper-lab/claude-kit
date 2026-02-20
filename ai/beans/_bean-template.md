@@ -45,6 +45,14 @@ What is the desired outcome when this bean is complete?
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.
 
+## Changes
+
+> Auto-populated by `/merge-bean` with the git diff summary.
+
+| File | Lines |
+|------|-------|
+| — | — |
+
 ## Notes
 
 (Any additional context, links, or discussion.)

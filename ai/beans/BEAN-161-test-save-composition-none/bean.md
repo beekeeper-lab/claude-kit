@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-161 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-20 20:16 |
+| **Completed** | 2026-02-20 20:19 |
+| **Duration** | 3m |
 | **Owner** | (unassigned) |
 | **Category** | App |
 
@@ -33,19 +33,20 @@ Add a test that saves a spec with `safety=None`, reads the raw YAML, and asserts
 
 ## Acceptance Criteria
 
-- [ ] Test saves a composition spec with `safety=None`
-- [ ] Test reads raw YAML from disk and asserts `"safety"` key is absent
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Test saves a composition spec with `safety=None`
+- [x] Test reads raw YAML from disk and asserts `"safety"` key is absent
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add test for None field exclusion in save_composition YAML output | Developer | — | Done |
+| 2 | Verify None exclusion test and acceptance criteria | Tech-QA | Task 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default)
+> Bottleneck check: no contention — 2 sequential tasks, single file modified
 
 ## Notes
 
@@ -66,12 +67,13 @@ Ensures clean YAML output without null noise for downstream tool compatibility.
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Add test for None field exclusion in save_composition YAML output | Developer | < 1m | 1,088,298 | 909 | $3.16 |
+| 2 | Verify None exclusion test and acceptance criteria | Tech-QA | < 1m | 2,098,409 | 1,751 | $4.94 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | 1m |
+| **Total Tokens In** | 3,186,707 |
+| **Total Tokens Out** | 2,660 |
+| **Total Cost** | $8.10 |

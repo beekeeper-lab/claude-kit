@@ -185,4 +185,4 @@
 | BEAN-161 | Test save_composition Excludes None Fields from YAML Output | App | Medium | Done | team-lead |
 | BEAN-162 | Bean Change Summary Section | Process | Medium | In Progress | team-lead |
 | BEAN-163 | Fix Open Project Folder Button | App | High | Done | team-lead |
-| BEAN-164 | Review and Prune Generated CLAUDE.md | App | High | In Progress | team-lead |
+| BEAN-164 | Review and Prune Generated CLAUDE.md | App | High | Done | team-lead |

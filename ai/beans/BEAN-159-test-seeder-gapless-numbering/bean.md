@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-159 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-20 20:11 |
+| **Completed** | 2026-02-20 20:15 |
+| **Duration** | 4m |
 | **Owner** | (unassigned) |
 | **Category** | App |
 
@@ -32,19 +32,20 @@ Add a test with `["developer", "unknown-role", "architect"]`, extract all row nu
 
 ## Acceptance Criteria
 
-- [ ] Test uses a team list with both known and unknown personas (e.g., `["developer", "unknown-role", "architect"]`)
-- [ ] Test extracts row numbers from seeder output and asserts they are contiguous 1..N
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Test uses a team list with both known and unknown personas (e.g., `["developer", "unknown-role", "architect"]`)
+- [x] Test extracts row numbers from seeder output and asserts they are contiguous 1..N
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add gapless numbering test with mixed personas | Developer | — | Done |
+| 2 | Verify gapless numbering test | Tech-QA | 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default)
+> Bottleneck check: no contention — sequential 2-task wave, single file modified.
 
 ## Notes
 
@@ -65,12 +66,13 @@ Ensures counter logic handles adversarial input correctly — no gaps from unrec
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Add gapless numbering test with mixed personas | Developer | < 1m | 346,031 | 638 | $0.66 |
+| 2 | Verify gapless numbering test | Tech-QA | 3m | 514,491 | 534 | $0.91 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | 3m |
+| **Total Tokens In** | 860,522 |
+| **Total Tokens Out** | 1,172 |
+| **Total Cost** | $1.57 |

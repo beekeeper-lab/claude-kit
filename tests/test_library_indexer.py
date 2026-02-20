@@ -30,6 +30,7 @@ EXPECTED_STACKS = [
     "data-engineering",
     "devops",
     "dotnet",
+    "gdpr-data-privacy",
     "go",
     "hipaa-compliance",
     "iso-9000",

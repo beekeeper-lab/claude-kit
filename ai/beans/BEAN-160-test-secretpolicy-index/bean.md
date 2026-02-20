@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-160 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-20 20:11 |
+| **Completed** | 2026-02-20 20:15 |
+| **Duration** | 4m |
+| **Owner** | team-lead |
 | **Category** | App |
 
 ## Problem Statement
@@ -32,19 +32,20 @@ Add a parameterized test with the invalid pattern at different positions and ass
 
 ## Acceptance Criteria
 
-- [ ] Parameterized test places an invalid regex at different positions in the `secret_patterns` list
-- [ ] Each test case asserts the error message contains `secret_patterns[N]` with the correct index N
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Parameterized test places an invalid regex at different positions in the `secret_patterns` list
+- [x] Each test case asserts the error message contains `secret_patterns[N]` with the correct index N
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add parameterized index test | Developer | — | Done |
+| 2 | Tech-QA verification | Tech-QA | 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default)
+> Bottleneck check: no contention — two sequential tasks, single file modified
 
 ## Notes
 
@@ -65,12 +66,13 @@ Ensures error messages give actionable location info for debugging rejected conf
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Add parameterized index test | Developer | < 1m | 397,416 | 432 | $0.71 |
+| 2 | Tech-QA verification | Tech-QA | 2m | 619,909 | 727 | $1.09 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | 2m |
+| **Total Tokens In** | 1,017,325 |
+| **Total Tokens Out** | 1,159 |
+| **Total Cost** | $1.80 |

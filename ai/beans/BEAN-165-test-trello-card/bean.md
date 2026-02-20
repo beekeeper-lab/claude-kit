@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-165 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Low |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-20 22:42 |
+| **Completed** | 2026-02-20 22:42 |
+| **Duration** | < 1m |
 | **Owner** | (unassigned) |
 | **Category** | Infra |
 
@@ -38,10 +38,9 @@ Verify the Trello integration pipeline works correctly by processing this test c
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Verify Trello Lifecycle Test | Tech-QA | — | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default), Developer (no code changes — lifecycle test only)
 
 ## Changes
 
@@ -70,12 +69,12 @@ This bean was auto-created from a Trello test card with no description.
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Verify Trello Lifecycle Test | Tech-QA | < 1m | 367,080 | 186 | $0.59 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | < 1m |
+| **Total Tokens In** | 367,080 |
+| **Total Tokens Out** | 186 |
+| **Total Cost** | $0.59 |

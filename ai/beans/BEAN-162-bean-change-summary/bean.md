@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-162 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-20 20:18 |
+| **Completed** | 2026-02-20 20:23 |
+| **Duration** | 5m |
+| **Owner** | team-lead |
 | **Category** | Process |
 
 ## Problem Statement
@@ -33,21 +33,22 @@ After a bean is completed, generate a git diff summary and add it as a new `## C
 
 ## Acceptance Criteria
 
-- [ ] Bean template includes a `## Changes` section placeholder
-- [ ] When a bean is completed and merged, the Changes section is populated with a git diff summary
-- [ ] Changes section lists files modified with line count deltas
-- [ ] The workflow update is documented (which step populates the section)
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Bean template includes a `## Changes` section placeholder
+- [x] When a bean is completed and merged, the Changes section is populated with a git diff summary
+- [x] Changes section lists files modified with line count deltas
+- [x] The workflow update is documented (which step populates the section)
+- [x] All tests pass (`uv run pytest`) — pre-existing PySide6/libGL UI test failures only
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add Changes section to template and merge workflow | Developer | — | Done |
+| 2 | Verify Changes section implementation | Tech-QA | 1 | Done |
 
-> Tasks are populated by the Team Lead during decomposition.
-> Task files go in `tasks/` subdirectory.
+> Skipped: BA (default), Architect (default)
+> Bottleneck check: no contention — tasks are sequential (Developer → Tech-QA)
 
 ## Notes
 
@@ -68,12 +69,13 @@ The git diff should be computed from the merge commit or feature branch diff aga
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Add Changes section to template and merge workflow | Developer | 1m | 833,635 | 1,150 | $1.63 |
+| 2 | Verify Changes section implementation | Tech-QA | 3m | 1,542,088 | 596 | $2.77 |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
-| **Total Tokens In** | — |
-| **Total Tokens Out** | — |
-| **Total Cost** | — |
+| **Total Tasks** | 2 |
+| **Total Duration** | 4m |
+| **Total Tokens In** | 2,375,723 |
+| **Total Tokens Out** | 1,746 |
+| **Total Cost** | $4.40 |

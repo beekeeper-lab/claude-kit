@@ -1,5 +1,8 @@
 # Audit Procedures
 
+## Category
+Compliance & Governance
+
 Standards for planning, conducting, and following up on quality audits. Audits
 verify that the QMS is implemented effectively and identify opportunities for
 improvement. ISO 19011:2018 provides guidelines for auditing management systems.

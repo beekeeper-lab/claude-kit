@@ -1,5 +1,8 @@
 # AWS Core Services
 
+## Category
+Infrastructure & Platforms
+
 Standards for deploying and operating workloads on Amazon Web Services.
 This guide covers identity, networking, compute, storage, and databases.
 All AWS usage must follow the Well-Architected Framework. Deviations require an ADR.

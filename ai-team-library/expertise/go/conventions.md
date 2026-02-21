@@ -1,5 +1,8 @@
 # Go Stack Conventions
 
+## Category
+Languages
+
 Non-negotiable defaults for Go services on this team. Targets Go 1.22+ with
 the standard library as the primary dependency. Deviations require an ADR with
 justification. "I prefer it differently" is not justification.

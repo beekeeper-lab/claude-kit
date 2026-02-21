@@ -1,5 +1,8 @@
 # PySide6 Conventions
 
+## Category
+Languages
+
 Non-negotiable defaults for Qt for Python (PySide6) desktop applications.
 Deviations require an ADR with justification.
 

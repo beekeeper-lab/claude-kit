@@ -1,5 +1,8 @@
 # Customer Health Scoring
 
+## Category
+Business Practices
+
 A composite metric that predicts customer retention, expansion, and churn risk
 by combining product usage, engagement, support, and financial signals. Health
 scores replace gut feel with a consistent, data-driven view of account status.

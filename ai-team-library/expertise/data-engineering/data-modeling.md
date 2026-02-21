@@ -1,5 +1,8 @@
 # Data Modeling
 
+## Category
+Data & ML
+
 Standards for analytical data modeling in data warehouses. Dimensional modeling
 (Kimball) is the default for analytics workloads. Data Vault is the alternative
 for environments requiring full auditability and multi-source integration.

@@ -1,5 +1,8 @@
 # .NET Stack Conventions
 
+## Category
+Languages
+
 These conventions are non-negotiable defaults for .NET applications on this
 team. They target .NET 8+ and C# 12+. Deviations require an ADR with
 justification. "I prefer it differently" is not justification.

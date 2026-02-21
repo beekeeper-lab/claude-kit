@@ -1,5 +1,8 @@
 # Business Intelligence Stack Conventions
 
+## Category
+Data & ML
+
 These conventions apply to all business intelligence and analytics projects on
 this team. They are opinionated by design — consistency across dashboards,
 metrics, and reports matters more than individual preference. Deviations require

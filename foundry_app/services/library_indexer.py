@@ -68,16 +68,20 @@ def _scan_personas(personas_dir: Path) -> list[PersonaInfo]:
 
 
 def _parse_expertise_category(expertise_dir: Path) -> str:
-    """Extract the category from an expertise directory's conventions.md.
+    """Extract the category from an expertise directory's primary markdown file.
 
-    Looks for a ``## Category`` heading followed by the category value on the next line.
-    Returns empty string if not found.
+    Checks ``conventions.md`` first, then falls back to the first ``.md`` file
+    alphabetically.  Looks for a ``## Category`` heading followed by the category
+    value on the next line.  Returns empty string if not found.
     """
-    conventions = expertise_dir / "conventions.md"
-    if not conventions.is_file():
-        return ""
+    target = expertise_dir / "conventions.md"
+    if not target.is_file():
+        md_files = sorted(f for f in expertise_dir.iterdir() if f.suffix == ".md")
+        if not md_files:
+            return ""
+        target = md_files[0]
     try:
-        lines = conventions.read_text(encoding="utf-8").splitlines()
+        lines = target.read_text(encoding="utf-8").splitlines()
     except OSError:
         return ""
     for i, line in enumerate(lines):

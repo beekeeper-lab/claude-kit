@@ -1,5 +1,8 @@
 # Budgets & Commitment Planning
 
+## Category
+Business Practices
+
 Standards for budget alerts, reserved instance and Savings Plans purchasing, and long-term
 commitment strategies. Budget alerts catch overspend early; commitment-based discounts
 (Reserved Instances, Savings Plans) reduce steady-state costs by 30–60%.

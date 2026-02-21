@@ -1,5 +1,8 @@
 # Kubernetes Stack Conventions
 
+## Category
+Infrastructure & Platforms
+
 Non-negotiable defaults for Kubernetes workloads on this team. Targets
 Kubernetes 1.28+ with cloud-agnostic manifests. Deviations require an ADR
 with justification. "I prefer it differently" is not justification.

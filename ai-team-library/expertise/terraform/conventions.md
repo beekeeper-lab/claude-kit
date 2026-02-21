@@ -1,5 +1,8 @@
 # Terraform Stack Conventions
 
+## Category
+Infrastructure & Platforms
+
 Non-negotiable defaults for Terraform infrastructure-as-code on this team. Targets
 Terraform 1.6+ with the HashiCorp provider ecosystem. Deviations require an ADR
 with justification. "I prefer it differently" is not justification.

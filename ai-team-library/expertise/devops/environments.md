@@ -1,5 +1,8 @@
 # Environment Management
 
+## Category
+Infrastructure & Platforms
+
 Standards for provisioning, promoting, and managing deployment environments.
 Infrastructure is defined as code. Manual environment changes are forbidden.
 

@@ -1,5 +1,8 @@
 # TypeScript Conventions
 
+## Category
+Languages
+
 These conventions govern all TypeScript code in the project. Strict mode is
 non-negotiable. The type system is a tool for catching bugs at compile time --
 use it fully, not as a formality to satisfy the compiler.

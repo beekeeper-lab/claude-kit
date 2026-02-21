@@ -461,6 +461,69 @@ class TestExpertiseCategories:
         assert e is not None
         assert e.category == "Infrastructure"
 
+    def test_category_fallback_to_first_md(self, tmp_path: Path):
+        """When no conventions.md exists, parse category from first .md file."""
+        expertise_dir = tmp_path / "expertise" / "fallback"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "alpha.md").write_text(
+            "# Alpha\n\n## Category\nBusiness Practices\n\n## Content\nStuff\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("fallback")
+        assert e is not None
+        assert e.category == "Business Practices"
+
+    def test_all_expertise_have_expected_category(self):
+        """Every real expertise item has the correct ## Category value."""
+        expected = {
+            "accessibility-compliance": "Compliance & Governance",
+            "api-design": "Architecture & Patterns",
+            "aws-cloud-platform": "Infrastructure & Platforms",
+            "azure-cloud-platform": "Infrastructure & Platforms",
+            "business-intelligence": "Data & ML",
+            "change-management": "Business Practices",
+            "clean-code": "Architecture & Patterns",
+            "customer-enablement": "Business Practices",
+            "data-engineering": "Data & ML",
+            "devops": "Infrastructure & Platforms",
+            "dotnet": "Languages",
+            "event-driven-messaging": "Architecture & Patterns",
+            "finops": "Business Practices",
+            "frontend-build-tooling": "Architecture & Patterns",
+            "gcp-cloud-platform": "Infrastructure & Platforms",
+            "gdpr-data-privacy": "Compliance & Governance",
+            "go": "Languages",
+            "hipaa-compliance": "Compliance & Governance",
+            "iso-9000": "Compliance & Governance",
+            "java": "Languages",
+            "kotlin": "Languages",
+            "kubernetes": "Infrastructure & Platforms",
+            "microservices": "Architecture & Patterns",
+            "mlops": "Data & ML",
+            "node": "Languages",
+            "pci-dss-compliance": "Compliance & Governance",
+            "product-strategy": "Business Practices",
+            "python": "Languages",
+            "python-qt-pyside6": "Languages",
+            "react": "Languages",
+            "react-native": "Languages",
+            "rust": "Languages",
+            "sales-engineering": "Business Practices",
+            "security": "Compliance & Governance",
+            "sox-compliance": "Compliance & Governance",
+            "sql-dba": "Data & ML",
+            "swift": "Languages",
+            "terraform": "Infrastructure & Platforms",
+            "typescript": "Languages",
+        }
+        idx = build_library_index(LIBRARY_ROOT)
+        for expertise in idx.expertise:
+            assert expertise.id in expected, f"{expertise.id} not in expected map"
+            assert expertise.category == expected[expertise.id], (
+                f"{expertise.id}: expected {expected[expertise.id]!r}, "
+                f"got {expertise.category!r}"
+            )
+
     def test_category_with_whitespace(self, tmp_path: Path):
         """Category value should be stripped of leading/trailing whitespace."""
         expertise_dir = tmp_path / "expertise" / "spaced"

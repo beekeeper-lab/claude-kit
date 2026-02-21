@@ -23,6 +23,7 @@ EXPECTED_PERSONAS = [
     "mobile-developer",
     "platform-sre-engineer",
     "researcher-librarian",
+    "sales-engineer",
     "security-engineer",
     "team-lead",
     "tech-qa",

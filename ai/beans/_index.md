@@ -191,3 +191,46 @@
 | BEAN-167 | ISO 9000 Certification Tech Stack | App | Medium | Done | team-lead |
 | BEAN-168 | Tech Stack Options Review & Expansion | App | Medium | Done | team-lead |
 | BEAN-169 | SOX Compliance Tech Stack | App | Medium | Done | team-lead |
+| BEAN-170 | HIPAA Compliance Stack | App | Medium | Done | team-lead |
+| BEAN-171 | Rust Language Tech Stack | App | Medium | Done | team-lead |
+| BEAN-172 | AWS Cloud Platform Stack | App | Medium | Done | team-lead |
+| BEAN-173 | React Native Mobile Tech Stack | App | Medium | Done | team-lead |
+| BEAN-174 | Data Engineering Tech Stack | App | Medium | Done | team-lead |
+| BEAN-175 | GDPR & Data Privacy Compliance Stack | App | Medium | Done | team-lead |
+| BEAN-176 | Go Language Tech Stack | App | Medium | Done | team-lead |
+| BEAN-177 | Kotlin Language Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-178 | Swift Language Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-179 | C#/.NET Expanded Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-180 | Kubernetes Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-181 | Terraform/IaC Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-182 | GCP Cloud Platform Stack | Infra | Medium | Done | team-lead |
+| BEAN-183 | Azure Cloud Platform Stack | Infra | Medium | Done | team-lead |
+| BEAN-184 | API Design Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-185 | Event-Driven / Messaging Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-186 | Microservices Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-187 | Frontend Build & Tooling Tech Stack | Infra | Medium | Done | team-lead |
+| BEAN-188 | PCI-DSS Compliance Stack | Infra | Medium | Done | team-lead |
+| BEAN-189 | Data Engineer Persona | Infra | Medium | Done | team-lead |
+| BEAN-190 | Mobile Developer Persona | Infra | Medium | Done | team-lead |
+| BEAN-191 | Platform/SRE Engineer Persona | Infra | Medium | Done | team-lead |
+| BEAN-192 | Database Administrator Persona | Infra | Medium | Done | team-lead |
+| BEAN-193 | Legal Counsel / Lawyer Persona | Infra | Medium | Done | team-lead |
+| BEAN-194 | Contract Review & Analysis Skill | Infra | Medium | Done | team-lead |
+| BEAN-195 | Intellectual Property & Licensing Skill | Infra | Medium | Done | team-lead |
+| BEAN-196 | Terms of Service & Privacy Policy Drafting Skill | Infra | Medium | Done | team-lead |
+| BEAN-197 | Regulatory Compliance Assessment Skill | Infra | Medium | Done | team-lead |
+| BEAN-198 | Risk Assessment & Liability Analysis Skill | Infra | Medium | Done | team-lead |
+| BEAN-199 | Product Owner / Product Manager Persona | Infra | Medium | Done | team-lead |
+| BEAN-200 | Data Analyst / BI Analyst Persona | Infra | Medium | Done | team-lead |
+| BEAN-201 | Customer Success / Solutions Engineer Persona | Infra | Medium | Done | team-lead |
+| BEAN-202 | Financial Operations / Budget Officer Persona | Infra | Medium | Done | team-lead |
+| BEAN-203 | Change Management / Adoption Lead Persona | Infra | Medium | Done | team-lead |
+| BEAN-204 | Sales Engineer / Pre-Sales Persona | Infra | Medium | Done | team-lead |
+| BEAN-205 | Product Strategy & Roadmapping Stack | Infra | Medium | Done | team-lead |
+| BEAN-206 | Business Intelligence & Analytics Stack | Infra | Medium | Done | team-lead |
+| BEAN-207 | FinOps / Cloud Cost Management Stack | Infra | Medium | Done | team-lead |
+| BEAN-208 | Customer Enablement Stack | Infra | Medium | Done | team-lead |
+| BEAN-209 | Change Management Stack | Infra | Medium | Done | team-lead |
+| BEAN-210 | Sales Engineering Stack | Infra | Medium | Done | team-lead |
+| BEAN-211 | ML/AI & LLM Operations Stack | Infra | Medium | Done | team-lead |
+| BEAN-212 | Accessibility Compliance (ADA/WCAG) Stack | Infra | Medium | Done | team-lead |

@@ -45,6 +45,7 @@ EXPECTED_STACKS = [
     "devops",
     "dotnet",
     "event-driven-messaging",
+    "finops",
     "frontend-build-tooling",
     "gcp-cloud-platform",
     "gdpr-data-privacy",

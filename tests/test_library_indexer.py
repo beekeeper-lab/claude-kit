@@ -37,6 +37,7 @@ EXPECTED_STACKS = [
     "java",
     "kotlin",
     "kubernetes",
+    "microservices",
     "node",
     "python",
     "python-qt-pyside6",

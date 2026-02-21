@@ -223,7 +223,7 @@
 | BEAN-199 | Product Owner / Product Manager Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-200 | Data Analyst / BI Analyst Persona | Infra | Medium | Done | team-lead |
 | BEAN-201 | Customer Success / Solutions Engineer Persona | Infra | Medium | Done | team-lead |
-| BEAN-202 | Financial Operations / Budget Officer Persona | Infra | Medium | In Progress | team-lead |
+| BEAN-202 | Financial Operations / Budget Officer Persona | Infra | Medium | Done | team-lead |
 | BEAN-203 | Change Management / Adoption Lead Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-204 | Sales Engineer / Pre-Sales Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-205 | Product Strategy & Roadmapping Stack | Infra | Medium | In Progress | team-lead |

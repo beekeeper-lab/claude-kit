@@ -199,7 +199,7 @@
 | BEAN-175 | GDPR & Data Privacy Compliance Stack | App | Medium | Done | team-lead |
 | BEAN-176 | Go Language Tech Stack | App | Medium | Done | team-lead |
 | BEAN-177 | Kotlin Language Tech Stack | Infra | Medium | In Progress | team-lead |
-| BEAN-178 | Swift Language Tech Stack | Infra | Medium | In Progress | team-lead |
+| BEAN-178 | Swift Language Tech Stack | Infra | Medium | Done | team-lead |
 | BEAN-179 | C#/.NET Expanded Tech Stack | Infra | Medium | In Progress | team-lead |
 | BEAN-180 | Kubernetes Tech Stack | Infra | Medium | In Progress | team-lead |
 | BEAN-181 | Terraform/IaC Tech Stack | Infra | Medium | In Progress | team-lead |

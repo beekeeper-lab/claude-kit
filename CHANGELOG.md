@@ -104,8 +104,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `foundry-cli diff` — display diff report
 
 **Library**
-- 13 personas: team-lead, ba, architect, developer, tech-qa, code-quality-reviewer, devops-release, security-engineer, compliance-risk, researcher-librarian, technical-writer, ux-ui-designer, integrator-merge-captain
-- 11 tech stacks: python, python-qt-pyside6, react, typescript, node, java, dotnet, sql-dba, devops, security, clean-code
+- 24 personas: team-lead, ba, architect, developer, tech-qa, code-quality-reviewer, devops-release, security-engineer, compliance-risk, researcher-librarian, technical-writer, ux-ui-designer, integrator-merge-captain, and 11 more
+- 39 expertise packs across 6 categories: Languages, Architecture & Patterns, Infrastructure & Platforms, Data & ML, Compliance & Governance, Business Practices
 - Each persona includes: persona.md, outputs.md, prompts.md, templates/
 - Jinja2 variables in library files: {{ project_name }}, {{ stacks | join(", ") }}, {{ strictness }}
 - 4 example compositions: small-python-team, full-stack-web, security-focused, foundry-dogfood

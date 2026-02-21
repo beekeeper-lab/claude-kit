@@ -35,7 +35,7 @@ EXPECTED_PERSONAS = [
     "ux-ui-designer",
 ]
 
-EXPECTED_STACKS = [
+EXPECTED_EXPERTISE = [
     "accessibility-compliance",
     "api-design",
     "aws-cloud-platform",
@@ -111,10 +111,10 @@ class TestBuildLibraryIndexReal:
         persona_ids = [p.id for p in idx.personas]
         assert persona_ids == EXPECTED_PERSONAS
 
-    def test_discovers_all_stacks(self):
+    def test_discovers_all_expertise(self):
         idx = build_library_index(LIBRARY_ROOT)
-        stack_ids = [s.id for s in idx.stacks]
-        assert stack_ids == EXPECTED_STACKS
+        expertise_ids = [s.id for s in idx.expertise]
+        assert expertise_ids == EXPECTED_EXPERTISE
 
     def test_discovers_all_hook_packs(self):
         idx = build_library_index(LIBRARY_ROOT)
@@ -135,12 +135,12 @@ class TestBuildLibraryIndexReal:
         for persona in idx.personas:
             assert persona.has_persona_md, f"{persona.id} missing persona.md"
 
-    def test_stack_has_files(self):
+    def test_expertise_has_files(self):
         idx = build_library_index(LIBRARY_ROOT)
-        python_stack = idx.stack_by_id("python")
-        assert python_stack is not None
-        assert "conventions.md" in python_stack.files
-        assert len(python_stack.files) >= 3
+        python_expertise = idx.expertise_by_id("python")
+        assert python_expertise is not None
+        assert "conventions.md" in python_expertise.files
+        assert len(python_expertise.files) >= 3
 
     def test_hook_pack_has_file(self):
         idx = build_library_index(LIBRARY_ROOT)
@@ -170,28 +170,28 @@ class TestBuildLibraryIndexGraceful:
         idx = build_library_index(tmp_path / "does-not-exist")
         assert isinstance(idx, LibraryIndex)
         assert idx.personas == []
-        assert idx.stacks == []
+        assert idx.expertise == []
         assert idx.hook_packs == []
 
     def test_empty_root(self, tmp_path: Path):
         idx = build_library_index(tmp_path)
         assert isinstance(idx, LibraryIndex)
         assert idx.personas == []
-        assert idx.stacks == []
+        assert idx.expertise == []
         assert idx.hook_packs == []
 
     def test_missing_personas_dir(self, tmp_path: Path):
-        (tmp_path / "stacks" / "python").mkdir(parents=True)
-        (tmp_path / "stacks" / "python" / "conventions.md").touch()
+        (tmp_path / "expertise" / "python").mkdir(parents=True)
+        (tmp_path / "expertise" / "python" / "conventions.md").touch()
         idx = build_library_index(tmp_path)
         assert idx.personas == []
-        assert len(idx.stacks) == 1
+        assert len(idx.expertise) == 1
 
-    def test_missing_stacks_dir(self, tmp_path: Path):
+    def test_missing_expertise_dir(self, tmp_path: Path):
         (tmp_path / "personas" / "dev").mkdir(parents=True)
         (tmp_path / "personas" / "dev" / "persona.md").touch()
         idx = build_library_index(tmp_path)
-        assert idx.stacks == []
+        assert idx.expertise == []
         assert len(idx.personas) == 1
 
     def test_missing_hooks_dir(self, tmp_path: Path):
@@ -237,13 +237,13 @@ class TestLibraryIndexLookups:
         idx = build_library_index(LIBRARY_ROOT)
         assert idx.persona_by_id("nonexistent") is None
 
-    def test_stack_by_id_found(self):
+    def test_expertise_by_id_found(self):
         idx = build_library_index(LIBRARY_ROOT)
-        assert idx.stack_by_id("python") is not None
+        assert idx.expertise_by_id("python") is not None
 
-    def test_stack_by_id_not_found(self):
+    def test_expertise_by_id_not_found(self):
         idx = build_library_index(LIBRARY_ROOT)
-        assert idx.stack_by_id("cobol") is None
+        assert idx.expertise_by_id("cobol") is None
 
     def test_hook_pack_by_id_found(self):
         idx = build_library_index(LIBRARY_ROOT)
@@ -310,3 +310,228 @@ class TestHookPackCategories:
         pack = idx.hook_pack_by_id("bare")
         assert pack is not None
         assert pack.category == ""
+
+
+# ---------------------------------------------------------------------------
+# Persona category tests
+# ---------------------------------------------------------------------------
+
+
+class TestPersonaCategories:
+    """Test that persona category parsing works correctly."""
+
+    def test_all_personas_have_expected_category(self):
+        """Every real persona has the correct ## Category value."""
+        expected = {
+            "architect": "Software Development",
+            "ba": "Software Development",
+            "change-management": "Business Operations",
+            "code-quality-reviewer": "Software Development",
+            "compliance-risk": "Compliance & Legal",
+            "customer-success": "Business Operations",
+            "data-analyst": "Data & Analytics",
+            "data-engineer": "Software Development",
+            "database-administrator": "Software Development",
+            "developer": "Software Development",
+            "devops-release": "Software Development",
+            "financial-operations": "Business Operations",
+            "integrator-merge-captain": "Software Development",
+            "legal-counsel": "Business Operations",
+            "mobile-developer": "Software Development",
+            "platform-sre-engineer": "Software Development",
+            "product-owner": "Business Operations",
+            "researcher-librarian": "Data & Analytics",
+            "sales-engineer": "Business Operations",
+            "security-engineer": "Compliance & Legal",
+            "team-lead": "Software Development",
+            "tech-qa": "Software Development",
+            "technical-writer": "Data & Analytics",
+            "ux-ui-designer": "Software Development",
+        }
+        idx = build_library_index(LIBRARY_ROOT)
+        for persona in idx.personas:
+            assert persona.id in expected, f"{persona.id} not in expected map"
+            assert persona.category == expected[persona.id], (
+                f"{persona.id}: expected {expected[persona.id]!r}, "
+                f"got {persona.category!r}"
+            )
+
+    def test_category_from_persona_md(self, tmp_path: Path):
+        """Test category parsing from a persona.md with Category header."""
+        persona_dir = tmp_path / "personas" / "my-persona"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text(
+            "# Persona: My Persona\n\n## Category\nEngineering\n\n## Role\nTest\n"
+        )
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("my-persona")
+        assert p is not None
+        assert p.category == "Engineering"
+
+    def test_no_category_defaults_empty(self, tmp_path: Path):
+        """Personas without a Category header get empty string."""
+        persona_dir = tmp_path / "personas" / "bare"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text("# Persona: Bare\n\n## Role\nTest\n")
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("bare")
+        assert p is not None
+        assert p.category == ""
+
+    def test_no_persona_md_defaults_empty(self, tmp_path: Path):
+        """Personas without a persona.md file get empty category."""
+        persona_dir = tmp_path / "personas" / "minimal"
+        persona_dir.mkdir(parents=True)
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("minimal")
+        assert p is not None
+        assert p.category == ""
+
+    def test_category_case_insensitive_heading(self, tmp_path: Path):
+        """## category (lowercase) should also be parsed."""
+        persona_dir = tmp_path / "personas" / "lower"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text(
+            "# Persona\n\n## category\nOperations\n"
+        )
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("lower")
+        assert p is not None
+        assert p.category == "Operations"
+
+    def test_category_with_whitespace(self, tmp_path: Path):
+        """Category value should be stripped of leading/trailing whitespace."""
+        persona_dir = tmp_path / "personas" / "spaced"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text(
+            "# Persona\n\n## Category\n  Leadership  \n"
+        )
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("spaced")
+        assert p is not None
+        assert p.category == "Leadership"
+
+
+class TestExpertiseCategories:
+    """Test that expertise category parsing works correctly."""
+
+    def test_category_from_conventions_md(self, tmp_path: Path):
+        """Test category parsing from conventions.md with Category header."""
+        expertise_dir = tmp_path / "expertise" / "python"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Python\n\n## Category\nLanguages\n\n## Defaults\nSome content\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("python")
+        assert e is not None
+        assert e.category == "Languages"
+
+    def test_no_category_defaults_empty(self, tmp_path: Path):
+        """Expertise without a Category header gets empty string."""
+        expertise_dir = tmp_path / "expertise" / "bare"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Bare\n\n## Defaults\nSome content\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("bare")
+        assert e is not None
+        assert e.category == ""
+
+    def test_no_conventions_md_defaults_empty(self, tmp_path: Path):
+        """Expertise without conventions.md gets empty category."""
+        expertise_dir = tmp_path / "expertise" / "minimal"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "other.md").write_text("# Other\n")
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("minimal")
+        assert e is not None
+        assert e.category == ""
+
+    def test_category_case_insensitive_heading(self, tmp_path: Path):
+        """## category (lowercase) should also be parsed."""
+        expertise_dir = tmp_path / "expertise" / "lower"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Lower\n\n## category\nInfrastructure\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("lower")
+        assert e is not None
+        assert e.category == "Infrastructure"
+
+    def test_category_fallback_to_first_md(self, tmp_path: Path):
+        """When no conventions.md exists, parse category from first .md file."""
+        expertise_dir = tmp_path / "expertise" / "fallback"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "alpha.md").write_text(
+            "# Alpha\n\n## Category\nBusiness Practices\n\n## Content\nStuff\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("fallback")
+        assert e is not None
+        assert e.category == "Business Practices"
+
+    def test_all_expertise_have_expected_category(self):
+        """Every real expertise item has the correct ## Category value."""
+        expected = {
+            "accessibility-compliance": "Compliance & Governance",
+            "api-design": "Architecture & Patterns",
+            "aws-cloud-platform": "Infrastructure & Platforms",
+            "azure-cloud-platform": "Infrastructure & Platforms",
+            "business-intelligence": "Data & ML",
+            "change-management": "Business Practices",
+            "clean-code": "Architecture & Patterns",
+            "customer-enablement": "Business Practices",
+            "data-engineering": "Data & ML",
+            "devops": "Infrastructure & Platforms",
+            "dotnet": "Languages",
+            "event-driven-messaging": "Architecture & Patterns",
+            "finops": "Business Practices",
+            "frontend-build-tooling": "Architecture & Patterns",
+            "gcp-cloud-platform": "Infrastructure & Platforms",
+            "gdpr-data-privacy": "Compliance & Governance",
+            "go": "Languages",
+            "hipaa-compliance": "Compliance & Governance",
+            "iso-9000": "Compliance & Governance",
+            "java": "Languages",
+            "kotlin": "Languages",
+            "kubernetes": "Infrastructure & Platforms",
+            "microservices": "Architecture & Patterns",
+            "mlops": "Data & ML",
+            "node": "Languages",
+            "pci-dss-compliance": "Compliance & Governance",
+            "product-strategy": "Business Practices",
+            "python": "Languages",
+            "python-qt-pyside6": "Languages",
+            "react": "Languages",
+            "react-native": "Languages",
+            "rust": "Languages",
+            "sales-engineering": "Business Practices",
+            "security": "Compliance & Governance",
+            "sox-compliance": "Compliance & Governance",
+            "sql-dba": "Data & ML",
+            "swift": "Languages",
+            "terraform": "Infrastructure & Platforms",
+            "typescript": "Languages",
+        }
+        idx = build_library_index(LIBRARY_ROOT)
+        for expertise in idx.expertise:
+            assert expertise.id in expected, f"{expertise.id} not in expected map"
+            assert expertise.category == expected[expertise.id], (
+                f"{expertise.id}: expected {expected[expertise.id]!r}, "
+                f"got {expertise.category!r}"
+            )
+
+    def test_category_with_whitespace(self, tmp_path: Path):
+        """Category value should be stripped of leading/trailing whitespace."""
+        expertise_dir = tmp_path / "expertise" / "spaced"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Spaced\n\n## Category\n  Data & ML  \n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("spaced")
+        assert e is not None
+        assert e.category == "Data & ML"

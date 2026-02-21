@@ -26,10 +26,12 @@ EXPECTED_PERSONAS = [
 
 EXPECTED_STACKS = [
     "aws-cloud-platform",
+    "azure-cloud-platform",
     "clean-code",
     "data-engineering",
     "devops",
     "dotnet",
+    "gcp-cloud-platform",
     "gdpr-data-privacy",
     "go",
     "hipaa-compliance",
@@ -38,6 +40,7 @@ EXPECTED_STACKS = [
     "kotlin",
     "kubernetes",
     "node",
+    "pci-dss-compliance",
     "python",
     "python-qt-pyside6",
     "react",

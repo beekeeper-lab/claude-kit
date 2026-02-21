@@ -237,8 +237,8 @@
 | BEAN-213 | Add Category Field to PersonaInfo Model | App | High | Done | team-lead |
 | BEAN-214 | Add Category Metadata to All Persona Files | Infra | High | Done | team-lead |
 | BEAN-215 | Group Personas by Category in Wizard UI | App | High | Done | team-lead |
-| BEAN-216 | Rename Stack to Expertise in Codebase | App | High | In Progress | team-lead |
-| BEAN-217 | Rename stacks/ to expertise/ in Library | Infra | High | Approved | (unassigned) |
+| BEAN-216 | Rename Stack to Expertise in Codebase | App | High | Done | team-lead |
+| BEAN-217 | Rename stacks/ to expertise/ in Library | Infra | High | In Progress | team-lead |
 | BEAN-218 | Add Category Field to ExpertiseInfo Model | App | High | Approved | (unassigned) |
 | BEAN-219 | Add Category Metadata to All Expertise Files | Infra | High | Approved | (unassigned) |
 | BEAN-220 | Group Expertise by Category in Wizard UI | App | High | Approved | (unassigned) |

@@ -55,6 +55,7 @@ EXPECTED_STACKS = [
     "kotlin",
     "kubernetes",
     "microservices",
+    "mlops",
     "node",
     "pci-dss-compliance",
     "product-strategy",

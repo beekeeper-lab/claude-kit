@@ -18,6 +18,7 @@ EXPECTED_PERSONAS = [
     "developer",
     "devops-release",
     "integrator-merge-captain",
+    "legal-counsel",
     "mobile-developer",
     "platform-sre-engineer",
     "researcher-librarian",

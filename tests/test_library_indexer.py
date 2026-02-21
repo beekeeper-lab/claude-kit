@@ -27,6 +27,7 @@ EXPECTED_PERSONAS = [
     "platform-sre-engineer",
     "product-owner",
     "researcher-librarian",
+    "sales-engineer",
     "security-engineer",
     "team-lead",
     "tech-qa",

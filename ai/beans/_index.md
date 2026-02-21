@@ -227,7 +227,7 @@
 | BEAN-203 | Change Management / Adoption Lead Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-204 | Sales Engineer / Pre-Sales Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-205 | Product Strategy & Roadmapping Stack | Infra | Medium | In Progress | team-lead |
-| BEAN-206 | Business Intelligence & Analytics Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-206 | Business Intelligence & Analytics Stack | Infra | Medium | In Progress | team-lead |
 | BEAN-207 | FinOps / Cloud Cost Management Stack | Infra | Medium | Approved | (unassigned) |
 | BEAN-208 | Customer Enablement Stack | Infra | Medium | Approved | (unassigned) |
 | BEAN-209 | Change Management Stack | Infra | Medium | Approved | (unassigned) |

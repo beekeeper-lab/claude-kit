@@ -39,6 +39,7 @@ EXPECTED_STACKS = [
     "api-design",
     "aws-cloud-platform",
     "azure-cloud-platform",
+    "business-intelligence",
     "clean-code",
     "data-engineering",
     "devops",

@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-218 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-21 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-20 21:34 |
+| **Completed** | 2026-02-20 21:36 |
+| **Duration** | 2m |
 | **Owner** | (unassigned) |
 | **Category** | App |
 
@@ -77,8 +77,8 @@ Depends on BEAN-216 (codebase rename) and BEAN-217 (library directory rename). T
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 1 |
+| **Total Duration** | 2m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |
 | **Total Cost** | — |

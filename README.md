@@ -2,7 +2,7 @@
 
 **A project factory for AI-assisted software teams.**
 
-Foundry is a desktop application and CLI that generates fully configured [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) project folders from reusable building blocks. It combines **personas** (role definitions like Architect, Developer, QA) with **tech-stack packs** (language/framework best practices) to produce self-contained project directories — complete with sub-agents, compiled team prompts, starter tasks, and safety hooks.
+Foundry is a desktop application and CLI that generates fully configured [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) project folders from reusable building blocks. It combines **personas** (role definitions like Architect, Developer, QA) with **expertise packs** (language/framework/compliance best practices) to produce self-contained project directories — complete with sub-agents, compiled team prompts, starter tasks, and safety hooks.
 
 Built with PySide6 (Qt for Python), Foundry provides both a visual desktop GUI and a headless CLI for batch automation.
 
@@ -12,7 +12,7 @@ Built with PySide6 (Qt for Python), Foundry provides both a visual desktop GUI a
 
 Foundry is a project factory for AI-assisted software teams. If you've ever set up a Claude Code project and spent hours writing agent prompts, defining team roles, configuring safety hooks, and scaffolding directory structures — only to do it all over again for the next project — Foundry eliminates that repetition entirely.
 
-The core idea is simple: the knowledge that makes an AI agent effective — how a developer should write code, how an architect should design systems, how a QA engineer should verify work — doesn't change from project to project. What changes is the tech stack, the domain, and the team composition. Foundry treats these as independent building blocks. Pick your roles, pick your stacks, set your safety posture, and Foundry compiles everything into a ready-to-go project folder with fully wired agents, starter tasks, and quality gates. No prompt engineering required.
+The core idea is simple: the knowledge that makes an AI agent effective — how a developer should write code, how an architect should design systems, how a QA engineer should verify work — doesn't change from project to project. What changes is the tech stack, the domain, and the team composition. Foundry treats these as independent building blocks. Pick your roles, pick your expertise, set your safety posture, and Foundry compiles everything into a ready-to-go project folder with fully wired agents, starter tasks, and quality gates. No prompt engineering required.
 
 But Foundry isn't just a project generator — it's also the operating system for the team it creates. Work gets organized into "beans" (discrete units like features or bug fixes) that flow through a structured lifecycle: backlog, approval, decomposition into tasks, execution by specialized AI personas, verification, and merge. The whole process can run autonomously with a single command, or you can drive it step by step. It even syncs with Trello so stakeholders can manage priorities in a familiar tool while the AI team handles execution behind the scenes.
 
@@ -33,7 +33,7 @@ The result is that standing up a new AI-powered project goes from a day of boile
 **The Building Block Library**
 - [Library Overview](#library-overview)
 - [Personas](#personas-13)
-- [Tech Stacks](#tech-stacks-11)
+- [Expertise](#expertise-39)
 - [Hook Packs](#hook-packs-5)
 - [Jinja2 Templating](#jinja2-templating)
 
@@ -65,13 +65,13 @@ The result is that standing up a new AI-powered project goes from a day of boile
 When working with Claude Code on multi-agent projects, each team member (sub-agent) needs a carefully constructed prompt that combines:
 
 - **Who they are** — role identity, operating principles, definition of done
-- **What they know** — tech stack conventions, testing practices, security patterns
+- **What they know** — expertise conventions, testing practices, security patterns
 - **What they produce** — deliverables, output routing, quality bars
 - **How they collaborate** — task dependencies, handoff checklists, escalation rules
 
-Writing these prompts by hand for every project is repetitive and error-prone. Foundry solves this by treating personas and stacks as **independent, reusable building blocks** that get **compiled** into project-specific team member prompts at generation time.
+Writing these prompts by hand for every project is repetitive and error-prone. Foundry solves this by treating personas and expertise as **independent, reusable building blocks** that get **compiled** into project-specific team member prompts at generation time.
 
-> **TeamMember** = **Persona** (role behaviors) + **StackPack** (tech best practices) + **ProjectContext** (domain + constraints)
+> **TeamMember** = **Persona** (role behaviors) + **Expertise** (tech best practices) + **ProjectContext** (domain + constraints)
 
 The same Architect persona works equally well with a Python project, a React+Node project, or a .NET project — Foundry handles the merge.
 
@@ -83,7 +83,7 @@ Foundry's architecture is guided by five core principles:
 
 ### Composition Over Configuration
 
-Teams are assembled by combining independent building blocks — not by configuring a monolithic template. A persona knows nothing about tech stacks; a stack knows nothing about roles. Foundry merges them at compile time, producing combinations that neither component could anticipate on its own. This makes the library open for extension without modifying existing blocks.
+Teams are assembled by combining independent building blocks — not by configuring a monolithic template. A persona knows nothing about expertise packs; an expertise pack knows nothing about roles. Foundry merges them at compile time, producing combinations that neither component could anticipate on its own. This makes the library open for extension without modifying existing blocks.
 
 ### Self-Contained Output
 
@@ -132,8 +132,8 @@ Foundry is organized into four layers, each with a clear responsibility boundary
 ├─────────────────────────────────────────────────────────┤
 │                    Library Layer                          │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ │
-│  │ Personas │ │  Stacks  │ │  Hooks   │ │ Templates  │ │
-│  │ (13)     │ │  (11)    │ │  (5)     │ │ (72)       │ │
+│  │ Personas │ │Expertise │ │  Hooks   │ │ Templates  │ │
+│  │ (24)     │ │  (39)    │ │  (5)     │ │ (72)       │ │
 │  └──────────┘ └──────────┘ └──────────┘ └────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -154,7 +154,7 @@ Foundry's behavior is driven by three core data structures, all defined as Pydan
 
 ### CompositionSpec — The Input Contract
 
-The authoritative project specification, produced by the wizard or composition editor. Declares what the user wants: which personas, which stacks, what safety posture, and how to generate.
+The authoritative project specification, produced by the wizard or composition editor. Declares what the user wants: which personas, which expertise, what safety posture, and how to generate.
 
 ```yaml
 project:
@@ -163,7 +163,7 @@ project:
   output_root: "./generated-projects"
   output_folder: "my-project"
 
-stacks:
+expertise:
   - id: python
     order: 10
   - id: react
@@ -219,7 +219,7 @@ A machine-readable record of every generation run, stored in the generated proje
 
 ### LibraryIndex — The Capability Contract
 
-A computed index built at runtime by scanning the library directory. Enumerates all available personas (with their component files and templates), stacks (with their convention docs), and hook packs. The GUI and CLI use this index to populate selection lists and validate composition references.
+A computed index built at runtime by scanning the library directory. Enumerates all available personas (with their component files and templates), expertise (with their convention docs), and hook packs. The GUI and CLI use this index to populate selection lists and validate composition references.
 
 ---
 
@@ -239,9 +239,9 @@ CompositionSpec ──→ Validate ──→ Scaffold ──→ Compile ──�
 
 | Stage | Responsibility |
 |---|---|
-| **Validate** | Verifies composition completeness, checks that all referenced personas, stacks, and templates exist in the library, enforces strictness rules |
+| **Validate** | Verifies composition completeness, checks that all referenced personas, expertise, and templates exist in the library, enforces strictness rules |
 | **Scaffold** | Creates the directory structure: `CLAUDE.md`, `.claude/agents/`, `ai/context/`, `ai/outputs/`, `ai/tasks/` |
-| **Compile** | Merges each persona's identity, outputs contract, and invocation prompts with the selected stack conventions and project context into a single compiled prompt per team member, rendered via Jinja2 |
+| **Compile** | Merges each persona's identity, outputs contract, and invocation prompts with the selected expertise conventions and project context into a single compiled prompt per team member, rendered via Jinja2 |
 | **Copy Assets** | Copies skills, commands, and hook packs from the library into the generated project's `.claude/` directory |
 | **Seed** | Creates starter task lists with wave-based dependencies. Default wave: Developer → Tech-QA. BA and Architect included only when specific criteria are met. |
 
@@ -277,14 +277,14 @@ my-project/
     hooks/                           # Hook policy files
   ai/
     context/
-      project.md                     # Project overview, team, stacks, conventions
-      stack.md                       # Stack context summary
+      project.md                     # Project overview, team, expertise, conventions
+      expertise.md                   # Expertise context summary
       decisions.md                   # Architecture decision records
     team/
       composition.yml                # The authoritative project spec (preserved)
     generated/
       members/                       # Compiled team member prompts
-        team-lead.md                 # Persona + stack + context merged
+        team-lead.md                 # Persona + expertise + context merged
         developer.md
         ...
       manifest.json                  # Generation metadata and file manifest
@@ -303,9 +303,9 @@ my-project/
 
 | Component | Purpose |
 |---|---|
-| **CLAUDE.md** | The first file Claude Code reads. Contains project context, team roster, stack conventions, hooks posture, and directory layout. |
+| **CLAUDE.md** | The first file Claude Code reads. Contains project context, team roster, expertise conventions, hooks posture, and directory layout. |
 | **.claude/agents/** | Thin wrappers that point to the full compiled prompts in `ai/generated/members/`. Claude Code loads these as sub-agent definitions. |
-| **ai/generated/members/** | The compiled team member prompts. Each merges the persona's identity, outputs contract, invocation prompts, relevant stack conventions, and project context into a single comprehensive prompt. |
+| **ai/generated/members/** | The compiled team member prompts. Each merges the persona's identity, outputs contract, invocation prompts, relevant expertise conventions, and project context into a single comprehensive prompt. |
 | **ai/team/composition.yml** | The full composition spec, preserved in the project for traceability. |
 | **ai/outputs/** | Per-role output directories where each agent writes its deliverables. |
 | **ai/tasks/seeded-tasks.md** | Starter task list following a wave-based dependency model: Developer → Tech-QA (default), with BA and Architect included when criteria are met. Parallel lanes for Security, DevOps, Code Quality, and Docs. |
@@ -316,13 +316,13 @@ my-project/
 
 ## Library Overview
 
-Foundry ships with a built-in library (`ai-team-library/`) containing a comprehensive set of building blocks ready to use. The library is a read-only content store — Foundry never modifies it. It is designed to be extended by adding new personas, stacks, or hook packs without changing existing ones.
+Foundry ships with a built-in library (`ai-team-library/`) containing a comprehensive set of building blocks ready to use. The library is a read-only content store — Foundry never modifies it. It is designed to be extended by adding new personas, expertise packs, or hook packs without changing existing ones.
 
-The library contains **207 markdown files** across **13 personas**, **11 tech stacks**, **72 templates**, and **5 hook packs**.
+The library contains **207 markdown files** across **24 personas**, **39 expertise packs**, **72 templates**, and **5 hook packs**.
 
 ---
 
-## Personas (13)
+## Personas (24)
 
 Each persona includes four component files that together define the role's complete behavior:
 
@@ -350,26 +350,32 @@ Each persona includes four component files that together define the role's compl
 | **technical-writer** | READMEs, runbooks, onboarding, ADR summaries |
 | **ux-ui-designer** | User flows, wireframes, component specs, accessibility |
 | **integrator-merge-captain** | Integration plans, conflict resolution, release notes |
+| **change-management** | Organizational change, stakeholder engagement, adoption |
+| **customer-success** | Customer onboarding, retention, success metrics |
+| **data-analyst** | Data analysis, reporting, insights |
+| **database-administrator** | Database design, optimization, migrations |
+| **data-engineer** | Data pipelines, ETL, data infrastructure |
+| **financial-operations** | Financial planning, budgeting, cost management |
+| **legal-counsel** | Legal review, contracts, compliance |
+| **mobile-developer** | Mobile app development, platform-specific patterns |
+| **platform-sre-engineer** | Platform reliability, SRE practices, incident response |
+| **product-owner** | Product vision, roadmap, backlog prioritization |
+| **sales-engineer** | Technical sales, demos, proof of concepts |
 
 ---
 
-## Tech Stacks (11)
+## Expertise (39)
 
-Each stack contains convention docs covering best practices, testing strategies, security patterns, and tooling. Stacks are technology-specific — they know nothing about roles. At compile time, the relevant stack docs are injected into each persona's compiled prompt.
+Each expertise pack contains convention docs covering best practices, testing strategies, security patterns, and tooling. Expertise packs are topic-specific — they know nothing about roles. At compile time, the relevant expertise docs are injected into each persona's compiled prompt. Expertise items are organized into six categories:
 
-| Stack | Focus |
+| Category | Examples |
 |---|---|
-| **python** | Python conventions, packaging, testing, security |
-| **python-qt-pyside6** | Qt/PySide6 desktop app patterns |
-| **react** | React conventions, state management, accessibility |
-| **typescript** | TypeScript conventions, type safety, tooling |
-| **node** | Node.js backend, API design, testing |
-| **java** | Java conventions, architecture, testing |
-| **dotnet** | .NET architecture, conventions, testing |
-| **sql-dba** | Database design, query optimization, migrations |
-| **devops** | CI/CD pipelines, infrastructure, monitoring |
-| **security** | Security practices, threat modeling, hardening |
-| **clean-code** | Cross-cutting code quality principles |
+| **Languages** | python, java, typescript, go, rust, swift, kotlin, dotnet, react, react-native |
+| **Architecture & Patterns** | api-design, microservices, event-driven-messaging, clean-code, frontend-build-tooling |
+| **Infrastructure & Platforms** | aws-cloud-platform, azure-cloud-platform, gcp-cloud-platform, kubernetes, terraform, devops |
+| **Data & ML** | sql-dba, data-engineering, business-intelligence, mlops |
+| **Compliance & Governance** | gdpr-data-privacy, hipaa-compliance, pci-dss-compliance, sox-compliance, iso-9000, accessibility-compliance, security |
+| **Business Practices** | product-strategy, customer-enablement, sales-engineering, finops, change-management |
 
 ---
 
@@ -394,7 +400,7 @@ Library markdown files support Jinja2 template variables that get rendered at co
 | Variable | Description |
 |---|---|
 | `{{ project_name }}` | The project name from the composition spec |
-| `{{ stacks \| join(", ") }}` | Comma-separated list of selected stacks |
+| `{{ expertise \| join(", ") }}` | Comma-separated list of selected expertise |
 | `{{ strictness }}` | The persona's strictness setting |
 | `{{ slug }}` | The project slug |
 
@@ -633,7 +639,7 @@ Browse, create, and edit the building blocks that define how agentic teams work.
 | Screen | Purpose |
 |---|---|
 | **Personas** | Create and edit persona definitions (persona.md, outputs.md, prompts.md, templates/) |
-| **Stacks** | Manage tech-stack convention docs (conventions, testing, security, etc.) |
+| **Expertise** | Manage expertise convention docs (conventions, testing, security, etc.) |
 | **Templates** | Cross-cut searchable view of all templates across all personas |
 | **Hooks** | Define hook policy packs with posture presets (baseline / hardened / regulated) |
 | **Workflows** | Manage pipeline and task taxonomy documentation |
@@ -645,7 +651,7 @@ Collect decisions, generate a project, and export it.
 
 | Screen | Purpose |
 |---|---|
-| **New Project Wizard** | 6-step guided flow: Project, Stack, Persona, Architecture, Hooks, Review & Generate |
+| **New Project Wizard** | 6-step guided flow: Project, Expertise, Persona, Architecture, Hooks, Review & Generate |
 | **Composition Editor** | Power-edit `composition.yml` with synchronized Form and YAML views |
 | **Generate** | Run the pipeline, watch stage progress, inspect the generation manifest |
 | **Export** | Copy/move the project to its final destination with pre-export validation |
@@ -746,7 +752,7 @@ Foundry provides a comprehensive set of Claude Code skills and commands that aut
 | `/bean-status` | Planning | Display backlog summary grouped by status with optional task detail |
 | `/build-traceability` | Quality | Map acceptance criteria to test cases; identify coverage gaps |
 | `/close-loop` | Quality | Verify task outputs against acceptance criteria; record telemetry |
-| `/compile-team` | Generation | Resolve persona/stack references; produce unified CLAUDE.md |
+| `/compile-team` | Generation | Resolve persona/expertise references; produce unified CLAUDE.md |
 | `/deploy` | Deployment | Promote `test` to `main` (or current branch to `test`) via PR with tests and release notes |
 | `/docs-update` | Documentation | Audit project docs against codebase and fix stale values |
 | `/handoff` | Workflow | Package artifacts and context for the next persona in the wave |
@@ -1232,7 +1238,7 @@ Produces a status report summarizing progress, blockers, velocity, and next step
 
 #### `/compile-team` — Assemble Team Configuration
 
-Resolves persona/stack references from a composition spec and merges them into a unified CLAUDE.md.
+Resolves persona/expertise references from a composition spec and merges them into a unified CLAUDE.md.
 
 ```
 /compile-team [composition-file] [--strict] [--dry-run] [--no-manifest]
@@ -1565,7 +1571,7 @@ foundry/
         spinner_widget.py              # Branded spinner graphic
   ai-team-library/                     # Bundled building-block library (read-only)
     personas/                          # 13 role definitions
-    stacks/                            # 11 tech-stack packs
+    expertise/                         # 39 expertise packs
     workflows/                         # Pipeline + task taxonomy docs
     claude/
       commands/                        # Claude Code commands

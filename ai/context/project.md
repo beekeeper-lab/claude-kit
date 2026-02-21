@@ -2,7 +2,7 @@
 
 ## Overview
 
-Foundry generates Claude Code project folders from reusable building blocks. It combines a PySide6 desktop wizard with a headless CLI, both backed by a shared service layer. The library (`ai-team-library/`) contains personas, stack guides, templates, workflows, skills, commands, and hook packs.
+Foundry generates Claude Code project folders from reusable building blocks. It combines a PySide6 desktop wizard with a headless CLI, both backed by a shared service layer. The library (`ai-team-library/`) contains personas, expertise guides, templates, workflows, skills, commands, and hook packs.
 
 **Version:** 1.0.0 | **License:** MIT | **Python:** >=3.11
 
@@ -29,7 +29,7 @@ foundry_app/
     generator.py       # Pipeline orchestrator — generate_project()
     validator.py       # Pre-generation validation (strictness levels)
     scaffold.py        # Creates directory tree + context files
-    compiler.py        # Compiles per-member prompts from persona + stack files
+    compiler.py        # Compiles per-member prompts from persona + expertise files
     asset_copier.py    # Copies skills, commands, hooks into .claude/
     seeder.py          # Generates seed tasks (detailed or kickoff mode)
     safety_writer.py   # Writes settings.local.json from SafetyConfig
@@ -49,7 +49,7 @@ foundry_app/
     screens/
       builder_screen.py    # Wizard host screen
       builder/
-        wizard_pages/      # 6-step wizard: Project → Stack → Persona → Architecture → Hooks → Review
+        wizard_pages/      # 6-step wizard: Project → Expertise → Persona → Architecture → Hooks → Review
       generation_progress.py # Pipeline runner with progress display
       export_screen.py     # Export with pre-flight checklist
       history_screen.py    # Recent projects + logs

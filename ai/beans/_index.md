@@ -214,7 +214,7 @@
 | BEAN-190 | Mobile Developer Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-191 | Platform/SRE Engineer Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-192 | Database Administrator Persona | Infra | Medium | In Progress | team-lead |
-| BEAN-193 | Legal Counsel / Lawyer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-193 | Legal Counsel / Lawyer Persona | Infra | Medium | In Progress | team-lead |
 | BEAN-194 | Contract Review & Analysis Skill | Infra | Medium | Approved | (unassigned) |
 | BEAN-195 | Intellectual Property & Licensing Skill | Infra | Medium | Approved | (unassigned) |
 | BEAN-196 | Terms of Service & Privacy Policy Drafting Skill | Infra | Medium | Approved | (unassigned) |

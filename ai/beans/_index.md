@@ -198,3 +198,39 @@
 | BEAN-174 | Data Engineering Tech Stack | App | Medium | Done | team-lead |
 | BEAN-175 | GDPR & Data Privacy Compliance Stack | App | Medium | Done | team-lead |
 | BEAN-176 | Go Language Tech Stack | App | Medium | Done | team-lead |
+| BEAN-177 | Kotlin Language Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-178 | Swift Language Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-179 | C#/.NET Expanded Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-180 | Kubernetes Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-181 | Terraform/IaC Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-182 | GCP Cloud Platform Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-183 | Azure Cloud Platform Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-184 | API Design Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-185 | Event-Driven / Messaging Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-186 | Microservices Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-187 | Frontend Build & Tooling Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-188 | PCI-DSS Compliance Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-189 | Data Engineer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-190 | Mobile Developer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-191 | Platform/SRE Engineer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-192 | Database Administrator Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-193 | Legal Counsel / Lawyer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-194 | Contract Review & Analysis Skill | Infra | Medium | Approved | (unassigned) |
+| BEAN-195 | Intellectual Property & Licensing Skill | Infra | Medium | Approved | (unassigned) |
+| BEAN-196 | Terms of Service & Privacy Policy Drafting Skill | Infra | Medium | Approved | (unassigned) |
+| BEAN-197 | Regulatory Compliance Assessment Skill | Infra | Medium | Approved | (unassigned) |
+| BEAN-198 | Risk Assessment & Liability Analysis Skill | Infra | Medium | Approved | (unassigned) |
+| BEAN-199 | Product Owner / Product Manager Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-200 | Data Analyst / BI Analyst Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-201 | Customer Success / Solutions Engineer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-202 | Financial Operations / Budget Officer Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-203 | Change Management / Adoption Lead Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-204 | Sales Engineer / Pre-Sales Persona | Infra | Medium | Approved | (unassigned) |
+| BEAN-205 | Product Strategy & Roadmapping Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-206 | Business Intelligence & Analytics Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-207 | FinOps / Cloud Cost Management Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-208 | Customer Enablement Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-209 | Change Management Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-210 | Sales Engineering Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-211 | ML/AI & LLM Operations Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-212 | Accessibility Compliance (ADA/WCAG) Stack | Infra | Medium | Approved | (unassigned) |

@@ -310,3 +310,75 @@ class TestHookPackCategories:
         pack = idx.hook_pack_by_id("bare")
         assert pack is not None
         assert pack.category == ""
+
+
+# ---------------------------------------------------------------------------
+# Persona category tests
+# ---------------------------------------------------------------------------
+
+
+class TestPersonaCategories:
+    """Test that persona category parsing works correctly."""
+
+    def test_real_personas_default_empty_category(self):
+        """Real personas without ## Category sections get empty string."""
+        idx = build_library_index(LIBRARY_ROOT)
+        for persona in idx.personas:
+            assert persona.category == "", (
+                f"{persona.id} has unexpected category={persona.category!r}"
+            )
+
+    def test_category_from_persona_md(self, tmp_path: Path):
+        """Test category parsing from a persona.md with Category header."""
+        persona_dir = tmp_path / "personas" / "my-persona"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text(
+            "# Persona: My Persona\n\n## Category\nEngineering\n\n## Role\nTest\n"
+        )
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("my-persona")
+        assert p is not None
+        assert p.category == "Engineering"
+
+    def test_no_category_defaults_empty(self, tmp_path: Path):
+        """Personas without a Category header get empty string."""
+        persona_dir = tmp_path / "personas" / "bare"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text("# Persona: Bare\n\n## Role\nTest\n")
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("bare")
+        assert p is not None
+        assert p.category == ""
+
+    def test_no_persona_md_defaults_empty(self, tmp_path: Path):
+        """Personas without a persona.md file get empty category."""
+        persona_dir = tmp_path / "personas" / "minimal"
+        persona_dir.mkdir(parents=True)
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("minimal")
+        assert p is not None
+        assert p.category == ""
+
+    def test_category_case_insensitive_heading(self, tmp_path: Path):
+        """## category (lowercase) should also be parsed."""
+        persona_dir = tmp_path / "personas" / "lower"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text(
+            "# Persona\n\n## category\nOperations\n"
+        )
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("lower")
+        assert p is not None
+        assert p.category == "Operations"
+
+    def test_category_with_whitespace(self, tmp_path: Path):
+        """Category value should be stripped of leading/trailing whitespace."""
+        persona_dir = tmp_path / "personas" / "spaced"
+        persona_dir.mkdir(parents=True)
+        (persona_dir / "persona.md").write_text(
+            "# Persona\n\n## Category\n  Leadership  \n"
+        )
+        idx = build_library_index(tmp_path)
+        p = idx.persona_by_id("spaced")
+        assert p is not None
+        assert p.category == "Leadership"

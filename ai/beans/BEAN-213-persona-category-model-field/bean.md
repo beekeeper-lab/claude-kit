@@ -3,12 +3,12 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-213 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | High |
 | **Created** | 2026-02-21 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
+| **Started** | 2026-02-20 20:49 |
+| **Completed** | 2026-02-20 20:52 |
+| **Duration** | 3m |
 | **Owner** | (unassigned) |
 | **Category** | App |
 
@@ -35,18 +35,21 @@ Add a `category` string field to the `PersonaInfo` Pydantic model and update the
 
 ## Acceptance Criteria
 
-- [ ] `PersonaInfo` model has a `category` field of type `str` with default `""`
-- [ ] `_scan_personas()` reads `## Category` section from persona.md and populates the field
-- [ ] Personas without a `## Category` section get `category = ""`
-- [ ] Existing graceful degradation tests still pass (missing dirs, empty dirs, etc.)
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] `PersonaInfo` model has a `category` field of type `str` with default `""`
+- [x] `_scan_personas()` reads `## Category` section from persona.md and populates the field
+- [x] Personas without a `## Category` section get `category = ""`
+- [x] Existing graceful degradation tests still pass (missing dirs, empty dirs, etc.)
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Add `category` field to PersonaInfo model | Developer | — | Done |
+| 2 | Add `_parse_persona_category()` and update `_scan_personas()` | Developer | 1 | Done |
+| 3 | Add/update tests for category parsing | Developer | 2 | Done |
+| 4 | Run full test suite and lint check | Tech-QA | 3 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.
@@ -73,12 +76,15 @@ This bean is a prerequisite for BEAN-214 (category metadata in persona files) an
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Add `category` field to PersonaInfo model | Developer | — | — | — | — |
+| 2 | Add `_parse_persona_category()` and update `_scan_personas()` | Developer | — | — | — | — |
+| 3 | Add/update tests for category parsing | Developer | — | — | — | — |
+| 4 | Run full test suite and lint check | Tech-QA | — | — | — | — |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 4 |
+| **Total Duration** | 3m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |
 | **Total Cost** | — |

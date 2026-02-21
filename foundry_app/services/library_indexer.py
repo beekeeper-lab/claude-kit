@@ -15,6 +15,24 @@ from foundry_app.core.models import (
 logger = logging.getLogger(__name__)
 
 
+def _parse_persona_category(path: Path) -> str:
+    """Extract the category from a persona markdown file.
+
+    Looks for a ``## Category`` heading followed by the category value on the next line.
+    Returns empty string if not found.
+    """
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return ""
+    for i, line in enumerate(lines):
+        if line.strip().lower() == "## category" and i + 1 < len(lines):
+            cat = lines[i + 1].strip()
+            if cat:
+                return cat
+    return ""
+
+
 def _scan_personas(personas_dir: Path) -> list[PersonaInfo]:
     """Scan the personas/ directory and return PersonaInfo for each subdirectory."""
     if not personas_dir.is_dir():
@@ -33,14 +51,16 @@ def _scan_personas(personas_dir: Path) -> list[PersonaInfo]:
                 f.name for f in templates_dir.iterdir() if f.is_file()
             )
 
+        persona_md = entry / "persona.md"
         personas.append(
             PersonaInfo(
                 id=entry.name,
                 path=str(entry),
-                has_persona_md=(entry / "persona.md").is_file(),
+                has_persona_md=persona_md.is_file(),
                 has_outputs_md=(entry / "outputs.md").is_file(),
                 has_prompts_md=(entry / "prompts.md").is_file(),
                 templates=templates,
+                category=_parse_persona_category(persona_md),
             )
         )
 

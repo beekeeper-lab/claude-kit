@@ -535,6 +535,7 @@ class PersonaInfo(BaseModel):
     has_outputs_md: bool = False
     has_prompts_md: bool = False
     templates: list[str] = Field(default_factory=list, description="Template filenames")
+    category: str = Field(default="", description="Persona category for grouped display")
 
 
 class StackInfo(BaseModel):

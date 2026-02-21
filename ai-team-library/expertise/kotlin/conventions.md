@@ -1,5 +1,8 @@
 # Kotlin Stack Conventions
 
+## Category
+Languages
+
 Non-negotiable defaults for Kotlin applications on this team. Covers both
 server-side (Spring Boot / Ktor) and Android development. Targets Kotlin 2.0+
 with coroutines as the primary concurrency model. Deviations require an ADR

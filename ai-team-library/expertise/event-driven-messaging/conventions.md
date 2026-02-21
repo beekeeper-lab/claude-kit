@@ -1,5 +1,8 @@
 # Event-Driven / Messaging Stack Conventions
 
+## Category
+Architecture & Patterns
+
 Non-negotiable defaults for event-driven architectures and asynchronous messaging.
 Covers broker selection, message design, serialization, consumer patterns, and
 topic/queue governance. Deviations require an ADR with justification.

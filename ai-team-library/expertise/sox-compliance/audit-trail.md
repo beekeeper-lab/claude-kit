@@ -1,5 +1,8 @@
 # Audit Trail
 
+## Category
+Compliance & Governance
+
 Standards for implementing and maintaining audit trails that support SOX
 compliance. Audit trails provide the evidentiary basis for demonstrating
 that controls are designed and operating effectively.

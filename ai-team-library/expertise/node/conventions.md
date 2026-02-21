@@ -1,5 +1,8 @@
 # Node.js Stack Conventions
 
+## Category
+Languages
+
 These conventions are non-negotiable defaults for Node.js server-side
 applications on this team. Deviations require an ADR with justification.
 "I prefer it differently" is not justification.

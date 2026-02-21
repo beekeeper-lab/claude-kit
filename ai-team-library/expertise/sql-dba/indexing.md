@@ -1,5 +1,8 @@
 # SQL Indexing
 
+## Category
+Data & ML
+
 Indexing strategies for relational databases. PostgreSQL is the primary reference;
 SQL Server equivalents noted where they differ.
 

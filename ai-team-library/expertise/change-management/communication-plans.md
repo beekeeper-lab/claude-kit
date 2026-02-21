@@ -1,5 +1,8 @@
 # Communication Plans
 
+## Category
+Business Practices
+
 Frameworks and templates for planning, executing, and measuring change
 communication. Effective communication builds awareness, reduces uncertainty,
 and sustains engagement throughout the change lifecycle.

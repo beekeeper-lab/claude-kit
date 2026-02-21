@@ -1,5 +1,8 @@
 # Microservices Stack Conventions
 
+## Category
+Architecture & Patterns
+
 Non-negotiable defaults for microservices architecture on this team. Covers
 service decomposition, API design, data ownership, and deployment patterns.
 Deviations require an ADR with justification. "I prefer it differently" is not

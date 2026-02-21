@@ -1,5 +1,8 @@
 # Frontend Bundlers
 
+## Category
+Architecture & Patterns
+
 Standards for JavaScript/TypeScript bundling, tree-shaking, and code splitting.
 Vite is the default bundler for new projects. Deviations require an ADR.
 

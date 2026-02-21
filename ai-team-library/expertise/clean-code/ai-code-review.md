@@ -1,5 +1,8 @@
 # AI-Assisted Code Review
 
+## Category
+Architecture & Patterns
+
 Guidance on using AI tools to detect and eliminate common code review
 anti-patterns. AI reviewers automate repetitive checks, freeing human reviewers
 to focus on architecture, logic, and design decisions. Based on industry

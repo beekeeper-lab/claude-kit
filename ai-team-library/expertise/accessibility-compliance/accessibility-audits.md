@@ -1,5 +1,8 @@
 # Accessibility Audits and Remediation
 
+## Category
+Compliance & Governance
+
 Standards for conducting accessibility audits, documenting findings, prioritizing remediation,
 and maintaining ongoing compliance. A structured audit process ensures consistent evaluation
 and measurable progress toward conformance goals.

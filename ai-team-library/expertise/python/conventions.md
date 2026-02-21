@@ -1,5 +1,8 @@
 # Python Stack Conventions
 
+## Category
+Languages
+
 These conventions are non-negotiable defaults for Python projects in this team.
 Deviations require an ADR with justification. "I prefer it differently" is not
 justification.

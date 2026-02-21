@@ -1,5 +1,8 @@
 # Hardening
 
+## Category
+Compliance & Governance
+
 Checklists and standards for hardening applications, APIs, and infrastructure.
 Hardening reduces the attack surface by disabling what is not needed and
 strengthening what remains.

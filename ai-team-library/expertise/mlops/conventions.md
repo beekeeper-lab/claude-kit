@@ -1,5 +1,8 @@
 # MLOps Stack Conventions
 
+## Category
+Data & ML
+
 These conventions apply to all ML/AI and LLM operations projects on this team.
 They are opinionated by design — consistency across training pipelines, model
 registries, and inference services matters more than individual preference.

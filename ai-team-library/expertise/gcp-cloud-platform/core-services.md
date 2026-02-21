@@ -1,5 +1,8 @@
 # GCP Core Services
 
+## Category
+Infrastructure & Platforms
+
 Standards for deploying and operating workloads on Google Cloud Platform.
 This guide covers identity, networking, compute, storage, messaging, and analytics.
 All GCP usage must follow the Google Cloud Architecture Framework. Deviations require an ADR.

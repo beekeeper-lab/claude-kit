@@ -1,5 +1,8 @@
 # Java Stack Conventions
 
+## Category
+Languages
+
 Non-negotiable defaults for Java server-side applications on this team.
 Targets modern Java (17+ / 21+ where virtual threads are available) with
 Spring Boot as the default framework. Deviations require an ADR with

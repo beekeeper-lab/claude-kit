@@ -1,5 +1,8 @@
 # Customer Architecture Reviews
 
+## Category
+Business Practices
+
 Structured methods for conducting architecture reviews with prospects and
 customers. An architecture review is both a sales tool and a technical
 service — it demonstrates your team's expertise while mapping how your solution

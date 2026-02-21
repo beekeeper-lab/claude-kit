@@ -1,5 +1,8 @@
 # Competitive Analysis
 
+## Category
+Business Practices
+
 Structured methods for understanding the competitive landscape, identifying
 differentiation opportunities, and informing product positioning. Competitive
 analysis is an ongoing practice, not a one-time exercise — markets shift, and

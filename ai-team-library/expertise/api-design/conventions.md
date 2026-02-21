@@ -1,5 +1,8 @@
 # API Design Stack Conventions
 
+## Category
+Architecture & Patterns
+
 Non-negotiable defaults for API design on this team. Covers REST and GraphQL
 conventions, versioning strategies, and general design principles. Deviations
 require an ADR with justification. "I prefer it differently" is not

@@ -1,5 +1,8 @@
 # React Native Stack Conventions
 
+## Category
+Languages
+
 These conventions apply to all React Native mobile projects on this team. They are
 opinionated by design -- consistency across the codebase matters more than individual
 preference. Deviations require an ADR with justification.

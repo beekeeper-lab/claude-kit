@@ -1,5 +1,8 @@
 # Breach Notification
 
+## Category
+Compliance & Governance
+
 Standards for complying with the HIPAA Breach Notification Rule (45 CFR
 §§ 164.400–164.414), as amended by the HITECH Act and the Omnibus Rule.
 The rule requires covered entities and business associates to provide

@@ -1,5 +1,8 @@
 # Swift Stack Conventions
 
+## Category
+Languages
+
 Non-negotiable defaults for Swift projects on this team. Targets Swift 6.0+ with
 iOS/macOS native development using SwiftUI, structured concurrency, and ARC memory
 management. Deviations require an ADR with justification. "I prefer it differently"

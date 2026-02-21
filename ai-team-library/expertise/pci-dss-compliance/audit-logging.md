@@ -1,5 +1,8 @@
 # Audit Logging and Monitoring
 
+## Category
+Compliance & Governance
+
 Standards for logging, monitoring, and testing security of systems and networks
 within the cardholder data environment (CDE). PCI DSS v4.0 Requirements 10 and
 11 establish the controls for detecting anomalies, investigating incidents, and

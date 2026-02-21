@@ -1,5 +1,8 @@
 # Azure Core Services
 
+## Category
+Infrastructure & Platforms
+
 Standards for deploying and operating workloads on Microsoft Azure.
 This guide covers identity, networking, compute, storage, messaging, and databases.
 All Azure usage must follow the Azure Well-Architected Framework. Deviations require an ADR.

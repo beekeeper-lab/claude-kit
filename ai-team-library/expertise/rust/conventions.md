@@ -1,5 +1,8 @@
 # Rust Stack Conventions
 
+## Category
+Languages
+
 Non-negotiable defaults for Rust projects on this team. Rust's ownership model,
 zero-cost abstractions, and memory safety guarantees demand specific conventions
 that differ significantly from garbage-collected languages. Deviations require

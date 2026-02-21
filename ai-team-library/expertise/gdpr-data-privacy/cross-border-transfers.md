@@ -1,5 +1,8 @@
 # Cross-Border Data Transfers & Breach Notification
 
+## Category
+Compliance & Governance
+
 Standards for transferring personal data outside the EEA and for handling
 personal data breaches under Articles 44–49 (transfers) and Articles 33–34
 (breach notification) of the GDPR.

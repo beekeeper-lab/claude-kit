@@ -3,13 +3,13 @@
 | Field | Value |
 |-------|-------|
 | **Bean ID** | BEAN-208 |
-| **Status** | Approved |
+| **Status** | Done |
 | **Priority** | Medium |
 | **Created** | 2026-02-20 |
-| **Started** | — |
-| **Completed** | — |
-| **Duration** | — |
-| **Owner** | (unassigned) |
+| **Started** | 2026-02-20 19:55 |
+| **Completed** | 2026-02-20 20:02 |
+| **Duration** | 7m |
+| **Owner** | Team Lead |
 | **Category** | Infra |
 
 ## Problem Statement
@@ -31,16 +31,23 @@ Add the stack to `ai-team-library/stacks/` with comprehensive, production-ready 
 
 ## Acceptance Criteria
 
-- [ ] Stack file created in `ai-team-library/stacks/` following standardized template
-- [ ] Includes: Defaults table with alternatives, Do/Don't lists, Common Pitfalls, Checklist, code examples
-- [ ] All tests pass (`uv run pytest`)
-- [ ] Lint clean (`uv run ruff check foundry_app/`)
+- [x] Stack file created in `ai-team-library/stacks/` following standardized template
+- [x] Includes: Defaults table with alternatives, Do/Don't lists, Common Pitfalls, Checklist, code examples
+- [x] All tests pass (`uv run pytest`)
+- [x] Lint clean (`uv run ruff check foundry_app/`)
 
 ## Tasks
 
 | # | Task | Owner | Depends On | Status |
 |---|------|-------|------------|--------|
-| 1 | | | | Pending |
+| 1 | Create onboarding-playbooks.md | Developer | — | Done |
+| 2 | Create knowledge-base.md | Developer | — | Done |
+| 3 | Create feedback-collection.md | Developer | — | Done |
+| 4 | Create nps-csat-measurement.md | Developer | — | Done |
+| 5 | Create escalation-workflows.md | Developer | — | Done |
+| 6 | Create customer-health-scoring.md | Developer | — | Done |
+| 7 | Create success-plan-templates.md | Developer | — | Done |
+| 8 | Verify tests pass and lint clean | Tech-QA | 1-7 | Done |
 
 > Tasks are populated by the Team Lead during decomposition.
 > Task files go in `tasks/` subdirectory.
@@ -72,12 +79,19 @@ Sourced from Trello card #83.
 
 | # | Task | Owner | Duration | Tokens In | Tokens Out | Cost |
 |---|------|-------|----------|-----------|------------|------|
-| 1 |      |       |          |           |            |      |
+| 1 | Create onboarding-playbooks.md | Developer | — | — | — | — |
+| 2 | Create knowledge-base.md | Developer | — | — | — | — |
+| 3 | Create feedback-collection.md | Developer | — | — | — | — |
+| 4 | Create nps-csat-measurement.md | Developer | — | — | — | — |
+| 5 | Create escalation-workflows.md | Developer | — | — | — | — |
+| 6 | Create customer-health-scoring.md | Developer | — | — | — | — |
+| 7 | Create success-plan-templates.md | Developer | — | — | — | — |
+| 8 | Verify tests pass and lint clean | Tech-QA | — | — | — | — |
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | — |
-| **Total Duration** | — |
+| **Total Tasks** | 8 |
+| **Total Duration** | 7m |
 | **Total Tokens In** | — |
 | **Total Tokens Out** | — |
 | **Total Cost** | — |

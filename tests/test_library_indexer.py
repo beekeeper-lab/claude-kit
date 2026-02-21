@@ -410,3 +410,65 @@ class TestPersonaCategories:
         p = idx.persona_by_id("spaced")
         assert p is not None
         assert p.category == "Leadership"
+
+
+class TestExpertiseCategories:
+    """Test that expertise category parsing works correctly."""
+
+    def test_category_from_conventions_md(self, tmp_path: Path):
+        """Test category parsing from conventions.md with Category header."""
+        expertise_dir = tmp_path / "expertise" / "python"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Python\n\n## Category\nLanguages\n\n## Defaults\nSome content\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("python")
+        assert e is not None
+        assert e.category == "Languages"
+
+    def test_no_category_defaults_empty(self, tmp_path: Path):
+        """Expertise without a Category header gets empty string."""
+        expertise_dir = tmp_path / "expertise" / "bare"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Bare\n\n## Defaults\nSome content\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("bare")
+        assert e is not None
+        assert e.category == ""
+
+    def test_no_conventions_md_defaults_empty(self, tmp_path: Path):
+        """Expertise without conventions.md gets empty category."""
+        expertise_dir = tmp_path / "expertise" / "minimal"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "other.md").write_text("# Other\n")
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("minimal")
+        assert e is not None
+        assert e.category == ""
+
+    def test_category_case_insensitive_heading(self, tmp_path: Path):
+        """## category (lowercase) should also be parsed."""
+        expertise_dir = tmp_path / "expertise" / "lower"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Lower\n\n## category\nInfrastructure\n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("lower")
+        assert e is not None
+        assert e.category == "Infrastructure"
+
+    def test_category_with_whitespace(self, tmp_path: Path):
+        """Category value should be stripped of leading/trailing whitespace."""
+        expertise_dir = tmp_path / "expertise" / "spaced"
+        expertise_dir.mkdir(parents=True)
+        (expertise_dir / "conventions.md").write_text(
+            "# Spaced\n\n## Category\n  Data & ML  \n"
+        )
+        idx = build_library_index(tmp_path)
+        e = idx.expertise_by_id("spaced")
+        assert e is not None
+        assert e.category == "Data & ML"

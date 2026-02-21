@@ -544,6 +544,7 @@ class ExpertiseInfo(BaseModel):
     id: str
     path: str = Field(..., description="Path to expertise directory")
     files: list[str] = Field(default_factory=list, description="Convention doc filenames")
+    category: str = Field(default="", description="Expertise category for grouped display")
 
 
 class HookPackInfo(BaseModel):

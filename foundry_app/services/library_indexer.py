@@ -67,6 +67,27 @@ def _scan_personas(personas_dir: Path) -> list[PersonaInfo]:
     return personas
 
 
+def _parse_expertise_category(expertise_dir: Path) -> str:
+    """Extract the category from an expertise directory's conventions.md.
+
+    Looks for a ``## Category`` heading followed by the category value on the next line.
+    Returns empty string if not found.
+    """
+    conventions = expertise_dir / "conventions.md"
+    if not conventions.is_file():
+        return ""
+    try:
+        lines = conventions.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return ""
+    for i, line in enumerate(lines):
+        if line.strip().lower() == "## category" and i + 1 < len(lines):
+            cat = lines[i + 1].strip()
+            if cat:
+                return cat
+    return ""
+
+
 def _scan_expertise(expertise_dir: Path) -> list[ExpertiseInfo]:
     """Scan the expertise/ directory and return ExpertiseInfo for each subdirectory."""
     if not expertise_dir.is_dir():
@@ -84,6 +105,7 @@ def _scan_expertise(expertise_dir: Path) -> list[ExpertiseInfo]:
                 id=entry.name,
                 path=str(entry),
                 files=files,
+                category=_parse_expertise_category(entry),
             )
         )
 

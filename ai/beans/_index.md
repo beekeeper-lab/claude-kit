@@ -205,9 +205,9 @@
 | BEAN-181 | Terraform/IaC Tech Stack | Infra | Medium | Done | team-lead |
 | BEAN-182 | GCP Cloud Platform Stack | Infra | Medium | In Progress | team-lead |
 | BEAN-183 | Azure Cloud Platform Stack | Infra | Medium | In Progress | team-lead |
-| BEAN-184 | API Design Tech Stack | Infra | Medium | Approved | (unassigned) |
-| BEAN-185 | Event-Driven / Messaging Tech Stack | Infra | Medium | Approved | (unassigned) |
-| BEAN-186 | Microservices Tech Stack | Infra | Medium | Approved | (unassigned) |
+| BEAN-184 | API Design Tech Stack | Infra | Medium | In Progress | team-lead |
+| BEAN-185 | Event-Driven / Messaging Tech Stack | Infra | Medium | In Progress | team-lead |
+| BEAN-186 | Microservices Tech Stack | Infra | Medium | In Progress | team-lead |
 | BEAN-187 | Frontend Build & Tooling Tech Stack | Infra | Medium | Approved | (unassigned) |
 | BEAN-188 | PCI-DSS Compliance Stack | Infra | Medium | Approved | (unassigned) |
 | BEAN-189 | Data Engineer Persona | Infra | Medium | Approved | (unassigned) |

@@ -23,12 +23,20 @@ Show the sync status of all tracked branches in a clear table with actionable ne
    - `git rev-list --left-right --count origin/test...test` → same (skip if no local `test`)
 6. **Compare server main ↔ server test (pipeline gap):**
    - `git rev-list --left-right --count origin/test...origin/main` → parse as `<test_ahead>\t<main_ahead>`
-7. **Compare .claude/ subtree ↔ claude-kit remote:**
-   - `git fetch claude-kit main 2>/dev/null` — fetch latest claude-kit refs
-   - `git rev-parse HEAD:.claude` — tree hash of `.claude/` in foundry
-   - `git rev-parse FETCH_HEAD^{tree}` — root tree hash of claude-kit main
-   - If the two tree hashes match: in sync. If they differ: drift.
-   - If the fetch fails (no `claude-kit` remote): skip this section and note "claude-kit remote not configured"
+7. **Compare .claude/kit submodule ↔ upstream:**
+   - First, detect the setup: `git config --file .gitmodules submodule..claude/kit.url 2>/dev/null`
+   - **If submodule-based** (the above command succeeds):
+     - Check if initialized: test if `.claude/kit` is non-empty (`ls -A .claude/kit 2>/dev/null`)
+     - Get pinned commit (what the parent repo expects): `git ls-tree -d HEAD .claude/kit | awk '{print $3}'` → first 7 chars
+     - Fetch upstream in the submodule: `git -C .claude/kit fetch origin 2>/dev/null`
+     - Get upstream HEAD: `git -C .claude/kit rev-parse origin/main 2>/dev/null` → first 7 chars
+     - Compare pinned vs upstream, and count the gap: `git -C .claude/kit rev-list --left-right --count origin/main...HEAD`
+   - **If subtree-based** (no submodule entry, but a `claude-kit` remote exists):
+     - `git fetch claude-kit main 2>/dev/null` — fetch latest claude-kit refs
+     - `git rev-parse HEAD:.claude` — tree hash of `.claude/` in foundry
+     - `git rev-parse FETCH_HEAD^{tree}` — root tree hash of claude-kit main
+     - If the two tree hashes match: in sync. If they differ: drift.
+   - **If neither**: skip this section and note "claude-kit not configured"
 
 ## Output Format
 
@@ -90,7 +98,34 @@ Shows the gap between `main` and `test` on the server and what to do about it.
 
 ### Claude Kit Sync table
 
-Shows whether the local `.claude/` directory matches what's on the `claude-kit` remote. This is the most valuable part of the project — always keep it in sync.
+Shows whether the `.claude/kit` submodule (or `.claude/` subtree) is in sync with its upstream. The setup is auto-detected.
+
+#### Submodule-based repos
+
+The section title is `### Claude Kit Submodule (.claude/kit)`. Display the first 7 characters of each commit hash.
+
+```
+### Claude Kit Submodule (.claude/kit)
+
+| Pinned   | Upstream | Status    | Action Needed |
+|----------|----------|-----------|---------------|
+| `abc123` | `abc123` | ✓ In sync | —             |
+```
+
+**Status and Action rules (evaluated in priority order):**
+
+| Condition | Status | Action |
+|-----------|--------|--------|
+| `.claude/kit` is empty or missing | ⚠ Not initialized | `git submodule update --init --recursive` |
+| Pinned == upstream HEAD | ✓ In sync | — |
+| Pinned is behind upstream (behind > 0) | ⚠ N behind upstream | `./scripts/claude-sync.sh` |
+| Pinned is ahead of upstream (ahead > 0) | ⚠ N ahead of upstream | Push submodule: `cd .claude/kit && git push origin main` |
+| Pinned diverged from upstream (both > 0) | ⚠ Diverged | Investigate — submodule has diverged from upstream |
+| Fetch failed | ⚠ Cannot reach upstream | Check network/SSH config |
+
+#### Subtree-based repos (fallback)
+
+The section title is `### Claude Kit Subtree (.claude/ ↔ claude-kit)`. Display the first 7 characters of each tree hash.
 
 ```
 ### Claude Kit Subtree (.claude/ ↔ claude-kit)
@@ -100,15 +135,21 @@ Shows whether the local `.claude/` directory matches what's on the `claude-kit` 
 | `e2487…`   | `e2487…`    | ✓ In sync | —             |
 ```
 
-Display the first 7 characters of each tree hash. Rules:
-
 | Condition | Status | Action |
 |-----------|--------|--------|
 | Trees match | ✓ In sync | — |
 | Trees differ | ⚠ Out of sync | `git subtree push --prefix=.claude claude-kit main` |
-| Fetch failed | — No remote | Configure: `git remote add claude-kit git@github.com:beekeeper-lab/claude-kit.git` |
+| No `claude-kit` remote | — No remote | Configure: `git remote add claude-kit git@github.com:beekeeper-lab/claude-kit.git` |
 
-**Note:** Subtree drift means local `.claude/` changes haven't been pushed to `claude-kit`, or upstream changes haven't been pulled. The action depends on which side changed — if you made local changes, push. If upstream changed, pull with `git subtree pull --prefix=.claude claude-kit main --squash`.
+#### Neither configured
+
+If no submodule entry and no `claude-kit` remote exist, show:
+
+```
+### Claude Kit
+
+Not configured — see CLAUDE.md for setup instructions.
+```
 
 ### Summary line
 
@@ -116,7 +157,7 @@ After the tables, add a one-line **Next step** that tells the user the single mo
 
 1. Uncommitted changes → `**Next step:** Commit and push to sync <branch> with server`
 2. Local branch ahead/behind → `**Next step:** <push or pull command>`
-3. Claude Kit out of sync → `**Next step:** <subtree push or pull command>`
+3. Claude Kit out of sync → `**Next step:** <sync or push command>`
 4. Pipeline drift → `**Next step:** <sync or deploy command>`
 5. Everything clean → `All clear — nothing to do.`
 
@@ -140,16 +181,16 @@ After the tables, add a one-line **Next step** that tells the user the single mo
 |------|------|-----|-----------|---------------|
 | main | test | —   | ✓ In sync | —             |
 
-### Claude Kit Subtree (.claude/ ↔ claude-kit)
+### Claude Kit Submodule (.claude/kit)
 
-| Local Tree | Remote Tree | Status    | Action Needed |
-|------------|-------------|-----------|---------------|
-| `e2487…`   | `e2487…`    | ✓ In sync | —             |
+| Pinned   | Upstream | Status    | Action Needed |
+|----------|----------|-----------|---------------|
+| `9841bc7` | `9841bc7` | ✓ In sync | —             |
 
 All clear — nothing to do.
 ```
 
-## Complete Example (claude-kit drift)
+## Complete Example (claude-kit behind upstream)
 
 ```
 ## Git Status
@@ -169,13 +210,13 @@ All clear — nothing to do.
 |------|------|-----|-----------|---------------|
 | main | test | —   | ✓ In sync | —             |
 
-### Claude Kit Subtree (.claude/ ↔ claude-kit)
+### Claude Kit Submodule (.claude/kit)
 
-| Local Tree | Remote Tree | Status          | Action Needed                                          |
-|------------|-------------|-----------------|--------------------------------------------------------|
-| `a1b2c…`   | `d3e4f…`    | ⚠ Out of sync  | `git subtree push --prefix=.claude claude-kit main`    |
+| Pinned   | Upstream | Status                  | Action Needed            |
+|----------|----------|-------------------------|--------------------------|
+| `9841bc7` | `566eff2` | ⚠ 3 behind upstream    | `./scripts/claude-sync.sh` |
 
-**Next step:** Push .claude/ to claude-kit — `git subtree push --prefix=.claude claude-kit main`
+**Next step:** Update submodule — `./scripts/claude-sync.sh`
 ```
 
 ## Complete Example (uncommitted changes)
@@ -200,11 +241,11 @@ All clear — nothing to do.
 |------|------|-----|-----------|---------------|
 | main | test | —   | ✓ In sync | —             |
 
-### Claude Kit Subtree (.claude/ ↔ claude-kit)
+### Claude Kit Submodule (.claude/kit)
 
-| Local Tree | Remote Tree | Status         | Action Needed                  |
-|------------|-------------|----------------|--------------------------------|
-| `e2487…`   | `e2487…`    | ⚠ Uncommitted  | Commit first, then check again |
+| Pinned   | Upstream | Status    | Action Needed |
+|----------|----------|-----------|---------------|
+| `9841bc7` | `9841bc7` | ✓ In sync | —             |
 
 **Next step:** Commit and push to sync main with server
 ```
@@ -229,11 +270,11 @@ All clear — nothing to do.
 |------|------|-----------------|--------------|------------------------------------------------------------------------------------|
 | main | test | 2 commits ahead | ⚠ main ahead | Sync test: `git checkout test && git merge --ff-only main && git push origin test`  |
 
-### Claude Kit Subtree (.claude/ ↔ claude-kit)
+### Claude Kit Submodule (.claude/kit)
 
-| Local Tree | Remote Tree | Status    | Action Needed |
-|------------|-------------|-----------|---------------|
-| `e2487…`   | `e2487…`    | ✓ In sync | —             |
+| Pinned   | Upstream | Status    | Action Needed |
+|----------|----------|-----------|---------------|
+| `9841bc7` | `9841bc7` | ✓ In sync | —             |
 
 **Next step:** Sync test to main — `git checkout test && git merge --ff-only main && git push origin test`
 ```

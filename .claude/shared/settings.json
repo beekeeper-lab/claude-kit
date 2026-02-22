@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/telemetry-stamp.py"
+            "command": "python3 .claude/shared/hooks/telemetry-stamp.py"
           }
         ]
       }

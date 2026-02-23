@@ -1,10 +1,10 @@
 # /merge-bean Command
 
-Claude Code slash command that merges a bean's feature branch into a target branch (default: `main`) using a safe merge sequence.
+Claude Code slash command that merges a bean's feature branch into a target branch (default: `test`) using a safe merge sequence.
 
 ## Purpose
 
-After a bean has been verified and committed on its feature branch, the Merge Captain safely merges the work into `main`. This is the final stage of the bean execution wave — it integrates completed work so other beans and the team can build on it.
+After a bean has been verified and committed on its feature branch, the Merge Captain safely merges the work into `test`. This is the final stage of the bean execution wave — it integrates completed work so other beans and the team can build on it.
 
 ## Usage
 
@@ -13,7 +13,7 @@ After a bean has been verified and committed on its feature branch, the Merge Ca
 ```
 
 - `bean-id` -- The bean ID to merge (e.g., `BEAN-011` or just `11`).
-- `--target <branch>` -- Target branch to merge into (default: `main`).
+- `--target <branch>` -- Target branch to merge into (default: `test`).
 
 ## Inputs
 
@@ -22,7 +22,7 @@ After a bean has been verified and committed on its feature branch, the Merge Ca
 | Bean ID | Command argument | Yes |
 | Bean directory | `ai/beans/BEAN-NNN-<slug>/` | Yes (must exist with status `Done`) |
 | Feature branch | `bean/BEAN-NNN-<slug>` | Yes (must exist in git) |
-| Target branch | `--target` flag or default `main` | Yes |
+| Target branch | `--target` flag or default `test` | Yes |
 
 ## Process
 
@@ -67,24 +67,24 @@ After a bean has been verified and committed on its feature branch, the Merge Ca
 ```
 /merge-bean 11
 ```
-Merges `bean/BEAN-011-merge-captain-auto-merge` into `main`.
+Merges `bean/BEAN-011-merge-captain-auto-merge` into `test`.
 
-**Merge to the test branch (used by /long-run):**
+**Merge to the main branch:**
 ```
-/merge-bean 11 --target test
+/merge-bean 11 --target main
 ```
-Merges the feature branch into `test` instead of `main`.
+Merges the feature branch into `main` instead of `test`.
 
 **Merge to a custom branch:**
 ```
 /merge-bean 11 --target dev
 ```
-Merges the feature branch into `dev` instead of `main`.
+Merges the feature branch into `dev` instead of `test`.
 
 **Typical output:**
 ```
 ✓ Merged BEAN-011 (Merge Captain Auto-Merge)
-  Branch: bean/BEAN-011-merge-captain-auto-merge → main
+  Branch: bean/BEAN-011-merge-captain-auto-merge → test
   Commit: f4e5d6c
   Cleaned: branch deleted (local + remote)
 ```

@@ -173,7 +173,7 @@ Pick BEAN-NNN (slug) using /pick-bean NNN, then execute the full bean lifecycle 
 You are running in an ISOLATED GIT WORKTREE. Your feature branch (bean/BEAN-NNN-slug) is already checked out.
 - Do NOT create or checkout branches — you are already on the correct feature branch.
 - Do NOT run /internal:merge-bean — the orchestrator handles merging after you finish.
-- Do NOT checkout main — this will fail in a worktree if that branch is checked out elsewhere.
+- Do NOT checkout test or main — this will fail in a worktree if either branch is checked out elsewhere.
 
 STATUS FILE PROTOCOL — You MUST update /tmp/foundry-worker-BEAN-NNN.status at every transition:
 - Write the file using: cat > /tmp/foundry-worker-BEAN-NNN.status << 'SF_EOF'
@@ -251,7 +251,7 @@ Bean lifecycle:
 4. Use /internal:handoff between persona transitions
 5. Run tests (uv run pytest) and lint (uv run ruff check foundry_app/) before closing
 6. Final commit and push all changes on the feature branch
-7. Use /internal:merge-bean to merge into main
+7. Use /internal:merge-bean to merge into test
 8. Use /status-report to produce final summary
 
 RELIABILITY RULES:
@@ -275,14 +275,14 @@ The orchestrator runs a persistent loop that monitors workers, merges completed 
 1. **Read all status files** — Read all `/tmp/foundry-worker-*.status` files. For each file, parse the key-value pairs.
 2. **Process completed workers** — For each status file showing `status: done` (or whose tmux window has closed) that has not yet been merged:
    a. **Remove the worktree**: `git worktree remove --force /tmp/foundry-worktree-BEAN-NNN`
-   b. **Sync before merging**: `git fetch origin && git checkout test && git pull origin test && git checkout main` — worktrees push to the remote, so the orchestrator's local `test` may be behind.
-   c. **Merge the bean**: Run `/internal:merge-bean NNN --target test` from the main repo to merge the feature branch into `test`.
-   d. **Update `_index.md`**: Set the bean's status to `Done` on `main`. Commit and push. (The orchestrator is the sole writer of `_index.md`.)
+   b. **Sync before merging**: `git fetch origin && git pull origin test` (the orchestrator is already on `test`).
+   c. **Merge the bean**: Run `/internal:merge-bean NNN` from the main repo (default target is `test`).
+   d. **Update `_index.md`**: Set the bean's status to `Done` on `test`. Commit and push. (The orchestrator is the sole writer of `_index.md`.)
    e. **Move Trello card** if applicable (same logic as long-run step 17b — best-effort, do not block on failure).
    f. **Mark this worker as merged** in the orchestrator's internal tracking so it is not re-processed on the next iteration.
 3. **Assign replacement workers** — After processing all completed workers, **re-read `_index.md` fresh** (do NOT use a pre-computed queue — the backlog may have changed due to merges or newly-approved beans). For each merged worker slot that has no replacement:
    a. Find the next bean with status `Approved` that has no unmet inter-bean dependencies.
-   b. If found: update `_index.md` to mark it `In Progress` with owner `team-lead`. Commit and push.
+   b. If found: update `_index.md` on `test` to mark it `In Progress` with owner `team-lead`. Commit and push.
    c. Create a new worktree, write an initial status file, create a launcher script, and spawn a new tmux window (or pane in `--wide` mode) using the same pattern as Step 2/2b.
    d. If no approved unblocked bean exists, do not spawn — the slot stays empty.
 4. **Compute progress** — For each active worker, compute `tasks_done / tasks_total * 100` (show 0% if `tasks_total` is 0).
@@ -324,7 +324,7 @@ while true; do
       BEAN_NUM=$(echo "$BEAN_LABEL" | sed 's/BEAN-0*//')
       WORKTREE="/tmp/foundry-worktree-${BEAN_LABEL}"
       git worktree remove --force "$WORKTREE" 2>/dev/null
-      git fetch origin && git checkout test && git pull origin test && git checkout main
+      git fetch origin && git pull origin test
       # Merge is handled by the orchestrator's Claude session via /internal:merge-bean
       echo "MERGE_NEEDED: $BEAN_NUM"
       MERGED="$MERGED $BEAN_LABEL"
@@ -379,7 +379,7 @@ When a worker has `status: blocked`:
 - Below the table, print a prominent alert: `⚠  N worker(s) need attention`
 - Include the window switch shortcut so the user can jump there immediately
 
-**Why merges happen from the main repo:** Worktrees cannot checkout `main` if it's checked out elsewhere. The orchestrator merges sequentially from the main repo, ensuring no branch conflicts.
+**Why merges happen from the main repo:** Worktrees cannot checkout `test` if it's checked out elsewhere (the orchestrator has it checked out). The orchestrator merges sequentially from the main repo, ensuring no branch conflicts.
 
 **User interrupts:** If the user presses Ctrl-C, exit cleanly. Status files remain in `/tmp/` for inspection. Worktrees can be cleaned up manually with `git worktree remove --force` and `git worktree prune`.
 

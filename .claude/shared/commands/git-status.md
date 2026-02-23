@@ -21,7 +21,7 @@ Show the sync status of all tracked branches in a clear table with actionable ne
 5. **Compare local ↔ server for each branch:**
    - `git rev-list --left-right --count origin/main...main` → parse as `<behind>\t<ahead>`
    - `git rev-list --left-right --count origin/test...test` → same (skip if no local `test`)
-6. **Compare server main ↔ server test (pipeline gap):**
+6. **Compare server test ↔ server main (deploy pipeline):**
    - `git rev-list --left-right --count origin/test...origin/main` → parse as `<test_ahead>\t<main_ahead>`
 7. **Compare .claude/kit submodule ↔ its remote:**
    - Check if `.claude/kit` is a submodule: `test -f .claude/kit/.git || test -d .claude/kit/.git`
@@ -72,24 +72,24 @@ Shows whether each local branch matches its remote. Use ✓ for in-sync, ⚠ for
 
 ### Deploy Pipeline table
 
-Shows the gap between `main` and `test` on the server and what to do about it.
+Shows the promotion gap between `test` (staging) and `main` (production) on the server and what to do about it. Code flows: feature → test → main.
 
 ```
-### Deploy Pipeline (server main ↔ server test)
+### Deploy Pipeline (server test → server main)
 
-| From | To   | Gap             | Status        | Action Needed                                                                      |
-|------|------|-----------------|---------------|------------------------------------------------------------------------------------|
-| main | test | 2 commits ahead | ⚠ main ahead  | Sync test: `git checkout test && git merge --ff-only main && git push origin test`  |
+| From | To   | Gap             | Status        | Action Needed |
+|------|------|-----------------|---------------|---------------|
+| test | main | 2 commits ahead | ⚠ test ahead  | `/deploy`     |
 ```
 
 **Status and Action rules for Deploy Pipeline:**
 
 | Condition | Status | Action |
 |-----------|--------|--------|
-| main_ahead=0, test_ahead=0 | ✓ In sync | — |
-| main_ahead>0, test_ahead=0 | ⚠ main ahead | Sync test: `git checkout test && git merge --ff-only main && git push origin test` |
-| main_ahead=0, test_ahead>0 | ⚠ test ahead | Promote: `/deploy` to tag and release main from test |
-| main_ahead>0, test_ahead>0 | ⚠ Diverged | Investigate — branches have diverged |
+| test_ahead=0, main_ahead=0 | ✓ In sync | — |
+| test_ahead>0, main_ahead=0 | ⚠ test ahead | Promote to production: `/deploy` |
+| test_ahead=0, main_ahead>0 | ⚠ main ahead | Investigate — main should only advance via `/deploy` |
+| test_ahead>0, main_ahead>0 | ⚠ Diverged | Investigate — branches have diverged |
 
 ### Claude Kit Sync table
 
@@ -125,7 +125,7 @@ After the tables, add a one-line **Next step** that tells the user the single mo
 1. Uncommitted changes → `**Next step:** Commit and push to sync <branch> with server`
 2. Local branch ahead/behind → `**Next step:** <push or pull command>`
 3. Claude Kit out of sync → `**Next step:** <submodule push, pull, or pointer update command>`
-4. Pipeline drift → `**Next step:** <sync or deploy command>`
+4. Pipeline drift → `**Next step:** Promote test to main — run /deploy` (or investigate if main is ahead)
 5. Everything clean → `All clear — nothing to do.`
 
 ## Complete Example (all in sync)
@@ -142,11 +142,11 @@ After the tables, add a one-line **Next step** that tells the user the single mo
 | main   | `abc123` | `abc123` | ✓ In sync | —             |
 | test   | `abc123` | `abc123` | ✓ In sync | —             |
 
-### Deploy Pipeline (server main ↔ server test)
+### Deploy Pipeline (server test → server main)
 
 | From | To   | Gap | Status    | Action Needed |
 |------|------|-----|-----------|---------------|
-| main | test | —   | ✓ In sync | —             |
+| test | main | —   | ✓ In sync | —             |
 
 ### Claude Kit Submodule (.claude/kit)
 
@@ -171,11 +171,11 @@ All clear — nothing to do.
 | main   | `abc123` | `abc123` | ✓ In sync | —             |
 | test   | `abc123` | `abc123` | ✓ In sync | —             |
 
-### Deploy Pipeline (server main ↔ server test)
+### Deploy Pipeline (server test → server main)
 
 | From | To   | Gap | Status    | Action Needed |
 |------|------|-----|-----------|---------------|
-| main | test | —   | ✓ In sync | —             |
+| test | main | —   | ✓ In sync | —             |
 
 ### Claude Kit Submodule (.claude/kit)
 
@@ -202,11 +202,11 @@ All clear — nothing to do.
 | main   | `abc123` | `abc123` | ⚠ Uncommitted changes  | Commit and push |
 | test   | `abc123` | `abc123` | ✓ In sync              | —               |
 
-### Deploy Pipeline (server main ↔ server test)
+### Deploy Pipeline (server test → server main)
 
 | From | To   | Gap | Status    | Action Needed |
 |------|------|-----|-----------|---------------|
-| main | test | —   | ✓ In sync | —             |
+| test | main | —   | ✓ In sync | —             |
 
 ### Claude Kit Submodule (.claude/kit)
 
@@ -231,11 +231,11 @@ All clear — nothing to do.
 | main   | `abc123` | `abc123` | ✓ In sync | —             |
 | test   | `def456` | `def456` | ✓ In sync | —             |
 
-### Deploy Pipeline (server main ↔ server test)
+### Deploy Pipeline (server test → server main)
 
-| From | To   | Gap             | Status       | Action Needed                                                                      |
-|------|------|-----------------|--------------|------------------------------------------------------------------------------------|
-| main | test | 2 commits ahead | ⚠ main ahead | Sync test: `git checkout test && git merge --ff-only main && git push origin test`  |
+| From | To   | Gap             | Status       | Action Needed |
+|------|------|-----------------|--------------|---------------|
+| test | main | 2 commits ahead | ⚠ test ahead | `/deploy`     |
 
 ### Claude Kit Submodule (.claude/kit)
 
@@ -243,5 +243,5 @@ All clear — nothing to do.
 |----------|----------|----------|-----------|---------------|
 | `566eff2` | `566eff2` | `566eff2` | ✓ In sync | —             |
 
-**Next step:** Sync test to main — `git checkout test && git merge --ff-only main && git push origin test`
+**Next step:** Promote test to main — run `/deploy`
 ```

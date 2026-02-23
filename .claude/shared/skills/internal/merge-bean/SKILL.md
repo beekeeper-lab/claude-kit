@@ -2,7 +2,7 @@
 
 ## Description
 
-Safely merges a bean's feature branch into a target branch (default: `main`). Handles pulling latest changes, detecting merge conflicts, and reporting results. This is the Merge Captain's primary operation — the final stage of the bean execution wave.
+Safely merges a bean's feature branch into a target branch (default: `test`). Handles pulling latest changes, detecting merge conflicts, and reporting results. This is the Merge Captain's primary operation — the final stage of the bean execution wave.
 
 ## Trigger
 
@@ -15,7 +15,7 @@ Safely merges a bean's feature branch into a target branch (default: `main`). Ha
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | bean_id | String | Yes | Bean identifier (e.g., `BEAN-011` or `11`) |
-| target_branch | String | No | Branch to merge into (default: `main`) |
+| target_branch | String | No | Branch to merge into (default: `test`) |
 | bean_dir | Directory | Yes | `ai/beans/BEAN-NNN-<slug>/` — resolved from bean_id |
 
 ## Process

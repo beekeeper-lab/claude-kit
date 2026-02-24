@@ -192,10 +192,65 @@ Tech-QA is mandatory for all beans — code, documentation, process, every categ
 | Condition | Action |
 |-----------|--------|
 | Any bean, any category | Tech-QA is **mandatory** |
-| Requirements are ambiguous; 3+ interpretations possible | Add BA |
-| New subsystem, cross-cutting API change, or ADR needed | Add Architect |
-| New external dependency or framework introduced | Add Architect |
+| BA Mode is Full (see `bean-workflow.md`) | BA runs on **every** bean |
+| BA Mode is Partial and any BA Engagement Rule triggered (see below) | Add BA |
+| Any Architect Engagement Rule triggered (see below) | Add Architect |
 | Trivial fix (< 5 min, single-line, obvious) | Team Lead direct + Tech-QA verify |
+
+### BA Engagement Rules
+
+**Mode:** Controlled by the `BA Mode` flag in `bean-workflow.md`. Default: `Partial`.
+
+**Full mode** — BA runs on every bean as the first step in the wave. BA maintains a requirements register (`ai/outputs/ba/requirements-register.md`), analyzes each bean's requirements impact, and hands off relevant requirements to the next persona. See `bean-workflow.md` "Full-Mode BA Workflow" for the detailed steps.
+
+**Partial mode** (default) — Add the BA when **ANY** of the following conditions apply. Evaluate each rule as a yes/no check against the bean's scope.
+
+| # | Rule | Description |
+|---|------|-------------|
+| 1 | **Requirements ambiguity** | The bean has 3+ valid interpretations of what should be built or how it should behave. |
+| 2 | **User-facing behavior change** | The bean changes how end users interact with the system — new screens, modified workflows, changed defaults, new user-facing concepts. |
+| 3 | **Multi-stakeholder trade-offs** | The bean involves competing concerns (performance vs usability, security vs convenience) that need documented trade-off analysis. |
+| 4 | **Documentation or specification task** | The bean's primary deliverable is documentation, specifications, or process definitions. BA is better suited than Developer for requirements-heavy writing. |
+| 5 | **Scope uncertainty** | The bean's In Scope / Out of Scope boundaries are unclear, contentious, or likely to expand during implementation. |
+| 6 | **Cross-bean requirements impact** | The bean may affect requirements or assumptions of 2+ other beans (new constraints, changed interfaces, deprecated behaviors). |
+| 7 | **New user-facing concept** | The bean introduces a term, workflow, or mental model that users need to understand. |
+
+**Do NOT engage the BA for (partial mode):**
+- Bug fixes with obvious expected behavior
+- Infrastructure/CI/CD changes with no user-facing impact
+- Code refactoring that preserves existing behavior
+- Test-only beans
+- Single-file configuration changes
+- Beans where Problem Statement, Goal, and Acceptance Criteria are already precise and unambiguous
+
+**When in doubt:** If the bean affects what users see or how they work and you are unsure whether the requirements are clear enough, engage the BA. A lightweight requirements review costs less than rework from misunderstood requirements.
+
+### Architect Engagement Rules
+
+Add the Architect when **ANY** of the following conditions apply. Evaluate each rule as a yes/no check against the bean's scope.
+
+| # | Rule | Description |
+|---|------|-------------|
+| 1 | **New subsystem or module** | The bean creates a new module, service, package, or top-level directory not in the existing codebase. |
+| 2 | **Refactoring driven by new functionality** | The bean adds features that require restructuring existing code — moving functions between modules, changing class hierarchies, splitting or merging files, or reorganizing package structure. |
+| 3 | **Cross-cutting change** | The bean modifies public APIs, data models, or interfaces used by 3+ modules or consumers. |
+| 4 | **New external dependency** | The bean introduces a new third-party library, framework, or external service not already in the project. |
+| 5 | **Data format or schema change** | The bean changes, creates, or translates between data formats, configuration schemas, or serialization structures (YAML/JSON/TOML schemas, database models, API contracts). |
+| 6 | **Architectural decision with alternatives** | The bean involves a design choice where 2+ reasonable approaches exist and the decision has long-term consequences. The architect creates an ADR documenting the alternatives and rationale. |
+| 7 | **Project foundation or scaffold** | The bean sets up initial project structure, establishes foundational patterns, or defines conventions that subsequent work will follow. Early-stage setup work belongs to the architect. |
+| 8 | **Pipeline or workflow restructuring** | The bean changes the execution order, stage boundaries, or data flow of a processing pipeline (e.g., the generation pipeline, CI/CD pipeline, or team workflow stages). |
+| 9 | **Cross-boundary integration** | The bean connects two or more previously independent subsystems or introduces a new integration point between system boundaries (UI ↔ service, service ↔ external API, etc.). |
+
+**Do NOT engage the Architect for:**
+- Single-file bug fixes or hotfixes
+- UI text, copy, or styling changes (unless restructuring the styling system itself)
+- Adding a button, field, or form element to an existing screen
+- Configuration value changes (not schema changes)
+- Test-only beans that don't change production code structure
+- Documentation-only beans (process docs, README updates)
+- Routine CRUD additions following an established pattern
+
+**When in doubt:** If the bean touches 3+ files across different directories and you hesitate about whether it's "just implementation," engage the architect. The cost of a lightweight architecture review is low; the cost of unrecorded structural decisions is high.
 
 When BA or Architect are not included, add an inline skip tag in the bean's Tasks section:
 ```

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# post-merge — Re-sync Claude Code assets after git pull / merge.
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SYNC_SCRIPT="${REPO_ROOT}/.claude/shared/scripts/claude-sync.sh"
+
+if [ -x "$SYNC_SCRIPT" ]; then
+  "$SYNC_SCRIPT"
+elif [ -x "${REPO_ROOT}/scripts/claude-sync.sh" ]; then
+  "${REPO_ROOT}/scripts/claude-sync.sh"
+fi

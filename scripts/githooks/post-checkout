@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# post-checkout — Re-sync Claude Code assets after branch switch.
+# Args: $1=prev_HEAD  $2=new_HEAD  $3=branch_flag (1=branch switch, 0=file checkout)
+
+BRANCH_FLAG="${3:-0}"
+[ "$BRANCH_FLAG" = "1" ] || exit 0
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SHARED_DIR="${REPO_ROOT}/.claude/shared"
+
+# Initialize submodule if empty (fresh clone or first checkout)
+if [ -f "${REPO_ROOT}/.gitmodules" ] && [ ! -f "${SHARED_DIR}/settings.json" ]; then
+  git -C "$REPO_ROOT" submodule update --init --recursive
+fi
+
+SYNC_SCRIPT="${SHARED_DIR}/scripts/claude-sync.sh"
+
+if [ -x "$SYNC_SCRIPT" ]; then
+  "$SYNC_SCRIPT"
+elif [ -x "${REPO_ROOT}/scripts/claude-sync.sh" ]; then
+  "${REPO_ROOT}/scripts/claude-sync.sh"
+fi

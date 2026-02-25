@@ -20,6 +20,7 @@ LOCAL_DIR="${CLAUDE_DIR}/local"
 DRY_RUN=false
 CHECK_MODE=false
 CONFLICTS=0
+OVERRIDES=0
 LINKS_CREATED=0
 
 for arg in "$@"; do
@@ -99,29 +100,29 @@ sync_files() {
 
   # Kit files first (base layer)
   local kit_dir="${KIT_SHARED}/${asset_type}"
+  local local_asset_dir="${LOCAL_DIR}/${asset_type}"
   if [ -d "$kit_dir" ]; then
     for f in "$kit_dir"/*; do
       [ -f "$f" ] || continue
       local name
       name="$(basename "$f")"
+      # Skip shared files that have a local override (local wins)
+      if [ -f "${local_asset_dir}/${name}" ]; then
+        continue
+      fi
       make_link "$f" "${dest_dir}/${name}"
     done
   fi
 
   # Local files second (override layer)
-  local local_asset_dir="${LOCAL_DIR}/${asset_type}"
   if [ -d "$local_asset_dir" ]; then
     for f in "$local_asset_dir"/*; do
       [ -f "$f" ] || continue
       local name
       name="$(basename "$f")"
-      if [ -L "${dest_dir}/${name}" ]; then
-        local existing_target
-        existing_target="$(readlink -f "${dest_dir}/${name}")"
-        if [[ "$existing_target" == *"/shared/"* ]]; then
-          warn "Local '${name}' overrides kit version in ${asset_type}/"
-          CONFLICTS=$((CONFLICTS + 1))
-        fi
+      if [ -f "${kit_dir}/${name}" ]; then
+        warn "Local '${name}' overrides kit version in ${asset_type}/"
+        OVERRIDES=$((OVERRIDES + 1))
       fi
       make_link "$f" "${dest_dir}/${name}"
     done
@@ -139,25 +140,29 @@ sync_internal_files() {
 
   # Kit internal files
   local kit_internal="${KIT_SHARED}/${asset_type}/internal"
+  local local_internal="${LOCAL_DIR}/${asset_type}/internal"
   if [ -d "$kit_internal" ]; then
     for f in "$kit_internal"/*; do
       [ -f "$f" ] || continue
       local name
       name="$(basename "$f")"
+      # Skip shared files that have a local override
+      if [ -f "${local_internal}/${name}" ]; then
+        continue
+      fi
       make_link "$f" "${dest_dir}/${name}"
     done
   fi
 
   # Local internal files (if any exist)
-  local local_internal="${LOCAL_DIR}/${asset_type}/internal"
   if [ -d "$local_internal" ]; then
     for f in "$local_internal"/*; do
       [ -f "$f" ] || continue
       local name
       name="$(basename "$f")"
-      if [ -L "${dest_dir}/${name}" ]; then
+      if [ -f "${kit_internal}/${name}" ]; then
         warn "Local internal '${name}' overrides kit version in ${asset_type}/internal/"
-        CONFLICTS=$((CONFLICTS + 1))
+        OVERRIDES=$((OVERRIDES + 1))
       fi
       make_link "$f" "${dest_dir}/${name}"
     done
@@ -173,31 +178,31 @@ sync_skills() {
 
   # Kit public skills
   local kit_skills="${KIT_SHARED}/skills"
+  local local_skills="${LOCAL_DIR}/skills"
   if [ -d "$kit_skills" ]; then
     for d in "$kit_skills"/*/; do
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
       [ "$name" = "internal" ] && continue
+      # Skip shared skills that have a local override
+      if [ -d "${local_skills}/${name}" ]; then
+        continue
+      fi
       make_link "$d" "${dest_dir}/${name}"
     done
   fi
 
   # Local public skills
-  local local_skills="${LOCAL_DIR}/skills"
   if [ -d "$local_skills" ]; then
     for d in "$local_skills"/*/; do
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
       [ "$name" = "internal" ] && continue
-      if [ -L "${dest_dir}/${name}" ]; then
-        local existing_target
-        existing_target="$(readlink -f "${dest_dir}/${name}")"
-        if [[ "$existing_target" == *"/shared/"* ]]; then
-          warn "Local skill '${name}' overrides kit version"
-          CONFLICTS=$((CONFLICTS + 1))
-        fi
+      if [ -d "${kit_skills}/${name}" ]; then
+        warn "Local skill '${name}' overrides kit version"
+        OVERRIDES=$((OVERRIDES + 1))
       fi
       make_link "$d" "${dest_dir}/${name}"
     done
@@ -211,25 +216,29 @@ sync_skills() {
 
   # Kit internal skills
   local kit_internal="${KIT_SHARED}/skills/internal"
+  local local_internal="${LOCAL_DIR}/skills/internal"
   if [ -d "$kit_internal" ]; then
     for d in "$kit_internal"/*/; do
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
+      # Skip shared skills that have a local override
+      if [ -d "${local_internal}/${name}" ]; then
+        continue
+      fi
       make_link "$d" "${dest_internal}/${name}"
     done
   fi
 
   # Local internal skills (if any exist)
-  local local_internal="${LOCAL_DIR}/skills/internal"
   if [ -d "$local_internal" ]; then
     for d in "$local_internal"/*/; do
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
-      if [ -L "${dest_internal}/${name}" ]; then
+      if [ -d "${kit_internal}/${name}" ]; then
         warn "Local internal skill '${name}' overrides kit version"
-        CONFLICTS=$((CONFLICTS + 1))
+        OVERRIDES=$((OVERRIDES + 1))
       fi
       make_link "$d" "${dest_internal}/${name}"
     done
@@ -404,11 +413,14 @@ if $CHECK_MODE; then
     exit 1
   else
     log "CHECK PASSED: All symlinks and settings are up to date."
+    if [ "$OVERRIDES" -gt 0 ]; then
+      log "(${OVERRIDES} local override(s) detected — this is expected.)"
+    fi
     exit 0
   fi
 fi
 
-log "Done. ${LINKS_CREATED} symlinks created, ${CONFLICTS} override(s)."
-if [ "$CONFLICTS" -gt 0 ]; then
-  warn "Override conflicts are expected when local extends kit. Review warnings above."
+log "Done. ${LINKS_CREATED} symlinks created, ${OVERRIDES} override(s)."
+if [ "$OVERRIDES" -gt 0 ]; then
+  log "Overrides are expected when local extends kit. Review warnings above."
 fi

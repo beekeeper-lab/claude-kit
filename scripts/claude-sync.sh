@@ -34,14 +34,13 @@ done
 log()  { echo "[sync] $*"; }
 warn() { echo "[sync] WARNING: $*" >&2; }
 
-# --- Ensure submodule is initialized ---
-if [ ! -f "${KIT_SHARED}/settings.json" ]; then
-  log "Initializing git submodule..."
-  if $DRY_RUN; then
+# --- Ensure submodule is initialized and at the recorded commit ---
+if $DRY_RUN; then
+  if [ ! -f "${KIT_SHARED}/settings.json" ]; then
     log "(dry-run) Would run: git submodule update --init --recursive"
-  else
-    git -C "$REPO_ROOT" submodule update --init --recursive
   fi
+else
+  git -C "$REPO_ROOT" submodule update --init --recursive
 fi
 
 # --- Helper: create a relative symlink ---

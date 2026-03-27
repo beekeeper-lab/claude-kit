@@ -786,13 +786,18 @@ def update_telemetry_row_tokens(
                 changed = True
             # Compute and write Cost column (index 6) if tokens were written
             if changed:
-                try:
-                    tin = int(tokens_in.replace(",", ""))
-                    tout = int(tokens_out.replace(",", ""))
-                    cost = compute_cost(tin, tout, cache_creation, cache_read)
-                    cost_str = format_cost(cost)
-                except (ValueError, TypeError):
-                    cost_str = SENTINEL
+                if tokens_in == "N/A" or tokens_out == "N/A":
+                    cost_str = "N/A"
+                else:
+                    try:
+                        tin = int(tokens_in.replace(",", ""))
+                        tout = int(tokens_out.replace(",", ""))
+                        cost = compute_cost(
+                            tin, tout, cache_creation, cache_read
+                        )
+                        cost_str = format_cost(cost)
+                    except (ValueError, TypeError):
+                        cost_str = SENTINEL
                 # Ensure row has 7 columns (add Cost if missing)
                 while len(cells) < 7:
                     cells.append(SENTINEL)
@@ -1187,16 +1192,24 @@ def handle_task_file(path: Path, now: str) -> list[str]:
                     save_checkpoint(cur_in, cur_out, cur_cc, cur_cr)
                     actions.append("Checkpoint saved")
                 else:
+                    # No JSONL found — write N/A markers instead of leaving
+                    # sentinel dashes, so it's clear capture was attempted
+                    tok_in_str = "N/A"
+                    tok_out_str = "N/A"
                     print(
                         f"telemetry-stamp: no session JSONL found for token"
                         f" delta (cwd={Path.cwd()})",
                         file=sys.stderr,
                     )
+                    actions.append("No JSONL — wrote N/A")
             except Exception as e:
+                tok_in_str = "N/A"
+                tok_out_str = "N/A"
                 print(
                     f"telemetry-stamp: token delta failed: {e}",
                     file=sys.stderr,
                 )
+                actions.append("Token delta error — wrote N/A")
 
             if bean_path.exists():
                 try:

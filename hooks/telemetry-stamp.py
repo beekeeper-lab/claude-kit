@@ -603,6 +603,49 @@ def find_session_jsonl() -> Path | None:
         return None
 
 
+# Plausibility thresholds for token delta validation
+TOKEN_FLOOR = 5_000       # System prompt alone is >10K tokens
+TOKEN_CEILING_WARN = 5_000_000  # Unusual for a single task, but possible
+
+
+def validate_token_delta(
+    delta_in: int, delta_out: int, task_num: str,
+) -> tuple[str | None, str | None]:
+    """Validate token delta values before writing to telemetry.
+
+    Returns (tok_in_str, tok_out_str) — either formatted token strings
+    or "N/A (suspect)" if the values fail plausibility checks.
+    """
+    # Zero delta — watermark == current means no work was captured
+    if delta_in == 0 and delta_out == 0:
+        print(
+            f"telemetry-stamp: SUSPECT task {task_num} — zero token delta "
+            f"(watermark == current session position)",
+            file=sys.stderr,
+        )
+        return "N/A (suspect)", "N/A (suspect)"
+
+    # Floor check — any real session has at least ~5K input tokens
+    if delta_in < TOKEN_FLOOR:
+        print(
+            f"telemetry-stamp: SUSPECT task {task_num} — delta_in={delta_in} "
+            f"below floor ({TOKEN_FLOOR}). Likely a measurement error.",
+            file=sys.stderr,
+        )
+        return "N/A (suspect)", "N/A (suspect)"
+
+    # Ceiling warning — log but still write
+    if delta_in > TOKEN_CEILING_WARN:
+        print(
+            f"telemetry-stamp: WARNING task {task_num} — delta_in="
+            f"{delta_in:,} exceeds {TOKEN_CEILING_WARN:,}. Unusually high "
+            f"for a single task.",
+            file=sys.stderr,
+        )
+
+    return format_tokens(delta_in), format_tokens(delta_out)
+
+
 def sum_session_tokens(jsonl_path: Path) -> tuple[int, int, int, int]:
     """Sum cumulative tokens from a JSONL conversation file.
 
@@ -1185,8 +1228,9 @@ def handle_task_file(path: Path, now: str) -> list[str]:
                         delta_out = cur_out
                         delta_cc = cur_cc
                         delta_cr = cur_cr
-                    tok_in_str = format_tokens(delta_in)
-                    tok_out_str = format_tokens(delta_out)
+                    tok_in_str, tok_out_str = validate_token_delta(
+                        delta_in, delta_out, task_num,
+                    )
 
                     # Save session checkpoint for the next task's baseline
                     save_checkpoint(cur_in, cur_out, cur_cc, cur_cr)

@@ -15,6 +15,7 @@ Parses telemetry data from all bean.md files and produces an aggregate summary o
 | category | String | No | Filter to a single category: `App`, `Process`, or `Infra`. Case-insensitive. |
 | status | String | No | Filter by bean status. Default: `Done` (only completed beans). Use `all` for everything. |
 | since | String | No | Only include beans created on or after this date (`YYYY-MM-DD`). |
+| validate | Flag | No | When present, scan all Done beans for suspect telemetry data and report anomalies. |
 
 ## Process
 
@@ -119,6 +120,26 @@ Parses telemetry data from all bean.md files and produces an aggregate summary o
     | Total Cost | $X.XX |
     ...
     ```
+
+### Validation Mode (`--validate`)
+
+When the `validate` flag is present, add a **Validation** section after the main report:
+
+1. **Scan per-task telemetry rows** — For each Done bean, parse its Telemetry table rows.
+2. **Flag suspect rows:**
+   - Tokens In contains "N/A" or "N/A (suspect)" — capture failed or value rejected
+   - Tokens In < 5,000 (numeric value below floor)
+   - Cost is "N/A" or sentinel dash
+   - Duration is sentinel dash for a Done task
+3. **Report format:**
+   ```
+   VALIDATION — Suspect Telemetry Data
+   | Bean | Task | Issue |
+   |------|------|-------|
+   | BEAN-142 | 01 | Tokens In: 15 (below 5K floor) |
+   | BEAN-205 | 01 | Tokens In: N/A (capture failed) |
+   ```
+4. If no suspect data found, print: "Validation: All telemetry data within expected ranges."
 
 ## Outputs
 

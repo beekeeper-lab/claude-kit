@@ -71,7 +71,25 @@ Parses telemetry data from all bean.md files and produces an aggregate summary o
    - Top 5 longest beans (with ID, title, duration)
    - Top 5 cheapest beans with data (with ID, title, cost)
 
-10. **Display the report:**
+10. **Classify data quality per bean:**
+    - **Complete**: All telemetry fields populated with numeric values
+    - **Partial**: Some fields are N/A or sentinel, but at least Duration is populated
+    - **Suspect**: Token values contain "N/A (suspect)" or numeric values below 5,000
+    - **Missing**: All telemetry fields are sentinel (`—`) or empty
+
+    For each bean in the per-bean table, append a confidence marker:
+    - Complete: no marker (clean data)
+    - Partial: `*` after the bean ID
+    - Suspect: `**` after the bean ID
+    - Missing: `***` after the bean ID
+
+    **Aggregate exclusion rule:** Exclude beans classified as `Suspect` or `Missing` from average and median calculations (cost and duration). Include them in totals with a footnote: `* N beans excluded from averages (suspect/missing data)`.
+
+11. **Compute data quality summary:**
+    - Count of Complete, Partial, Suspect, and Missing beans
+    - Confidence percentage: `(complete / total_with_any_data) * 100`
+
+12. **Display the report:**
 
     ```
     ===================================================
@@ -84,6 +102,10 @@ Parses telemetry data from all bean.md files and produces an aggregate summary o
     Average:  Xm per bean
     Median:   Xm per bean
     Cost:     $XXX.XX total ($X.XX avg per bean)
+
+    DATA QUALITY
+    Complete: N beans | Partial: N | Suspect: N | Missing: N
+    Confidence: XX% of beans have complete telemetry
     ===================================================
 
     BY CATEGORY
@@ -105,6 +127,9 @@ Parses telemetry data from all bean.md files and produces an aggregate summary o
     CHEAPEST BEANS (with data)
     | Bean | Title | Cost | Tokens |
     ...
+
+    * N beans excluded from averages (suspect/missing data)
+    ** = suspect data, *** = missing data
     ===================================================
     ```
 

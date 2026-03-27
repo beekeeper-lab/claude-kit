@@ -672,6 +672,51 @@ def load_watermark(
     return None
 
 
+def save_checkpoint(
+    tokens_in: int, tokens_out: int,
+    cache_creation: int = 0, cache_read: int = 0,
+) -> None:
+    """Save a session checkpoint after a task completes.
+
+    The checkpoint records the cumulative session token position so that
+    the next task's delta can be computed from the correct baseline —
+    even if that task transitions directly from Pending to Done (skipping
+    the In Progress state where task-specific watermarks are normally saved).
+
+    The checkpoint is stored in a session-level file (not per-bean) so it
+    persists across bean boundaries within a single /long-run session.
+    """
+    checkpoint_path = Path("/tmp/.foundry-telemetry-checkpoint.json")
+    data = {
+        "tokens_in": tokens_in,
+        "tokens_out": tokens_out,
+        "cache_creation": cache_creation,
+        "cache_read": cache_read,
+    }
+    checkpoint_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def load_checkpoint() -> tuple[int, int, int, int] | None:
+    """Load the last session checkpoint.
+
+    Returns (tokens_in, tokens_out, cache_creation, cache_read)
+    or None if no checkpoint exists.
+    """
+    checkpoint_path = Path("/tmp/.foundry-telemetry-checkpoint.json")
+    if not checkpoint_path.exists():
+        return None
+    try:
+        data = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        return (
+            data.get("tokens_in", 0),
+            data.get("tokens_out", 0),
+            data.get("cache_creation", 0),
+            data.get("cache_read", 0),
+        )
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def format_tokens(count: int) -> str:
     """Format a token count with comma separators."""
     return f"{count:,}"
@@ -1074,7 +1119,7 @@ def handle_task_file(path: Path, now: str) -> list[str]:
             final_dur = parse_metadata_field(content, "Duration")
             bean_path = bean_dir / "bean.md"
 
-            # Compute token delta from watermark
+            # Compute token delta from watermark or checkpoint
             tok_in_str = None
             tok_out_str = None
             delta_cc = 0
@@ -1085,20 +1130,39 @@ def handle_task_file(path: Path, now: str) -> list[str]:
                     wm = load_watermark(bean_dir, task_num)
                     cur_in, cur_out, cur_cc, cur_cr = sum_session_tokens(
                         jsonl_path)
-                    if wm:
-                        start_in, start_out, start_cc, start_cr = wm
+
+                    # Determine baseline: task watermark > session checkpoint
+                    # > no baseline (first task)
+                    baseline = wm
+                    if not baseline:
+                        # No task-specific watermark (Pending → Done skip).
+                        # Use the session checkpoint from the previous task.
+                        checkpoint = load_checkpoint()
+                        if checkpoint:
+                            baseline = checkpoint
+                            actions.append(
+                                f"Used checkpoint for task {task_num}"
+                            )
+
+                    if baseline:
+                        start_in, start_out, start_cc, start_cr = baseline
                         delta_in = max(0, cur_in - start_in)
                         delta_out = max(0, cur_out - start_out)
                         delta_cc = max(0, cur_cc - start_cc)
                         delta_cr = max(0, cur_cr - start_cr)
                     else:
-                        # No watermark — use full session tokens as fallback
+                        # No watermark and no checkpoint — first task in
+                        # session, use full session tokens
                         delta_in = cur_in
                         delta_out = cur_out
                         delta_cc = cur_cc
                         delta_cr = cur_cr
                     tok_in_str = format_tokens(delta_in)
                     tok_out_str = format_tokens(delta_out)
+
+                    # Save session checkpoint for the next task's baseline
+                    save_checkpoint(cur_in, cur_out, cur_cc, cur_cr)
+                    actions.append("Checkpoint saved")
                 else:
                     print(
                         f"telemetry-stamp: no session JSONL found for token"

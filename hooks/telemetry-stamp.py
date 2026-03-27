@@ -520,8 +520,14 @@ def find_session_jsonl() -> Path | None:
 
     Looks in ~/.claude/projects/<project-hash>/ for the most recently
     modified .jsonl file (excluding subagents/).
-    Handles git worktrees by also checking the main repo's project hash.
-    Returns the path, or None if not found.
+
+    Candidate resolution order:
+      1. Hash of current working directory (works for normal repos)
+      2. Hash of git --show-toplevel (worktree's own toplevel)
+      3. Hash of git --git-common-dir parent (main repo root, for worktrees)
+
+    Returns the path, or None if no JSONL can be found. Never falls back to
+    an unrelated project's JSONL — that produced wildly incorrect token data.
     """
     try:
         claude_dir = Path.home() / ".claude" / "projects"
@@ -532,20 +538,38 @@ def find_session_jsonl() -> Path | None:
         candidate_dirs: list[Path] = []
 
         # 1. Current working directory hash
-        cwd_hash = str(Path.cwd()).replace("/", "-")
+        cwd = Path.cwd()
+        cwd_hash = str(cwd).replace("/", "-")
         if not cwd_hash.startswith("-"):
             cwd_hash = "-" + cwd_hash
         candidate_dirs.append(claude_dir / cwd_hash)
 
-        # 2. Git main repo hash (for worktree support)
+        # 2. git --show-toplevel hash (in worktrees, this is the worktree root)
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True, text=True, timeout=5,
+            )
+            if result.returncode == 0:
+                toplevel = Path(result.stdout.strip()).resolve()
+                if toplevel != cwd:
+                    tl_hash = str(toplevel).replace("/", "-")
+                    if not tl_hash.startswith("-"):
+                        tl_hash = "-" + tl_hash
+                    candidate_dirs.append(claude_dir / tl_hash)
+        except Exception:
+            pass
+
+        # 3. Git main repo hash via --git-common-dir (for worktree support)
         main_repo = find_git_toplevel()
-        if main_repo and main_repo != Path.cwd():
+        if main_repo and main_repo != cwd:
             repo_hash = str(main_repo).replace("/", "-")
             if not repo_hash.startswith("-"):
                 repo_hash = "-" + repo_hash
-            candidate_dirs.append(claude_dir / repo_hash)
+            if (claude_dir / repo_hash) not in candidate_dirs:
+                candidate_dirs.append(claude_dir / repo_hash)
 
-        # Try each candidate directory
+        # Try each candidate directory in priority order
         for project_dir in candidate_dirs:
             if not project_dir.exists():
                 continue
@@ -554,25 +578,24 @@ def find_session_jsonl() -> Path | None:
                 if f.is_file() and f.suffix == ".jsonl"
             ]
             if jsonl_files:
-                return max(jsonl_files, key=lambda f: f.stat().st_mtime)
+                chosen = max(jsonl_files, key=lambda f: f.stat().st_mtime)
+                # Log if we fell back from cwd to a git-resolved path
+                if project_dir != candidate_dirs[0]:
+                    print(
+                        f"telemetry-stamp: JSONL resolved via fallback "
+                        f"(cwd={cwd}, used={project_dir.name})",
+                        file=sys.stderr,
+                    )
+                return chosen
 
-        # Fallback: use the most recently modified project dir
-        candidates = []
-        for d in claude_dir.iterdir():
-            if d.is_dir() and not d.name.startswith("."):
-                candidates.append(d)
-        if not candidates:
-            return None
-        project_dir = max(candidates, key=lambda d: d.stat().st_mtime)
-
-        jsonl_files = [
-            f for f in project_dir.iterdir()
-            if f.is_file() and f.suffix == ".jsonl"
-        ]
-        if not jsonl_files:
-            return None
-
-        return max(jsonl_files, key=lambda f: f.stat().st_mtime)
+        # No JSONL found in any candidate directory.
+        # Do NOT fall back to an unrelated project — that produces garbage data.
+        print(
+            f"telemetry-stamp: no session JSONL found in any candidate dir "
+            f"(cwd={cwd}, candidates={[d.name for d in candidate_dirs]})",
+            file=sys.stderr,
+        )
+        return None
 
     except Exception as e:
         print(f"telemetry-stamp: session JSONL search failed: {e}",

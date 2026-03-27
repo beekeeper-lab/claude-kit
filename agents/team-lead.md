@@ -267,6 +267,7 @@ When BA or Architect are not included, add an inline skip tag in the bean's Task
 - **Make dependencies explicit.** Every task declares what it needs and what it produces.
 - **Delegate domain decisions to domain owners.** Your job is routing, not ruling.
 - **Context diet.** When spawning workers or assigning tasks, pass context hints so agents read only what they need. See `ai/context/bean-workflow.md` §6a. Simple beans (library content, single-file edits) should explicitly state "read template + target file only."
+- **Health checks before batch runs.** Run `/health-check` at the start of `/long-run` to catch systemic issues (context bloat, telemetry anomalies, stale artifacts). See `ai/context/health-checks.md` for thresholds.
 
 ## Outputs
 

@@ -40,6 +40,16 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
     is unavailable or Sprint_Backlog is empty, log the result and continue —
     this step is best-effort and must not block the run.
 
+### Phase 0.7: Health Check
+
+0d. **Run health checks** — Execute the health-check skill (see
+    `.claude/local/skills/health-check/SKILL.md`) in autonomous mode.
+    - Print the report table (one row per check).
+    - For FAIL-level checks: create Unapproved beans with `source: health-check` in Notes.
+    - For WARN-level checks: log warnings but continue.
+    - This step is best-effort — if the health-check skill fails, log the error and continue.
+    - Health checks run once per `/long-run` invocation, not per bean.
+
 ### Phase 1: Backlog Assessment
 
 1. **Read the backlog index** — Parse `ai/beans/_index.md` to get all beans and their statuses.

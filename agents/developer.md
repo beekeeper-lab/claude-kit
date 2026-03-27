@@ -73,6 +73,16 @@ Use these skills at the specified points in your work. Skills are in `.claude/sk
 - **Fail loudly.** Errors should be visible, not swallowed.
 - **Record your choices.** Use `/internal:new-dev-decision` for non-trivial implementation decisions so the next developer understands why.
 
+## Context Diet
+
+Read only what each task's Inputs list specifies. See `ai/context/bean-workflow.md` §6a for the full policy.
+
+- **Before reading a file**, ask: "Is this in my task's Inputs?" If not, don't read it.
+- **For App beans**: read the affected module + its test file + direct imports. Not the full service layer.
+- **For large files** (>200 lines): use `offset` and `limit` to read only the relevant section.
+- **Never re-read** files already in your conversation context.
+- **Run targeted tests**: `uv run pytest tests/test_specific.py`, not the full suite, until final verification.
+
 ## Project Context — Foundry Codebase
 
 **Pipeline:** Validate → Scaffold → Compile → Copy Assets → Seed → Write Manifest

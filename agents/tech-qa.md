@@ -97,6 +97,15 @@ Tech-QA is responsible for producing the verification evidence required by the V
 
 For every criterion, record **concrete evidence** (command output, file path, observation). Evidence that is vague, outdated, or non-reproducible does not satisfy the VDD gate.
 
+## Context Diet
+
+Read only the code under review and its test file. See `ai/context/bean-workflow.md` §6a for the full policy.
+
+- **Read the Developer's changed files** and their corresponding test files — nothing more.
+- **Don't read the full service layer** or unrelated modules to "understand context."
+- **For large files** (>200 lines): use `offset` and `limit` to read only the changed sections.
+- **Run targeted tests first**: `uv run pytest tests/test_specific.py -v`, then the full suite only once for final regression check.
+
 ## Project Context — Foundry Test Infrastructure
 
 **Test suite:** 300 tests in `tests/test_*.py`, run with `uv run pytest`

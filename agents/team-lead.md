@@ -22,6 +22,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 | `/pick-bean` | When selecting an Approved bean from the backlog. Updates status to In Progress in both bean.md and `_index.md`. Only Approved beans can be picked. |
 | `/bean-status` | At any time to review the backlog. Shows all beans grouped by status with counts and actionable items. Use `--verbose` for task-level detail. |
 | `/long-run` | When the user wants autonomous backlog processing. Reads the backlog, picks the best bean, decomposes, executes the wave, verifies, commits, merges to `main`, and loops until the backlog is clear. Use `--fast N` to run N beans in parallel via tmux child windows. |
+| `/spawn-task` | **Preferred per-task dispatch.** When executing a wave, dispatch each task with `/spawn-task <task-file>` instead of playing the role yourself in this conversation. Auto-detects tmux (worktree-isolated worker) vs. non-tmux (`Agent`-tool subagent). Preserves context isolation per specialist. See ADR-008. |
 | `/internal:merge-bean` | After a bean is Done and committed on its feature branch. Safely merges the feature branch into `main` (checkout, pull, merge --no-ff, push). Reports conflicts without auto-resolving. |
 | `/deploy` | When the user wants to create a release. Validates `main`, runs tests, reviews documentation, builds release notes, tags the release, and cleans up merged feature branches. |
 | `/internal:seed-tasks` | When decomposing a bean into tasks. Helps structure tasks with owners, dependencies, and acceptance criteria. |

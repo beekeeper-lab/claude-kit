@@ -56,7 +56,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 - **Owner:** Which persona handles it
 - **Depends On:** Which tasks must complete first (by number)
 - **Goal:** What this task produces
-- **Inputs:** What the owner needs to read (file paths)
+- **Inputs:** What the owner needs to read (file paths). **Required and non-empty** — the `validate-task-inputs` hook blocks Status→`In Progress` without it. For genuinely input-less tasks (rare), use the escape hatch: `Inputs: NONE (justified: <reason of at least 10 characters>)`.
 - **Acceptance Criteria:** Concrete checklist
 - **Definition of Done:** When is this task finished
 - **Started:** Timestamp when persona begins work (recorded by the persona, format: `YYYY-MM-DD HH:MM`)

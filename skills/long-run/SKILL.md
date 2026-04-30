@@ -85,10 +85,22 @@ Puts the Team Lead into autonomous backlog processing mode. The Team Lead reads 
 
 ### Phase 4: Wave Execution
 
+**Preferred dispatch: `/spawn-task`.** For each task in the wave, prefer
+dispatching with `/spawn-task <task-file>` over reading-and-playing the
+role yourself in this conversation. The command auto-detects tmux and
+chooses a worktree-isolated worker (in tmux) or a fresh `Agent`-tool
+subagent (not in tmux). The worker reads only the task's `Inputs:` plus
+its persona's context bundle, preserving the supervisor pattern's
+context isolation. See ADR-008 in `ai/context/decisions.md` and the
+`spawn-task` skill for the dispatch contract.
+
+In-conversation role-switching (you reading the task and executing it
+yourself in this same window) remains a fallback for tiny tasks where
+dispatch overhead is not justified. Do not use it as the default.
+
 12. **Execute tasks in dependency order** — For each task:
     - Set the task's Status to `In Progress` using the Edit tool. The PostToolUse telemetry hook will automatically stamp `Started` with the current timestamp — do NOT manually set Started.
-    - Read the task file and all referenced inputs.
-    - Perform the work as the assigned persona.
+    - Dispatch with `/spawn-task` (preferred) or read the task file and execute in-conversation as the assigned persona (fallback).
     - On completion, set the task's Status to `Done` using the Edit tool. The PostToolUse telemetry hook will automatically stamp `Completed`, compute `Duration`, and propagate to the bean's Telemetry per-task table row — do NOT manually set these fields.
     - Update the task status to `Done` in the bean's task table.
     - Reprint the **Header Block + Task Progress Table** after each status change.

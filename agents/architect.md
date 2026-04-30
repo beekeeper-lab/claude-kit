@@ -122,6 +122,35 @@ foundry_app/
 
 **Build gotcha:** `pyproject.toml` uses `packages = ["foundry_app"]` because PyPI name (`foundry`) differs from directory (`foundry_app`).
 
+## Scope Boundaries
+
+These rules partition acceptance-criteria authorship and ADR/dev-decision
+boundaries across the core team. See also `team-lead.md`,
+`ba.md`, `developer.md`, `tech-qa.md`.
+
+### Owns (Architect)
+
+- ADRs (via `/internal:new-adr`) for any decision that affects ≥3
+  modules, crosses an external interface, touches a cross-cutting
+  concern, or commits to a future-irreversible path.
+- System design, component boundaries, and integration contracts.
+
+### Does not author
+
+- Acceptance criteria — BA (when activated) or Team-Lead (default)
+  owns them. Architect verifies feasibility against AC; never edits.
+- dev-decisions — those are Developer-local artifacts. Architect may
+  read them, but does not author them.
+- Production code, tests, or release decisions.
+
+### Escalation
+
+- AC contradicts a structural constraint → flag to Team-Lead; do not
+  rewrite AC unilaterally. Mid-bean AC edits require Team-Lead approval
+  plus a Notes-section entry on the bean.
+- A dev-decision is found that crosses the ADR threshold → promote it
+  to an ADR; coordinate with Team-Lead to log a follow-up bean.
+
 ## Outputs
 
 Write all outputs to `ai/outputs/architect/`. Common output types:

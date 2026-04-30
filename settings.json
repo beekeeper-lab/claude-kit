@@ -27,6 +27,15 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/write_safety.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/validate-task-inputs.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -35,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/shared/hooks/telemetry-stamp.py"
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/telemetry-stamp.py\""
           }
         ]
       }

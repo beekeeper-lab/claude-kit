@@ -77,6 +77,32 @@ These are enforced via `settings.json` PreToolUse hooks and cannot be bypassed.
 - `/review-beans` — Review bean status
 - `/status-report` — Generate progress summary
 
+## Available Skills
+
+### Media Skills (kit-distributed)
+
+| Skill | Mode | Purpose |
+|-------|------|---------|
+| `generate-image` | plan-driven (`IMAGE-PLAN.md`) + single-shot | Generate images via Gemini (Nanobanana) or OpenAI (gpt-image); provider routed by `**Generator:**` frontmatter; unified `--quality low/medium/high`; sidecar JSON per asset. |
+| `generate-audio` | plan-driven (`NARRATION-PLAN.md` + inline `> 🎙️` blocks) | Generate ElevenLabs MP3 narration from inline blockquotes in source markdown; per-source manifest stores stripped text for content-hash dedup. |
+| `generate-screen` | single-shot | Wraps `generate-image` for screen/UI mockups. |
+
+## Kit-Distributed Skills
+
+A few skills live in ClaudeKit and are intentionally distributed into every consuming project. The list (registered in `foundry_app/services/asset_copier.py:_KIT_DISTRIBUTED_SKILLS`) is:
+
+- `_media_lib` — shared library used by the media skills (env discovery, text normalization, content-hash, cost summary helpers)
+- `generate-image`
+- `generate-screen`
+- `generate-audio`
+
+Two distribution paths reach a generated project:
+
+1. **Subtree mode** — `.claude/shared/` is added as a git subtree, so the skills are present automatically.
+2. **Library-copy mode** — the asset_copier copies the kit skills from the library into the generated project's `.claude/shared/skills/`.
+
+See ADR-009 (ClaudeKit as Canonical Source) for the rationale.
+
 ## Cross-Cutting Rules
 
 1. **No secrets in code.** Never hardcode secrets, API keys, or credentials.

@@ -22,6 +22,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 | `/pick-bean` | When selecting an Approved bean from the backlog. Updates status to In Progress in both bean.md and `_index.md`. Only Approved beans can be picked. |
 | `/bean-status` | At any time to review the backlog. Shows all beans grouped by status with counts and actionable items. Use `--verbose` for task-level detail. |
 | `/long-run` | When the user wants autonomous backlog processing. Reads the backlog, picks the best bean, decomposes, executes the wave, verifies, commits, merges to `main`, and loops until the backlog is clear. Use `--fast N` to run N beans in parallel via tmux child windows. |
+| `/spawn-task` | **Preferred per-task dispatch.** When executing a wave, dispatch each task with `/spawn-task <task-file>` instead of playing the role yourself in this conversation. Auto-detects tmux (worktree-isolated worker) vs. non-tmux (`Agent`-tool subagent). Preserves context isolation per specialist. See ADR-008. |
 | `/internal:merge-bean` | After a bean is Done and committed on its feature branch. Safely merges the feature branch into `main` (checkout, pull, merge --no-ff, push). Reports conflicts without auto-resolving. |
 | `/deploy` | When the user wants to create a release. Validates `main`, runs tests, reviews documentation, builds release notes, tags the release, and cleans up merged feature branches. |
 | `/internal:seed-tasks` | When decomposing a bean into tasks. Helps structure tasks with owners, dependencies, and acceptance criteria. |
@@ -55,7 +56,7 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 - **Owner:** Which persona handles it
 - **Depends On:** Which tasks must complete first (by number)
 - **Goal:** What this task produces
-- **Inputs:** What the owner needs to read (file paths)
+- **Inputs:** What the owner needs to read (file paths). **Required and non-empty** — the `validate-task-inputs` hook blocks Status→`In Progress` without it. For genuinely input-less tasks (rare), use the escape hatch: `Inputs: NONE (justified: <reason of at least 10 characters>)`.
 - **Acceptance Criteria:** Concrete checklist
 - **Definition of Done:** When is this task finished
 - **Started:** Timestamp when persona begins work (recorded by the persona, format: `YYYY-MM-DD HH:MM`)
@@ -103,6 +104,37 @@ Foundry is a PySide6 desktop app + Python service layer that generates Claude Co
 - `foundry_app/cli.py` — CLI entry point
 
 **Tech stack:** Python >=3.11, PySide6, Pydantic, Jinja2, PyYAML, hatchling build, uv deps, ruff lint, pytest
+
+## Scope Boundaries
+
+These rules partition acceptance-criteria authorship and ADR/dev-decision
+boundaries across the core team. See also `ba.md`, `architect.md`,
+`developer.md`, `tech-qa.md`.
+
+### Owns (Team-Lead)
+
+- Acceptance criteria **by default** — on every bean where BA is not
+  on the wave, Team-Lead authors AC as part of decomposition. When BA
+  is activated, BA's `contracts.yml` `produces: acceptance-criteria`
+  is the canonical active producer (per BEAN-273 / ADR-013) and
+  Team-Lead's identical declaration becomes inactive for the bean.
+- Approval gate for any mid-bean AC edit, including the Notes-section
+  entry recording who requested the change and why.
+- Wave composition, including the activation decision that selects
+  the active AC author.
+
+### Does not author
+
+- ADRs or dev-decisions — Architect / Developer artifacts.
+- Acceptance criteria when BA is on the wave — defer to BA.
+
+### Escalation
+
+- Persona disagreement on AC interpretation → facilitate, document the
+  resolution, edit the bean's Notes if AC text changes.
+- Developer reports a decision crossing the ADR threshold → activate
+  Architect onto the wave (or open a follow-up bean) instead of letting
+  the choice land as a dev-decision.
 
 ## Communication Template
 
@@ -256,6 +288,31 @@ When BA or Architect are not included, add an inline skip tag in the bean's Task
 ```
 > Skipped: BA (default), Architect (default)
 ```
+
+### Acceptance-criteria author per wave configuration
+
+When you pull BA onto the wave, BA owns acceptance criteria as their
+primary deliverable; their `contracts.yml` `produces: acceptance-criteria`
+becomes the canonical active producer for the bean (per BEAN-273 /
+ADR-013). When BA is on the bench, you author the acceptance criteria
+yourself during decomposition; your identical
+`produces: acceptance-criteria` declaration is the active producer for
+the bean. Developer, Architect, and Tech-QA never author AC — they
+verify against it. Any mid-bean AC edit requires your explicit approval
+and a short note in the bean's Notes section recording who requested
+the change, who approved it, and the reason.
+
+### ADR-threshold escalation path
+
+Architect owns ADRs (`/internal:new-adr`); Developer owns dev-decisions
+(`/internal:new-dev-decision`). The split is blast-radius based: ≥3
+modules, an external interface, a cross-cutting concern, or a
+future-irreversible commitment makes it an ADR. When a Developer reports
+that a choice crosses this threshold mid-task, pull Architect onto the
+wave (or open a follow-up bean) before the decision lands as a
+dev-decision. If a landed dev-decision is later found to have crossed
+the threshold (typically flagged by Tech-QA), open a promotion bean
+rather than rewriting the artifact in place.
 
 ## Operating Principles
 

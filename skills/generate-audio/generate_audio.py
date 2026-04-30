@@ -233,3 +233,98 @@ def load_existing_manifest(module_audio_dir: Path) -> dict[int, dict[str, Any]]:
         return {e["index"]: e for e in entries}
     except (json.JSONDecodeError, KeyError, TypeError):
         return {}
+
+
+def write_manifest(module_audio_dir: Path, entries: list[dict[str, Any]]) -> None:
+    """Write the per-source manifest to ``<module_audio_dir>/manifest.json``.
+
+    Entries are written as a JSON array with two-space indentation. The
+    directory is created if missing. Callers are responsible for the
+    record shape (``index, module, audio_file, text, size_bytes``); this
+    helper does not validate.
+    """
+    module_audio_dir.mkdir(parents=True, exist_ok=True)
+    (module_audio_dir / "manifest.json").write_text(
+        json.dumps(entries, indent=2) + "\n"
+    )
+
+
+def cleanup_orphans(module_audio_dir: Path, expected_audio_files: set[str]) -> list[str]:
+    """Remove MP3s whose blocks no longer exist in the current manifest.
+
+    Returns the list of removed filenames (basenames). The directory is
+    walked for ``*.mp3`` files; any name not in ``expected_audio_files``
+    is removed. The function is a no-op when the directory does not
+    exist. Callers MUST NOT invoke this under ``--dry-run`` — orphan
+    cleanup is only correct on real generation runs.
+    """
+    if not module_audio_dir.is_dir():
+        return []
+    removed: list[str] = []
+    for mp3 in sorted(module_audio_dir.glob("*.mp3")):
+        if mp3.name not in expected_audio_files:
+            mp3.unlink()
+            removed.append(mp3.name)
+    return removed
+
+
+# ---------------------------------------------------------------------------
+# ElevenLabs client wrapper.
+# ---------------------------------------------------------------------------
+
+
+def _import_elevenlabs() -> Any:
+    """Lazy import of the ``elevenlabs`` SDK with a friendly error.
+
+    The dep is not declared in ``pyproject.toml`` because the canonical
+    invocation is ``uv run --with elevenlabs python <script>``; this
+    function fires only when actually generating audio. Tests mock the
+    SDK before ``generate_audio_for_block`` is called, so this import
+    never runs under ``uv run pytest``.
+    """
+    try:
+        from elevenlabs import ElevenLabs  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover - exercised at runtime only
+        raise SystemExit(
+            "ERROR: elevenlabs package not installed. "
+            "Run: uv run --with elevenlabs python <script>"
+        ) from exc
+    return ElevenLabs
+
+
+def get_elevenlabs_client(api_key: str) -> Any:
+    """Construct an ``ElevenLabs(api_key=...)`` client.
+
+    Split out so tests can mock the constructor without monkey-patching
+    the lazy import path.
+    """
+    ElevenLabs = _import_elevenlabs()
+    return ElevenLabs(api_key=api_key)
+
+
+def generate_audio_for_block(
+    client: Any,
+    text: str,
+    output_path: Path,
+    voice_id: str,
+    model_id: str = DEFAULT_MODEL,
+) -> int:
+    """Generate one MP3 via ElevenLabs and write it to ``output_path``.
+
+    The ``client`` is an already-constructed ElevenLabs SDK instance
+    (see :func:`get_elevenlabs_client`); the function does not consult
+    ``os.environ`` directly. It calls
+    ``client.text_to_speech.convert(...)`` with the documented defaults
+    (``output_format=mp3_44100_128``), concatenates the streamed bytes,
+    and writes the file. Returns the file size in bytes.
+    """
+    audio_gen = client.text_to_speech.convert(
+        text=text,
+        voice_id=voice_id,
+        model_id=model_id,
+        output_format=DEFAULT_OUTPUT_FORMAT,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    audio_bytes = b"".join(audio_gen)
+    output_path.write_bytes(audio_bytes)
+    return len(audio_bytes)

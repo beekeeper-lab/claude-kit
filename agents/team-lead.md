@@ -105,6 +105,37 @@ Foundry is a PySide6 desktop app + Python service layer that generates Claude Co
 
 **Tech stack:** Python >=3.11, PySide6, Pydantic, Jinja2, PyYAML, hatchling build, uv deps, ruff lint, pytest
 
+## Scope Boundaries
+
+These rules partition acceptance-criteria authorship and ADR/dev-decision
+boundaries across the core team. See also `ba.md`, `architect.md`,
+`developer.md`, `tech-qa.md`.
+
+### Owns (Team-Lead)
+
+- Acceptance criteria **by default** — on every bean where BA is not
+  on the wave, Team-Lead authors AC as part of decomposition. When BA
+  is activated, BA's `contracts.yml` `produces: acceptance-criteria`
+  is the canonical active producer (per BEAN-273 / ADR-013) and
+  Team-Lead's identical declaration becomes inactive for the bean.
+- Approval gate for any mid-bean AC edit, including the Notes-section
+  entry recording who requested the change and why.
+- Wave composition, including the activation decision that selects
+  the active AC author.
+
+### Does not author
+
+- ADRs or dev-decisions — Architect / Developer artifacts.
+- Acceptance criteria when BA is on the wave — defer to BA.
+
+### Escalation
+
+- Persona disagreement on AC interpretation → facilitate, document the
+  resolution, edit the bean's Notes if AC text changes.
+- Developer reports a decision crossing the ADR threshold → activate
+  Architect onto the wave (or open a follow-up bean) instead of letting
+  the choice land as a dev-decision.
+
 ## Communication Template
 
 When processing a bean, always use this structured output format. It keeps tmux panes scannable.
@@ -257,6 +288,31 @@ When BA or Architect are not included, add an inline skip tag in the bean's Task
 ```
 > Skipped: BA (default), Architect (default)
 ```
+
+### Acceptance-criteria author per wave configuration
+
+When you pull BA onto the wave, BA owns acceptance criteria as their
+primary deliverable; their `contracts.yml` `produces: acceptance-criteria`
+becomes the canonical active producer for the bean (per BEAN-273 /
+ADR-013). When BA is on the bench, you author the acceptance criteria
+yourself during decomposition; your identical
+`produces: acceptance-criteria` declaration is the active producer for
+the bean. Developer, Architect, and Tech-QA never author AC — they
+verify against it. Any mid-bean AC edit requires your explicit approval
+and a short note in the bean's Notes section recording who requested
+the change, who approved it, and the reason.
+
+### ADR-threshold escalation path
+
+Architect owns ADRs (`/internal:new-adr`); Developer owns dev-decisions
+(`/internal:new-dev-decision`). The split is blast-radius based: ≥3
+modules, an external interface, a cross-cutting concern, or a
+future-irreversible commitment makes it an ADR. When a Developer reports
+that a choice crosses this threshold mid-task, pull Architect onto the
+wave (or open a follow-up bean) before the decision lands as a
+dev-decision. If a landed dev-decision is later found to have crossed
+the threshold (typically flagged by Tech-QA), open a promotion bean
+rather than rewriting the artifact in place.
 
 ## Operating Principles
 

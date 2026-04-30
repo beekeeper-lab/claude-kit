@@ -328,3 +328,220 @@ def generate_audio_for_block(
     audio_bytes = b"".join(audio_gen)
     output_path.write_bytes(audio_bytes)
     return len(audio_bytes)
+
+
+# ---------------------------------------------------------------------------
+# Per-source orchestration — applies the five-mode skip-on-disk matrix.
+# ---------------------------------------------------------------------------
+
+
+def decide_action(
+    block_text: str,
+    audio_path: Path,
+    existing_entry: dict[str, Any] | None,
+    *,
+    force: bool,
+    regenerate_changed: bool,
+) -> tuple[bool, str]:
+    """Return ``(needs_generation, reason)`` for a single block.
+
+    Decision matrix per ADR-011 commitment 6:
+
+    - ``force=True``                                    -> generate (``"forced"``)
+    - audio file does not exist                         -> generate (``"new"``)
+    - ``regenerate_changed`` AND manifest's ``text`` differs from current
+                                                         -> generate (``"text changed"``)
+    - otherwise                                          -> skip (``"exists"``)
+
+    Comparison uses ``.strip()`` on both sides so trailing whitespace in
+    a manifest written by an earlier version of the script does not
+    falsely flag a block as changed.
+    """
+    if force:
+        return True, "forced"
+    if not audio_path.exists():
+        return True, "new"
+    if regenerate_changed and existing_entry is not None:
+        old_text = existing_entry.get("text", "")
+        if old_text.strip() != block_text.strip():
+            return True, "text changed"
+    return False, "exists"
+
+
+def process_source(
+    source_path: Path,
+    audio_root: Path,
+    *,
+    client: Any | None,
+    voice_id: str,
+    model_id: str = DEFAULT_MODEL,
+    force: bool = False,
+    regenerate_changed: bool = False,
+    dry_run: bool = False,
+    print_fn: Any = print,
+) -> dict[str, Any]:
+    """Process one markdown source file end-to-end.
+
+    Walks the file, applies the skip-on-disk matrix, generates MP3s
+    where needed (unless ``dry_run``), writes the per-source manifest,
+    and runs orphan cleanup (only on real runs). Returns a stats dict
+    with per-source counters used by the caller's end-of-run summary.
+
+    Returned keys:
+
+    - ``module``: source-file stem.
+    - ``manifest``: list of manifest records, each
+      ``{index, module, audio_file, text, size_bytes}``.
+    - ``generated``: count of blocks for which an API call was made
+      (always 0 under ``dry_run``).
+    - ``skipped``: count of blocks whose MP3 already existed and was
+      not regenerated.
+    - ``would_generate``: count of blocks the dry-run preview marked
+      for generation (always 0 outside ``dry_run``).
+    - ``chars_sent``: total characters sent to ElevenLabs this run for
+      this source (always 0 under ``dry_run``); equals total credits
+      spent for this source per ADR-011 cost discipline.
+    - ``orphans_removed``: list of orphan MP3 basenames removed.
+    """
+    module_name = source_path.stem
+    text = source_path.read_text()
+    blocks = find_narration_blocks(text)
+
+    module_audio_dir = audio_root / module_name
+    existing = load_existing_manifest(module_audio_dir)
+
+    manifest: list[dict[str, Any]] = []
+    generated = 0
+    skipped = 0
+    would_generate = 0
+    chars_sent = 0
+
+    if not blocks:
+        print_fn(f"  {module_name}: no narration blocks found, skipping")
+        return {
+            "module": module_name,
+            "manifest": manifest,
+            "generated": generated,
+            "skipped": skipped,
+            "would_generate": would_generate,
+            "chars_sent": chars_sent,
+            "orphans_removed": [],
+        }
+
+    for block in blocks:
+        idx = block["index"] + 1  # 1-based block number
+        audio_filename = f"{idx:02d}_{module_name}.mp3"
+        audio_path = module_audio_dir / audio_filename
+        block_text = block["text"]
+
+        existing_entry = existing.get(idx)
+        needs, reason = decide_action(
+            block_text,
+            audio_path,
+            existing_entry,
+            force=force,
+            regenerate_changed=regenerate_changed,
+        )
+
+        entry: dict[str, Any] = {
+            "index": idx,
+            "module": module_name,
+            "audio_file": audio_filename,
+            "text": block_text,
+        }
+
+        if dry_run:
+            if needs:
+                print_fn(f"  [{module_name}] Block {idx}: WOULD GENERATE ({reason})")
+                preview = block_text[:80]
+                print_fn(f"    {preview}{'...' if len(block_text) > 80 else ''}")
+                would_generate += 1
+            else:
+                print_fn(f"  [{module_name}] Block {idx}: exists, skip")
+            entry["size_bytes"] = (
+                audio_path.stat().st_size if audio_path.exists() else 0
+            )
+        elif needs:
+            if client is None:  # pragma: no cover - defensive only
+                raise RuntimeError(
+                    "process_source called with dry_run=False and client=None"
+                )
+            print_fn(f"  [{module_name}] Block {idx}: generating ({reason})...")
+            size = generate_audio_for_block(
+                client,
+                block_text,
+                audio_path,
+                voice_id=voice_id,
+                model_id=model_id,
+            )
+            entry["size_bytes"] = size
+            generated += 1
+            chars_sent += len(block_text)
+            print_fn(f"    -> {audio_filename} ({size:,} bytes)")
+        else:
+            entry["size_bytes"] = (
+                audio_path.stat().st_size if audio_path.exists() else 0
+            )
+            skipped += 1
+
+        manifest.append(entry)
+
+    # Orphan cleanup on real runs only.
+    expected = {e["audio_file"] for e in manifest}
+    orphans_removed: list[str] = []
+    if not dry_run:
+        orphans_removed = cleanup_orphans(module_audio_dir, expected)
+        for name in orphans_removed:
+            print_fn(f"  [{module_name}] Removing orphan: {name}")
+        write_manifest(module_audio_dir, manifest)
+
+    summary = f"{module_name}: {len(blocks)} blocks"
+    if generated:
+        summary += f", {generated} generated"
+    if would_generate:
+        summary += f", {would_generate} would generate"
+    if skipped:
+        summary += f", {skipped} skipped"
+    if orphans_removed:
+        summary += f", {len(orphans_removed)} orphan(s) removed"
+    print_fn(f"  {summary}")
+
+    return {
+        "module": module_name,
+        "manifest": manifest,
+        "generated": generated,
+        "skipped": skipped,
+        "would_generate": would_generate,
+        "chars_sent": chars_sent,
+        "orphans_removed": orphans_removed,
+    }
+
+
+def select_source_files(
+    source_dir: Path,
+    *,
+    explicit: Path | None = None,
+    include_all: bool = False,
+) -> list[Path]:
+    """Return the source files to process.
+
+    Selection rules:
+
+    - ``explicit`` is a path provided on the CLI. If it points to a file,
+      return ``[that file]``. If it points to a directory, glob ``*.md``
+      under it.
+    - Otherwise, when ``include_all`` is True, glob every ``*.md`` under
+      ``source_dir`` (auxiliary files: crash courses, references).
+    - Otherwise, glob ``module-*.md`` (the default scope: just modules).
+
+    Returned list is sorted for deterministic ordering.
+    """
+    if explicit is not None:
+        if explicit.is_file():
+            return [explicit]
+        if explicit.is_dir():
+            return sorted(explicit.glob("*.md"))
+        return []
+    if include_all:
+        return sorted(source_dir.glob("*.md"))
+    return sorted(source_dir.glob("module-*.md"))

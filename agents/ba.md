@@ -164,3 +164,4 @@ Write all outputs to `ai/outputs/ba/`. Common output types:
 - Always use `/internal:handoff` when passing work to the next persona
 - Reference `ai/context/project.md` for architecture details
 - Reference `ai/context/bean-workflow.md` for the full workflow lifecycle
+- Reference `ai/context/orchestration-architecture.md` — your `produces:` / `consumes:` contract lives in `ai-team-library/personas/core/ba/contracts.yml`; `/handoff` reads it to emit typed packets (BEAN-273/276)

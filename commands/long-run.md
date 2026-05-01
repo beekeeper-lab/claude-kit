@@ -38,14 +38,14 @@ Automates the manual loop of picking a bean, decomposing it into tasks, executin
 4. **Pick the bean** — Update status to `In Progress` in `bean.md`. Update `_index.md` on `test` to set status to `In Progress` and owner to `team-lead`.
 5. **Create feature branch from `test`** — `git fetch origin && git checkout -b bean/BEAN-NNN-<slug> origin/test`. All work for this bean happens on this branch.
 6. **Decompose into tasks** — Read the bean's Problem Statement, Goal, Scope, and Acceptance Criteria. Create numbered task files in the bean's `tasks/` directory. Default wave: Developer → Tech-QA. Include BA or Architect only when their inclusion criteria are met. Tech-QA is mandatory for every bean.
-7. **Execute the wave** — Process each task in dependency order:
-   - Read the task file and all referenced inputs
-   - Produce the required outputs in `ai/outputs/<persona>/`
+7. **Execute the wave** — Process each task in dependency order. **Preferred dispatch: `/spawn-task <task-file>`** — supervisor-pattern, auto-detects tmux (worktree-isolated worker) vs. non-tmux (`Agent`-tool subagent). The worker reads only the task's `Inputs:` plus its persona's context bundle. See ADR-008 and `ai/context/orchestration-architecture.md`. In-conversation role-switching survives as a fallback for tiny tasks. For each task:
+   - Dispatch via `/spawn-task` (preferred) or read the task file and execute in-conversation as the assigned persona (fallback)
+   - The worker produces outputs in `ai/outputs/<persona>/`; `validate-task-inputs.py` blocks dispatch if Inputs is missing/empty/placeholder
    - Update the task status to `Done`
 8. **Verify acceptance criteria** — Check every criterion in the bean's AC list. Run tests and lint if applicable.
 9. **Close the bean** — Update status to `Done` in `bean.md`. (The orchestrator updates `_index.md` after the merge — see step 11.)
 10. **Commit on feature branch** — Stage all changed files and commit with message: `BEAN-NNN: <title>`. The commit goes on the `bean/BEAN-NNN-<slug>` branch.
-11. **Merge to `test` and update index** — Execute `/internal:merge-bean NNN` to merge the feature branch into `test` (the default target). The merge-bean skill returns to `test` after merging. Then update `_index.md` on `test` to set the bean's status to `Done`, commit, and push. If merge conflicts occur, report and stop. *(In parallel mode, workers do NOT merge or edit `_index.md` — the orchestrator handles both after each worker completes.)*
+11. **Run `/vdd <bean-id>`** — Programmatic VDD gate (BEAN-277). Parses Acceptance Criteria, runs evidence checks (test/lint/file/manual), writes `ai/outputs/tech-qa/vdd-<bean-id>.md`. **`/internal:merge-bean` refuses to merge without a passing report.** Then execute `/internal:merge-bean NNN` to merge the feature branch into `test` (the default target). The merge-bean skill returns to `test` after merging. Then update `_index.md` on `test` to set the bean's status to `Done`, commit, and push. If merge conflicts occur, report and stop. *(In parallel mode, workers do NOT merge or edit `_index.md` — the orchestrator handles both after each worker completes.)*
 12. **Stay on `test`** — Remain on the `test` branch.
 13. **Report progress** — Summarize what was completed: bean title, tasks executed, branch name, merge commit, files changed.
 14. **Loop** — Go back to step 1. Continue until no actionable beans remain. When complete, display: `All work merged to test.`

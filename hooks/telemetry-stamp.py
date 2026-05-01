@@ -1013,6 +1013,238 @@ def needs_stamp(value: str | None) -> bool:
     return False
 
 
+# ---------------------------------------------------------------------------
+# BEAN-278: Orchestration Telemetry
+# ---------------------------------------------------------------------------
+#
+# A bean may carry an `## Orchestration Telemetry` section (added to the
+# template by BEAN-278) with fields like Personas activated, Bounces,
+# Dispatch mode, etc. This hook auto-populates two of those fields when
+# a bean flips to Done:
+#   - Personas activated → comma-separated owner ids from the per-task
+#     Telemetry table (deduped, sorted by first appearance).
+#   - Dispatch mode → in-process / tmux-worker / mixed, sourced from
+#     per-task marker files written by /spawn-task workers (or, if no
+#     markers exist, inferred from /tmp/agentic-task-* worktree presence
+#     at completion time).
+#
+# Other fields (Bounces, Scope changes, Contract violations, Inputs
+# escape-hatch invocations) are persona-recorded. The hook stamps them
+# with `0` only when their current value is the sentinel em-dash, never
+# overwriting a non-zero value.
+#
+# Beans whose Telemetry section pre-dates BEAN-278 are silently skipped.
+
+ORCH_FIELDS_DEFAULT_ZERO = (
+    "Bounces",
+    "Scope changes",
+    "Contract violations",
+    "Inputs escape-hatch invocations",
+)
+
+
+def has_orchestration_telemetry(content: str) -> bool:
+    """Detect whether a bean.md carries the Orchestration Telemetry section."""
+    return "## Orchestration Telemetry" in content
+
+
+def _orchestration_section_bounds(content: str) -> tuple[int, int]:
+    """Return (start_line_idx, end_line_idx) for the Orchestration Telemetry
+    section (exclusive end). Returns (-1, -1) if missing.
+    """
+    lines = content.splitlines()
+    start = -1
+    for i, line in enumerate(lines):
+        if line.strip().startswith("## Orchestration Telemetry"):
+            start = i
+            break
+    if start < 0:
+        return -1, -1
+    end = len(lines)
+    for j in range(start + 1, len(lines)):
+        if lines[j].strip().startswith("## "):
+            end = j
+            break
+    return start, end
+
+
+def parse_orchestration_field(content: str, field: str) -> str | None:
+    """Read a field from the Orchestration Telemetry section's table."""
+    start, end = _orchestration_section_bounds(content)
+    if start < 0:
+        return None
+    section = "\n".join(content.splitlines()[start:end])
+    return parse_metadata_field(section, field)
+
+
+def replace_orchestration_field(
+    content: str, field: str, value: str,
+) -> str:
+    """Replace a field's value in the Orchestration Telemetry section.
+
+    Scoped: only touches rows inside `## Orchestration Telemetry`. Returns
+    content unchanged if the section or the field row is missing.
+    """
+    start, end = _orchestration_section_bounds(content)
+    if start < 0:
+        return content
+    lines = content.splitlines()
+    section = "\n".join(lines[start:end])
+    new_section = replace_metadata_field(section, field, value)
+    if new_section == section:
+        return content
+    new_lines = lines[:start] + new_section.splitlines() + lines[end:]
+    return "\n".join(new_lines)
+
+
+def telemetry_owners_with_data(content: str) -> list[str]:
+    """Return the deduped, in-order list of owner ids from per-task Telemetry
+    rows that have actual data (any non-sentinel column past Owner).
+
+    Empty owners are skipped. Used to derive Personas activated.
+    """
+    _, _, rows = find_telemetry_table(content)
+    seen: list[str] = []
+    seen_set: set[str] = set()
+    for row in rows:
+        cells = [c.strip() for c in row.split("|")]
+        cells = [c for c in cells if c]
+        if len(cells) < 3:
+            continue
+        owner = cells[2]
+        if not owner or owner == SENTINEL:
+            continue
+        # Require at least one populated data column (Duration / Tokens / Cost)
+        data_cols = cells[3:]
+        if not any(c and c != SENTINEL for c in data_cols):
+            continue
+        if owner not in seen_set:
+            seen.append(owner)
+            seen_set.add(owner)
+    return seen
+
+
+def collect_dispatch_markers(bean_dir: Path) -> list[str]:
+    """Read per-task dispatch-mode markers under <bean>/.orchestration/.
+
+    Workers spawned by /spawn-task write `task-<NN>-mode` files containing
+    a single token: `in-process` or `tmux-worker`. Returns the list of
+    raw mode strings found (one per task that wrote a marker).
+    """
+    marker_dir = bean_dir / ".orchestration"
+    if not marker_dir.is_dir():
+        return []
+    modes: list[str] = []
+    for f in sorted(marker_dir.iterdir()):
+        if not f.is_file():
+            continue
+        if not f.name.startswith("task-"):
+            continue
+        try:
+            value = f.read_text(encoding="utf-8").strip()
+        except Exception:
+            continue
+        if value:
+            modes.append(value)
+    return modes
+
+
+def infer_dispatch_mode_from_worktrees(bean_id: str) -> str | None:
+    """Best-effort fallback when no per-task markers exist.
+
+    Lists /tmp/agentic-task-<bean_id>-* directories. Their presence at
+    completion time implies the tmux-worker path was used for at least one
+    task. Returns 'tmux-worker' if any are found, None otherwise (caller
+    will default to 'in-process' as the conservative assumption).
+    """
+    try:
+        tmp = Path("/tmp")
+        prefix = f"agentic-task-{bean_id}-"
+        for entry in tmp.iterdir():
+            if entry.is_dir() and entry.name.startswith(prefix):
+                return "tmux-worker"
+    except Exception:
+        pass
+    return None
+
+
+def compute_dispatch_mode(bean_dir: Path, bean_id: str) -> str:
+    """Aggregate per-task markers (or fallback heuristic) into a single
+    dispatch-mode label: in-process / tmux-worker / mixed.
+    """
+    markers = collect_dispatch_markers(bean_dir)
+    if markers:
+        unique = {m for m in markers if m}
+        if len(unique) > 1:
+            return "mixed"
+        return next(iter(unique))
+    fallback = infer_dispatch_mode_from_worktrees(bean_id)
+    if fallback:
+        return fallback
+    # No markers, no worktrees → conservative default. Agent-tool path
+    # often leaves no on-disk trace, so 'in-process' is the right guess.
+    return "in-process"
+
+
+def stamp_orchestration_telemetry(
+    content: str, bean_dir: Path, bean_id: str,
+) -> tuple[str, list[str]]:
+    """Populate the Orchestration Telemetry block when a bean flips to Done.
+
+    Idempotent. Skips silently if the bean has no Orchestration Telemetry
+    section. Never overwrites a non-sentinel persona-recorded value.
+    """
+    if not has_orchestration_telemetry(content):
+        return content, []
+
+    actions: list[str] = []
+
+    personas_val = parse_orchestration_field(content, "Personas activated")
+    if personas_val is None or needs_stamp(personas_val.split("(")[0].strip()):
+        owners = telemetry_owners_with_data(content)
+        if owners:
+            personas = ", ".join(owners)
+            content = replace_orchestration_field(
+                content, "Personas activated", personas,
+            )
+            actions.append(f"Personas={personas}")
+
+    dispatch_val = parse_orchestration_field(content, "Dispatch mode")
+    if dispatch_val is None or needs_stamp(dispatch_val.split("(")[0].strip()):
+        mode = compute_dispatch_mode(bean_dir, bean_id)
+        content = replace_orchestration_field(
+            content, "Dispatch mode", mode,
+        )
+        actions.append(f"Dispatch={mode}")
+
+    # Default-fill persona-recorded counters with `0` ONLY when the current
+    # value is the sentinel em-dash. Strip the parenthesised hint suffix
+    # before the sentinel check so the template's "— (Tech-QA → ...)" is
+    # treated as needing a stamp, but a real "2 (...)" is preserved.
+    for field in ORCH_FIELDS_DEFAULT_ZERO:
+        cur = parse_orchestration_field(content, field)
+        if cur is None:
+            continue
+        head_raw = cur.split("(")[0]
+        head = head_raw.strip()
+        if needs_stamp(head):
+            paren_idx = cur.find("(")
+            if paren_idx >= 0:
+                new_val = f"0 {cur[paren_idx:]}"
+            else:
+                new_val = "0"
+            content = replace_orchestration_field(content, field, new_val)
+            actions.append(f"{field}=0")
+
+    return content, actions
+
+
+def extract_bean_id(bean_dir: Path) -> str | None:
+    """Pull the BEAN-NNN id out of a bean directory path."""
+    m = re.match(r"^(BEAN-\d+)-", bean_dir.name)
+    return m.group(1) if m else None
+
+
 def handle_bean_file(path: Path, now: str) -> list[str]:
     """Process a bean.md file for telemetry stamping.
 
@@ -1115,6 +1347,17 @@ def handle_bean_file(path: Path, now: str) -> list[str]:
     # Sync telemetry table with tasks table (add missing rows)
     content, sync_actions = sync_telemetry_table(content)
     actions.extend(sync_actions)
+
+    # BEAN-278: Orchestration Telemetry — only stamp on Done, only when the
+    # block exists (no backfill for older beans).
+    if status and status.lower() == "done":
+        bean_dir = path.parent
+        bean_id = extract_bean_id(bean_dir)
+        if bean_id:
+            content, orch_actions = stamp_orchestration_telemetry(
+                content, bean_dir, bean_id,
+            )
+            actions.extend(orch_actions)
 
     if content != original:
         path.write_text(content, encoding="utf-8")

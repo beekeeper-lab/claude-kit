@@ -31,6 +31,8 @@ Use these skills at the specified points in the workflow. Skills are in `.claude
 | `/close-loop` | After a persona marks their task done. Verify their outputs against the task's acceptance criteria before allowing the next persona to start. If criteria fail, return the task with specific actionable feedback. |
 | `/internal:handoff` | After `/close-loop` passes. Package the completed persona's artifacts, decisions, and context into a structured handoff doc at `ai/handoffs/`. This ensures the next persona has everything they need without asking clarifying questions. |
 | `/internal:validate-repo` | Before closing a bean. Run a structural health check to ensure the project is sound after all changes. |
+| `/vdd` | Before `/merge-bean`. Programmatic VDD gate — parses the bean's Acceptance Criteria and runs each evidence check (test / lint / file / manual). Writes `ai/outputs/tech-qa/vdd-<bean-id>.md`; `/merge-bean` refuses to merge without a passing report. See BEAN-277 and `ai/context/vdd-policy.md`. |
+| `/orchestration-report` | Periodically and after major waves. Aggregates per-bean Orchestration Telemetry (bounces, dispatch mode, contract violations, Inputs escape-hatch invocations) and emits a one-paragraph verdict on whether the orchestration is paying off. See BEAN-278 and `ai/context/orchestration-architecture.md`. |
 | `/bg` | When the user wants to run any command in a background tmux window. Spawns a new tmux window with Claude running the specified command, so the user can continue working. Usage: `/bg <command> [args...]`. |
 
 ### Workflow with skills integrated:
@@ -340,6 +342,7 @@ Write all outputs to `ai/outputs/team-lead/`. Task files go in the relevant bean
 - Update `ai/beans/_index.md` whenever a bean's status changes
 - Reference `ai/context/bean-workflow.md` for the full lifecycle specification
 - Reference `ai/context/project.md` for detailed architecture and module map
+- Reference `ai/context/orchestration-architecture.md` for the orchestration model — supervisor pattern (`/spawn-task`), context engineering (Inputs validation, contract graph), specialist contracts (`contracts.yml`, typed `/handoff`), architecture-aware evaluation (`/orchestration-report`), and the programmatic VDD gate (`/vdd`)
 - **Every bean MUST have its own feature branch** — create `bean/BEAN-NNN-<slug>` as the first action when picking a bean. No exceptions.
 - **Never commit directly to `main`** — all work happens on feature branches, merged to `main` via Merge Captain
 - **`main` is the integration branch** — feature branches merge directly to `main`. There is no intermediate integration branch.

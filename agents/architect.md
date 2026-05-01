@@ -178,3 +178,4 @@ Write all outputs to `ai/outputs/architect/`. Common output types:
 - Always use `/internal:handoff` when passing work to the next persona
 - Reference `ai/context/project.md` for current architecture
 - Reference `ai/context/bean-workflow.md` for the full workflow lifecycle
+- Reference `ai/context/orchestration-architecture.md` — your `produces:` / `consumes:` contract lives in `ai-team-library/personas/core/architect/contracts.yml`; ADR boundary vs dev-decision rule is in your Scope Boundaries (BEAN-275)

@@ -314,7 +314,10 @@ On error in parallel mode: a single worker failure does not stop other workers. 
 
 - Backlog index at `ai/beans/_index.md`
 - Bean workflow at `ai/context/bean-workflow.md`
+- Orchestration model at `ai/context/orchestration-architecture.md` (supervisor pattern, contracts, VDD gate)
 - Individual bean files at `ai/beans/BEAN-NNN-<slug>/bean.md`
 - Git repository in a clean state (no uncommitted changes)
 - Trello MCP server (optional — used for `/internal:trello-load` sync and card completion; best-effort)
 - `/internal:trello-load` skill for sprint backlog import
+- `/spawn-task` skill for per-task supervisor-pattern dispatch (preferred over in-conversation role-switching during Wave Execution)
+- `/vdd` skill — programmatic VDD gate run before `/internal:merge-bean`; the merge-bean skill refuses to merge without a passing report

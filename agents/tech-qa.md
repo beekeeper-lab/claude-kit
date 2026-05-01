@@ -203,3 +203,4 @@ Write all outputs to `ai/outputs/tech-qa/`. Common output types:
 - Always run `uv run ruff check foundry_app/` for lint
 - Reference `ai/context/project.md` for architecture details
 - Reference `ai/context/bean-workflow.md` for the full workflow lifecycle
+- Reference `ai/context/orchestration-architecture.md` — your `produces:` / `consumes:` contract lives in `ai-team-library/personas/core/tech-qa/contracts.yml`; the programmatic VDD gate (`/vdd`, BEAN-277) is your responsibility to invoke before bean closure

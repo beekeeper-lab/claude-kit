@@ -79,9 +79,26 @@ Place files in `.claude/local/`:
 
 Local assets override shared assets when both have the same filename.
 
-## Publishing changes (foundry only)
+## Override policy: patch upstream vs fork locally
 
-Only the foundry project pushes changes to this repo:
+A local override permanently forks that file — it stops receiving upstream
+improvements. Choose deliberately (ADR-016):
+
+- **Patch upstream (default).** Fixes and generally-useful improvements go
+  back to claude-kit. From any consuming repo run
+  `scripts/kit-contribute.sh <branch-suffix> ["PR title"]` — it branches off
+  kit `origin/main`, pushes (forking automatically if you lack push rights),
+  and opens a PR against beekeeper-lab/claude-kit.
+- **Fork locally.** Only for genuinely project-specific behavior. Copy the
+  file into `.claude/local/`, and record it in `.claude/local/LOCAL-OVERRIDES.md`
+  (one line per file: what diverged and why) so drift stays visible and
+  auditable.
+
+## Publishing changes (foundry maintainers)
+
+Direct pushes are for foundry maintainers; everyone else uses
+`kit-contribute.sh` above. `scripts/claude-publish.sh` refuses to run from a
+detached HEAD — create a branch first:
 
 ```bash
 cd .claude/shared

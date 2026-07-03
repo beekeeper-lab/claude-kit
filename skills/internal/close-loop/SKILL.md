@@ -45,6 +45,8 @@ enforces the quality contract that keeps the autonomous team reliable.
    - **Token counts**: Claude Code does not expose session token counts programmatically. Token fields should be left as `—`. If a future Claude Code update exposes `/cost` data, this can be revisited.
    - Update the bean's **Telemetry per-task table** (in `bean.md`): find the row matching the task number and fill in Task name, Owner, and Duration. Token columns remain `—`.
 9. **If any criteria fail** -- Mark the task as `returned`. Send the verification report back to the producing persona with specific, actionable failure descriptions.
+10. **Retro + memory (SPEC-009)** -- After marking the final task of a bean complete, ask: did this bean surface a lesson that generalizes beyond it? If yes, append a one-line entry to `MEMORY.md` (Process / Personas / Expertise / Kit section). When the lesson implicates a persona, expertise pack, or kit asset, also draft an Unapproved improvement bean naming the file to change.
+11. **Report cadence (SPEC-009)** -- Every 10th closed bean, regenerate the telemetry roll-up before completing: run `uv run foundry-cli orchestration-report` (or `/orchestration-report`). Cheap check: if the newest `ai/outputs/team-lead/orchestration-report-*.md` has a `Generated-through:` more than 10 beans behind the bean being closed, the close is not done until the report is refreshed.
 
 ## Outputs
 

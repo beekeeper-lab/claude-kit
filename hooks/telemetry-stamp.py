@@ -219,12 +219,47 @@ def format_duration(started: str, completed: str) -> str:
         return "< 1m"
 
 
-def git_branch_duration() -> str | None:
-    """Compute duration from the first commit on the current feature branch.
+def parse_timestamp(value: str | None) -> datetime | None:
+    """Parse a metadata timestamp; None if missing/unparseable."""
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value.strip(), TIMESTAMP_FMT)
+    except (ValueError, TypeError):
+        return None
 
-    Uses git to find the first commit on the current branch that isn't on
-    'test' or 'main', and computes elapsed time from that commit to now.
-    Returns a formatted duration string, or None if git data is unavailable.
+
+def _checkpoint_path() -> Path:
+    """Session checkpoint path, keyed by git branch.
+
+    Parallel workers (/long-run --fast N, /spawn-bean --count N) each work
+    on their own branch; keying the checkpoint by branch keeps their token
+    baselines from clobbering each other (SPEC-005).
+    """
+    try:
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True, text=True, timeout=5,
+        ).stdout.strip()
+    except Exception:
+        branch = ""
+    suffix = re.sub(r"[^A-Za-z0-9_-]", "_", branch) if branch else "default"
+    return Path(f"/tmp/.foundry-telemetry-checkpoint-{suffix}.json")
+
+
+# Sanity ceiling for branch-age fallback: a branch older than this is not a
+# plausible work duration (long-lived/rebased branches produce 1000h+ values).
+_BRANCH_AGE_MAX_SECONDS = 7 * 24 * 3600
+
+
+def git_branch_duration() -> str | None:
+    """Compute the AGE of the current feature branch (first commit → now).
+
+    This measures branch age, NOT work duration — long-lived or rebased
+    branches make it wildly exceed real work time (SPEC-005). Use only as
+    a fallback when Started/Completed metadata is missing or unparseable.
+    Returns None if git data is unavailable or the age exceeds the 7-day
+    sanity ceiling.
     """
     try:
         # Get current branch name
@@ -263,6 +298,8 @@ def git_branch_duration() -> str | None:
         if dt_start.tzinfo is None:
             dt_start = dt_start.replace(tzinfo=timezone.utc)
         delta = (dt_now - dt_start).total_seconds()
+        if delta > _BRANCH_AGE_MAX_SECONDS:
+            return None
         return format_seconds(max(0, delta))
 
     except Exception:
@@ -752,7 +789,7 @@ def save_checkpoint(
     The checkpoint is stored in a session-level file (not per-bean) so it
     persists across bean boundaries within a single /long-run session.
     """
-    checkpoint_path = Path("/tmp/.foundry-telemetry-checkpoint.json")
+    checkpoint_path = _checkpoint_path()
     data = {
         "tokens_in": tokens_in,
         "tokens_out": tokens_out,
@@ -768,7 +805,7 @@ def load_checkpoint() -> tuple[int, int, int, int] | None:
     Returns (tokens_in, tokens_out, cache_creation, cache_read)
     or None if no checkpoint exists.
     """
-    checkpoint_path = Path("/tmp/.foundry-telemetry-checkpoint.json")
+    checkpoint_path = _checkpoint_path()
     if not checkpoint_path.exists():
         return None
     try:
@@ -1281,9 +1318,15 @@ def handle_bean_file(path: Path, now: str) -> list[str]:
 
         cur_duration = parse_metadata_field(content, "Duration")
         if needs_stamp(cur_duration):
-            # Prefer git-based duration (second-level precision) over
-            # Started→Completed metadata (minute-level, often 0m for fast beans)
-            duration = git_branch_duration() or format_duration(cur_started, now)
+            # Started→Completed is the work duration. Branch age is only a
+            # fallback when Started is unparseable — it measures how old the
+            # branch is, not how long the work took (SPEC-005).
+            if parse_timestamp(cur_started):
+                duration = format_duration(cur_started, now)
+            else:
+                duration = git_branch_duration() or format_duration(
+                    cur_started, now
+                )
             content = replace_metadata_field(content, "Duration", duration)
             actions.append(f"Duration={duration}")
 
@@ -1299,19 +1342,19 @@ def handle_bean_file(path: Path, now: str) -> list[str]:
 
         total_dur_val = parse_metadata_field(content, "Total Duration")
         if total_dur_val == SENTINEL:
-            # Prefer sum of per-task durations; fall back to git; then
-            # Started/Completed
+            # Prefer sum of per-task durations, then Started→Completed;
+            # branch age only as a last resort (SPEC-005: it measures
+            # branch age, not work duration).
             total_dur = sum_telemetry_durations(content)
-            if not total_dur:
-                total_dur = git_branch_duration()
             if not total_dur:
                 final_started = parse_metadata_field(content, "Started")
                 final_completed = parse_metadata_field(content, "Completed")
-                if (
-                    final_started and final_started != SENTINEL
-                    and final_completed and final_completed != SENTINEL
+                if parse_timestamp(final_started) and parse_timestamp(
+                    final_completed
                 ):
                     total_dur = format_duration(final_started, final_completed)
+            if not total_dur:
+                total_dur = git_branch_duration()
             if total_dur:
                 content = replace_metadata_field(
                     content, "Total Duration", total_dur

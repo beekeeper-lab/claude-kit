@@ -10,12 +10,18 @@
 #
 # Run after: git clone, git pull, git submodule update
 #
+# SPEC-025 hardening: discovery dirs are built in a staging area and swapped
+# into place (a crash or concurrent run never leaves them empty); relative
+# links are computed with python3 (portable — no GNU realpath dependency);
+# settings merge dedups arrays; git-hook install backs up non-kit hooks.
+#
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CLAUDE_DIR="${REPO_ROOT}/.claude"
 KIT_SHARED="${CLAUDE_DIR}/shared"
 LOCAL_DIR="${CLAUDE_DIR}/local"
+STAGE_DIR="${CLAUDE_DIR}/.sync-stage"
 
 DRY_RUN=false
 CHECK_MODE=false
@@ -43,18 +49,24 @@ else
   git -C "$REPO_ROOT" submodule update --init --recursive
 fi
 
+# Portable relative-path computation (macOS ships no GNU realpath).
+relpath() {
+  python3 -c "import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$1" "$2"
+}
+
 # --- Helper: create a relative symlink ---
-# Usage: make_link <target> <link_path>
+# Usage: make_link <target> <link_path> [<final_dir>]
+# When building in the staging area, <final_dir> is the directory the link
+# will live in AFTER the swap — relative targets must be computed against it.
 make_link() {
   local target="$1"
   local link_path="$2"
-  local link_dir
-  link_dir="$(dirname "$link_path")"
+  local final_dir="${3:-$(dirname "$link_path")}"
   local rel_target
-  rel_target="$(realpath --relative-to="$link_dir" "$target")"
+  rel_target="$(relpath "$target" "$final_dir")"
 
   if $CHECK_MODE; then
-    # In check mode, verify the symlink already exists and points correctly
+    # In check mode, link_path is the FINAL path; verify it points correctly
     if [ -L "$link_path" ]; then
       local current
       current="$(readlink "$link_path")"
@@ -74,28 +86,45 @@ make_link() {
   LINKS_CREATED=$((LINKS_CREATED + 1))
 }
 
-# --- Clean and recreate generated directories ---
-clean_generated() {
-  local dir="$1"
-  if [ -d "$dir" ] || [ -L "$dir" ]; then
-    if $DRY_RUN && ! $CHECK_MODE; then
-      log "(dry-run) Would remove: $dir"
-    elif ! $CHECK_MODE; then
-      rm -rf "$dir"
-    fi
+# --- Staging: build_dir returns the directory to write links into ---
+# In check mode we inspect the live dir; otherwise we build in the stage.
+build_dir() {
+  local asset_type="$1"
+  if $CHECK_MODE; then
+    echo "${CLAUDE_DIR}/${asset_type}"
+    return
   fi
-  if ! $DRY_RUN && ! $CHECK_MODE; then
-    mkdir -p "$dir"
+  local staged="${STAGE_DIR}/${asset_type}"
+  if ! $DRY_RUN; then
+    mkdir -p "$staged"
   fi
+  echo "$staged"
+}
+
+# Swap a fully-built staged dir into place (atomic-enough: the discovery
+# path is never left missing or half-built between runs).
+commit_dir() {
+  local asset_type="$1"
+  $CHECK_MODE && return 0
+  $DRY_RUN && return 0
+  local staged="${STAGE_DIR}/${asset_type}"
+  local final="${CLAUDE_DIR}/${asset_type}"
+  local old="${STAGE_DIR}/${asset_type}.old"
+  rm -rf "$old"
+  if [ -d "$final" ] || [ -L "$final" ]; then
+    mv "$final" "$old"
+  fi
+  mv "$staged" "$final"
+  rm -rf "$old"
 }
 
 # --- Sync file-based assets (agents, commands, hooks) ---
 # Symlinks individual files. Local overrides kit on name collision.
 sync_files() {
   local asset_type="$1"       # e.g. "agents", "commands", "hooks"
-  local dest_dir="${CLAUDE_DIR}/${asset_type}"
-
-  clean_generated "$dest_dir"
+  local dest_dir
+  dest_dir="$(build_dir "$asset_type")"
+  local final_dir="${CLAUDE_DIR}/${asset_type}"
 
   # Kit files first (base layer)
   local kit_dir="${KIT_SHARED}/${asset_type}"
@@ -109,7 +138,7 @@ sync_files() {
       if [ -f "${local_asset_dir}/${name}" ]; then
         continue
       fi
-      make_link "$f" "${dest_dir}/${name}"
+      make_link "$f" "${dest_dir}/${name}" "$final_dir"
     done
   fi
 
@@ -123,21 +152,22 @@ sync_files() {
         warn "Local '${name}' overrides kit version in ${asset_type}/"
         OVERRIDES=$((OVERRIDES + 1))
       fi
-      make_link "$f" "${dest_dir}/${name}"
+      make_link "$f" "${dest_dir}/${name}" "$final_dir"
     done
   fi
 }
 
-# --- Sync internal/ subdirectory for commands and skills ---
+# --- Sync internal/ subdirectory for commands (into the staged dir) ---
 sync_internal_files() {
   local asset_type="$1"  # "commands"
-  local dest_dir="${CLAUDE_DIR}/${asset_type}/internal"
+  local dest_dir
+  dest_dir="$(build_dir "$asset_type")/internal"
+  local final_dir="${CLAUDE_DIR}/${asset_type}/internal"
 
   if ! $DRY_RUN && ! $CHECK_MODE; then
     mkdir -p "$dest_dir"
   fi
 
-  # Kit internal files
   local kit_internal="${KIT_SHARED}/${asset_type}/internal"
   local local_internal="${LOCAL_DIR}/${asset_type}/internal"
   if [ -d "$kit_internal" ]; then
@@ -145,15 +175,13 @@ sync_internal_files() {
       [ -f "$f" ] || continue
       local name
       name="$(basename "$f")"
-      # Skip shared files that have a local override
       if [ -f "${local_internal}/${name}" ]; then
         continue
       fi
-      make_link "$f" "${dest_dir}/${name}"
+      make_link "$f" "${dest_dir}/${name}" "$final_dir"
     done
   fi
 
-  # Local internal files (if any exist)
   if [ -d "$local_internal" ]; then
     for f in "$local_internal"/*; do
       [ -f "$f" ] || continue
@@ -163,19 +191,20 @@ sync_internal_files() {
         warn "Local internal '${name}' overrides kit version in ${asset_type}/internal/"
         OVERRIDES=$((OVERRIDES + 1))
       fi
-      make_link "$f" "${dest_dir}/${name}"
+      make_link "$f" "${dest_dir}/${name}" "$final_dir"
     done
   fi
 }
 
 # --- Sync skill directories ---
 # Skills are directories containing SKILL.md, so we symlink entire dirs.
+# Underscore-prefixed dirs (e.g. _media_lib) are support packages, not
+# skills — never link them into the discovery path (SPEC-025).
 sync_skills() {
-  local dest_dir="${CLAUDE_DIR}/skills"
+  local dest_dir
+  dest_dir="$(build_dir "skills")"
+  local final_dir="${CLAUDE_DIR}/skills"
 
-  clean_generated "$dest_dir"
-
-  # Kit public skills
   local kit_skills="${KIT_SHARED}/skills"
   local local_skills="${LOCAL_DIR}/skills"
   if [ -d "$kit_skills" ]; then
@@ -184,36 +213,36 @@ sync_skills() {
       local name
       name="$(basename "$d")"
       [ "$name" = "internal" ] && continue
-      # Skip shared skills that have a local override
+      case "$name" in _*) continue ;; esac
       if [ -d "${local_skills}/${name}" ]; then
         continue
       fi
-      make_link "$d" "${dest_dir}/${name}"
+      make_link "$d" "${dest_dir}/${name}" "$final_dir"
     done
   fi
 
-  # Local public skills
   if [ -d "$local_skills" ]; then
     for d in "$local_skills"/*/; do
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
       [ "$name" = "internal" ] && continue
+      case "$name" in _*) continue ;; esac
       if [ -d "${kit_skills}/${name}" ]; then
         warn "Local skill '${name}' overrides kit version"
         OVERRIDES=$((OVERRIDES + 1))
       fi
-      make_link "$d" "${dest_dir}/${name}"
+      make_link "$d" "${dest_dir}/${name}" "$final_dir"
     done
   fi
 
   # Internal skills subdirectory
   local dest_internal="${dest_dir}/internal"
+  local final_internal="${final_dir}/internal"
   if ! $DRY_RUN && ! $CHECK_MODE; then
     mkdir -p "$dest_internal"
   fi
 
-  # Kit internal skills
   local kit_internal="${KIT_SHARED}/skills/internal"
   local local_internal="${LOCAL_DIR}/skills/internal"
   if [ -d "$kit_internal" ]; then
@@ -221,25 +250,25 @@ sync_skills() {
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
-      # Skip shared skills that have a local override
+      case "$name" in _*) continue ;; esac
       if [ -d "${local_internal}/${name}" ]; then
         continue
       fi
-      make_link "$d" "${dest_internal}/${name}"
+      make_link "$d" "${dest_internal}/${name}" "$final_internal"
     done
   fi
 
-  # Local internal skills (if any exist)
   if [ -d "$local_internal" ]; then
     for d in "$local_internal"/*/; do
       [ -d "$d" ] || continue
       local name
       name="$(basename "$d")"
+      case "$name" in _*) continue ;; esac
       if [ -d "${kit_internal}/${name}" ]; then
         warn "Local internal skill '${name}' overrides kit version"
         OVERRIDES=$((OVERRIDES + 1))
       fi
-      make_link "$d" "${dest_internal}/${name}"
+      make_link "$d" "${dest_internal}/${name}" "$final_internal"
     done
   fi
 }
@@ -301,7 +330,16 @@ def deep_merge(base, override):
         if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = deep_merge(result[key], value)
         elif key in result and isinstance(result[key], list) and isinstance(value, list):
-            result[key] = result[key] + value
+            # Union with dedup (SPEC-025): re-running the merge must not
+            # duplicate hook/permission entries. Dicts compare by content.
+            merged = list(result[key])
+            seen = {json.dumps(v, sort_keys=True) for v in merged}
+            for v in value:
+                key_v = json.dumps(v, sort_keys=True)
+                if key_v not in seen:
+                    merged.append(copy.deepcopy(v))
+                    seen.add(key_v)
+            result[key] = merged
         else:
             result[key] = copy.deepcopy(value)
     return result
@@ -323,11 +361,17 @@ with open('$output', 'w') as f:
 }
 
 # --- Sync mcp.json from local ---
+# NOTE: Claude Code reads MCP servers from the repo-root .mcp.json, not
+# .claude/mcp.json (SPEC-022). Link local MCP config to the root.
 sync_mcp() {
   local local_mcp="${LOCAL_DIR}/mcp.json"
-  local output="${CLAUDE_DIR}/mcp.json"
+  local output="${REPO_ROOT}/.mcp.json"
 
   if [ -f "$local_mcp" ]; then
+    if [ -e "$output" ] && [ ! -L "$output" ]; then
+      warn ".mcp.json exists and is not a symlink — leaving it alone (merge local/mcp.json manually)"
+      return
+    fi
     make_link "$local_mcp" "$output"
   fi
 }
@@ -360,11 +404,11 @@ configure_git() {
 }
 
 # --- Install git hooks from scripts/githooks/ ---
+# Kit hooks first, then project-level hooks (scripts/githooks/) which win
+# on name collision. Existing hooks that came from neither are backed up
+# once as <name>.pre-kit instead of being silently clobbered (SPEC-025).
 install_git_hooks() {
-  local hooks_src="${KIT_SHARED}/scripts/githooks"
-  [ -d "$hooks_src" ] || return 0
-
-  # Also check for project-level githooks
+  local kit_hooks_src="${KIT_SHARED}/scripts/githooks"
   local project_hooks_src="${REPO_ROOT}/scripts/githooks"
 
   # Resolve the hooks directory (works in both main repo and worktrees)
@@ -373,17 +417,29 @@ install_git_hooks() {
   [ -n "$git_dir" ] || return 0
   local hooks_dest="${git_dir}/hooks"
 
-  for hook in "$hooks_src"/*; do
-    [ -f "$hook" ] || continue
-    local name
-    name="$(basename "$hook")"
-    if $DRY_RUN; then
-      log "(dry-run) Would install git hook: ${name}"
-    else
-      cp "$hook" "${hooks_dest}/${name}"
-      chmod +x "${hooks_dest}/${name}"
+  local src
+  for src in "$kit_hooks_src" "$project_hooks_src"; do
+    [ -d "$src" ] || continue
+    for hook in "$src"/*; do
+      [ -f "$hook" ] || continue
+      local name
+      name="$(basename "$hook")"
+      local dest="${hooks_dest}/${name}"
+      if $DRY_RUN; then
+        log "(dry-run) Would install git hook: ${name}"
+        continue
+      fi
+      if [ -f "$dest" ] && ! cmp -s "$hook" "$dest" \
+         && [ ! -f "${dest}.pre-kit" ] \
+         && ! cmp -s "${kit_hooks_src}/${name}" "$dest" 2>/dev/null \
+         && ! cmp -s "${project_hooks_src}/${name}" "$dest" 2>/dev/null; then
+        cp "$dest" "${dest}.pre-kit"
+        warn "Existing git hook '${name}' backed up as ${name}.pre-kit"
+      fi
+      cp "$hook" "$dest"
+      chmod +x "$dest"
       log "Installed git hook: ${name}"
-    fi
+    done
   done
 }
 
@@ -393,16 +449,29 @@ log "  Shared: ${KIT_SHARED}"
 log "  Local:  ${LOCAL_DIR}"
 log ""
 
+if ! $DRY_RUN && ! $CHECK_MODE; then
+  rm -rf "$STAGE_DIR"
+  mkdir -p "$STAGE_DIR"
+fi
+
 sync_files "agents"
 sync_files "commands"
 sync_internal_files "commands"
 sync_files "hooks"
 sync_skills
+commit_dir "agents"
+commit_dir "commands"
+commit_dir "hooks"
+commit_dir "skills"
 merge_settings
 sync_mcp
 sync_settings_local
 configure_git
 install_git_hooks
+
+if ! $DRY_RUN && ! $CHECK_MODE; then
+  rm -rf "$STAGE_DIR"
+fi
 
 log ""
 

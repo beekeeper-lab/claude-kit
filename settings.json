@@ -56,6 +56,35 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/telemetry-stamp.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/format-on-save.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/session-start-context.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/stop-quality-reminder.py\""
+          }
+        ]
       }
     ]
   },

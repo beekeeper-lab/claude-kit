@@ -37,13 +37,6 @@ def main():
         ("/.ssh/", "BLOCKED: Cannot write to SSH directory"),
         ("/.ssh", "BLOCKED: Cannot write to SSH directory"),
 
-        # System files
-        ("/etc/", "BLOCKED: Cannot write to system config directory"),
-        ("/etc", "BLOCKED: Cannot write to system config directory"),
-
-        # Root home
-        ("/root/", "BLOCKED: Cannot write to root home directory"),
-
         # AWS credentials
         ("/.aws/credentials", "BLOCKED: Cannot write to AWS credentials"),
         ("/.aws/config", "BLOCKED: Cannot write to AWS config"),
@@ -58,6 +51,16 @@ def main():
             print(message, file=sys.stderr)
             sys.exit(2)
 
+    # System directories — anchored at the filesystem root so a project
+    # path that merely CONTAINS "/etc" (e.g. myapp/etc/config.yml) is not
+    # a false positive (SPEC-014).
+    if normalized_path == "/etc" or normalized_path.startswith("/etc/"):
+        print("BLOCKED: Cannot write to system config directory", file=sys.stderr)
+        sys.exit(2)
+    if normalized_path == "/root" or normalized_path.startswith("/root/"):
+        print("BLOCKED: Cannot write to root home directory", file=sys.stderr)
+        sys.exit(2)
+
     # === ENV FILE PROTECTION ===
     env_patterns = [
         ".env",
@@ -67,7 +70,12 @@ def main():
         ".env.development",
     ]
 
-    if basename in env_patterns or basename.startswith(".env"):
+    # Templates are meant to be committed and contain no secrets.
+    env_template_allowlist = {".env.example", ".env.template", ".env.sample", ".env.dist"}
+
+    if basename in env_template_allowlist:
+        pass
+    elif basename in env_patterns or basename.startswith(".env"):
         print(f"BLOCKED: Cannot write to environment file ({basename}). These often contain secrets.", file=sys.stderr)
         sys.exit(2)
 

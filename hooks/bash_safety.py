@@ -10,8 +10,20 @@ Blocks dangerous bash commands:
 5. Piping curl/wget to bash (remote code execution)
 """
 import json
-import sys
 import re
+import subprocess
+import sys
+
+
+def _current_branch() -> str:
+    """Current git branch, or '' when not in a repo / git unavailable."""
+    try:
+        return subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True, text=True, timeout=5,
+        ).stdout.strip()
+    except Exception:
+        return ""
 
 
 def main():
@@ -41,18 +53,32 @@ def main():
         (r"curl\s+.*&&\s*(ba)?sh", "BLOCKED: Cannot download and execute scripts"),
         (r"wget\s+.*&&\s*(ba)?sh", "BLOCKED: Cannot download and execute scripts"),
 
-        # Git to main/master protection
-        (r"git\s+push\s+(-[^\s]+\s+)*origin\s+main([\s;|&]|$)", "BLOCKED: Cannot push directly to main. Use a PR instead."),
-        (r"git\s+push\s+(-[^\s]+\s+)*origin\s+master([\s;|&]|$)", "BLOCKED: Cannot push directly to master. Use a PR instead."),
+        # Git to main/master protection. The [\s:] alternative also catches
+        # refspec pushes like `git push origin HEAD:main` / `feature:main`.
+        (r"git\s+push\b[^;|&]*[\s:]main([\s;|&]|$)", "BLOCKED: Cannot push directly to main. Use a PR instead."),
+        (r"git\s+push\b[^;|&]*[\s:]master([\s;|&]|$)", "BLOCKED: Cannot push directly to master. Use a PR instead."),
         (r"git\s+push\s+--force", "BLOCKED: Force push is disabled for safety"),
         (r"git\s+push\s+-f\s+", "BLOCKED: Force push is disabled for safety"),
-        (r"git\s+merge\s+.*\s+main([\s;|&]|$)", "BLOCKED: Cannot merge to main directly"),
-        (r"git\s+merge\s+.*\s+master([\s;|&]|$)", "BLOCKED: Cannot merge to master directly"),
+        # Force-push via refspec (`git push origin +feature`)
+        (r"git\s+push\b[^;|&]*\s\+\S", "BLOCKED: Force push (+refspec) is disabled for safety"),
     ]
 
     for pattern, message in hard_blocks:
         if re.search(pattern, command, re.IGNORECASE):
             print(message, file=sys.stderr)
+            sys.exit(2)
+
+    # Merging while ON a protected branch is the dangerous direction
+    # (`git merge <anything>` merges INTO the current branch). Merging
+    # main INTO a feature branch is a routine update and stays allowed.
+    if re.search(r"git\s+merge\b", command, re.IGNORECASE):
+        branch = _current_branch()
+        if branch in ("main", "master", "test", "prod"):
+            print(
+                f"BLOCKED: Cannot merge into protected branch '{branch}'. "
+                "Use a PR instead.",
+                file=sys.stderr,
+            )
             sys.exit(2)
 
     # === SOFT BLOCKS (blocked but can be overridden) ===
@@ -61,6 +87,9 @@ def main():
         r"rm\s+(-[rf]+\s+)*(node_modules|dist|build|\.cache|__pycache__|\.pytest_cache|coverage|\.nyc_output|\.next|\.nuxt)",
         r"rm\s+(-[rf]+\s+)*\*\.(log|tmp|bak|swp)",
         r"rm\s+[^-]",  # rm without flags on a single file is usually safe
+        # Non-recursive rm -f on relative paths carries the same risk as
+        # plain rm; only recursive/absolute deletions need approval.
+        r"rm\s+-f\s+(?![-/])",
     ]
 
     if re.search(r"\brm\s+", command):

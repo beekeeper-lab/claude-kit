@@ -53,11 +53,29 @@
   "mcpServers": {
     "trello": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-trello"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-trello"
+      ],
       "env": {
         "TRELLO_API_KEY": "${TRELLO_API_KEY}",
         "TRELLO_TOKEN": "${TRELLO_TOKEN}"
       }
     }
+  },
+  "permissions": {
+    "deny": [
+      "Bash(git push origin main:*)",
+      "Bash(git push origin master:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf /:*)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.production)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Write(./.env)"
+    ]
   }
 }

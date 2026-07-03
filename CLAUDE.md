@@ -40,7 +40,11 @@ Two safety hooks run on every tool use:
 - **bash_safety.py** — Blocks dangerous shell commands (force push, rm -rf /, pipe curl to bash, push to main)
 - **write_safety.py** — Blocks writes to sensitive files (.env, SSH keys, /etc, credentials)
 
-These are enforced via `settings.json` PreToolUse hooks and cannot be bypassed.
+These are enforced via `settings.json` PreToolUse hooks, backed by
+`permissions.deny` rules as defense in depth. They are pattern-based guards
+against accidents, not a sandbox — indirect invocations (scripts, `bash -c`,
+variable indirection) can evade them, so they complement rather than replace
+review and branch protection.
 
 ## Available Agents
 

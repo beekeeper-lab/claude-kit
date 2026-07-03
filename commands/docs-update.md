@@ -1,3 +1,8 @@
+---
+name: docs-update
+description: "Audits project documentation against the live codebase and fixes stale values. All facts are gathered by introspection (shell commands, file scans) — nothing is hardcoded."
+---
+
 # /docs-update Command
 
 Audits project documentation against the live codebase and fixes stale values. All facts are gathered by introspection (shell commands, file scans) — nothing is hardcoded.

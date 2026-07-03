@@ -1,3 +1,8 @@
+---
+name: validate-config
+description: "Catch hardcoded secrets, missing config variables, untracked .env files, and cross-environment inconsistencies before they cause outages or security incidents. This is the config equivalent of running a linter -- it catches the common mistakes that break deployments and leak credentials."
+---
+
 # /validate-config Command
 
 Claude Code slash command that checks configuration hygiene and detects exposed secrets.

@@ -1,3 +1,8 @@
+---
+name: new-dev-decision
+description: "Capture implementation-level decisions that matter but don't warrant a full ADR. Library choices, algorithm approaches, error handling strategies, performance tradeoffs — the decisions that make a future developer ask 'why did we do it this way?' This creates a searchable decision log so the answer is always one grep away."
+---
+
 # /new-dev-decision Command
 
 Claude Code slash command that records a lightweight developer decision.

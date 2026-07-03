@@ -1,3 +1,8 @@
+---
+name: notes-to-stories
+description: "Turn meeting notes, feature requests, brainstorming output, or any unstructured text into properly formatted user stories. Each story gets testable acceptance criteria, open questions are flagged, and risks are identified. This is the starting point for a delivery cycle -- raw ideas go in, structured backlog items come out."
+---
+
 # /notes-to-stories Command
 
 Claude Code slash command that converts unstructured notes into user stories with acceptance criteria.

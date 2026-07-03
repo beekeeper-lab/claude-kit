@@ -1,3 +1,8 @@
+---
+name: new-adr
+description: "Document a significant technical or architectural decision with context, options, tradeoffs, rationale, and consequences. ADRs create a searchable decision history so the team understands *why* the codebase looks the way it does -- not just *what* it does."
+---
+
 # /new-adr Command
 
 Claude Code slash command that creates a new Architecture Decision Record.

@@ -1,3 +1,8 @@
+---
+name: generate-screen
+description: "Generate responsive UI screens/pages from text descriptions, field definitions, diagrams, and style references. Code lands in your project's source tree."
+---
+
 # /generate-screen Command
 
 Generate responsive UI screens/pages from text descriptions, field definitions, diagrams, and style references. Code lands in your project's source tree.

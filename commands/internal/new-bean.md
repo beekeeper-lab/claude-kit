@@ -1,3 +1,8 @@
+---
+name: new-bean
+description: "Automates the boilerplate of creating a new bean: assigning the next sequential ID, creating the directory with tasks/ subdirectory, populating bean.md from the template, and appending the entry to _index.md. This eliminates manual copy-paste errors and ensures every bean follows the standard format."
+---
+
 # /new-bean Command
 
 Claude Code slash command that creates a new bean (work item) in the beans backlog with the correct ID, directory structure, and index entry.

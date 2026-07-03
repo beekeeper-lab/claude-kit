@@ -1,3 +1,8 @@
+---
+name: long-run
+description: "Automates the manual loop of picking a bean, decomposing it into tasks, executing the team wave, verifying results, and committing — then moving on to the next bean. The Team Lead selects beans based on priority, dependencies, and logical ordering."
+---
+
 # /long-run Command
 
 Claude Code slash command that puts the Team Lead in autonomous mode, processing beans from the backlog until the backlog is empty or no actionable beans remain. Supports sequential (default) and parallel (`--fast N`) modes.

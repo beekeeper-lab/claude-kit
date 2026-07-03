@@ -1,3 +1,8 @@
+---
+name: run
+description: "Pulls the latest code from a branch and launches the Foundry desktop app."
+---
+
 # /run Command
 
 Pulls the latest code from a branch and launches the Foundry desktop app.

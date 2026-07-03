@@ -1,3 +1,8 @@
+---
+name: scaffold-project
+description: "Set up the complete repo skeleton for a Foundry-generated project. This creates the directory structure, CLAUDE.md, agent wrappers, context documents, and output folders that all personas and skills operate within. Run this before /internal:compile-team and /internal:seed-tasks."
+---
+
 # /scaffold-project Command
 
 Claude Code slash command that creates a new project folder structure from a composition spec.

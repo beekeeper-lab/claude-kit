@@ -1,3 +1,8 @@
+---
+name: git-status
+description: "Show the sync status of all tracked branches in a clear table with actionable next steps."
+---
+
 # /git-status Command
 
 Show the sync status of all tracked branches in a clear table with actionable next steps.

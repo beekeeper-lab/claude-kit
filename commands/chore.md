@@ -1,3 +1,8 @@
+---
+name: chore
+description: "Create a new plan in specs/*.md to resolve the Chore using the exact specified markdown Plan Format. Follow the Instructions to create the plan using Test-Driven Development principles where applicable."
+---
+
 # Chore Planning (TDD Approach)
 
 Create a new plan in specs/*.md to resolve the `Chore` using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan using **Test-Driven Development** principles where applicable.

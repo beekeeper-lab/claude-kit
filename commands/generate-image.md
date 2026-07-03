@@ -1,3 +1,8 @@
+---
+name: generate-image
+description: "Generate image assets from text prompts using Gemini's Nano Banana models."
+---
+
 # /generate-image Command
 
 Generate image assets from text prompts using Gemini's Nano Banana models.

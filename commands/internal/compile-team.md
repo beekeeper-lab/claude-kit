@@ -1,3 +1,8 @@
+---
+name: compile-team
+description: "Assemble a unified CLAUDE.md file and supporting artifacts from the AI Team Library. The command reads a composition spec (which personas, stacks, and hooks were selected), resolves all references against the library, and produces a single compiled output that Claude Code can consume as its operating instructions for the project."
+---
+
 # /compile-team Command
 
 Claude Code slash command that compiles selected personas, stacks, and workflows into a complete team configuration ready for use in a project workspace.

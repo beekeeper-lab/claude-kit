@@ -1,3 +1,8 @@
+---
+name: deploy
+description: "Promotes code through the deployment pipeline using pull requests. Two modes: /deploy test merges the current branch into test (staging), and /deploy promotes test into main (production) with tagging and branch cleanup."
+---
+
 # /deploy Command
 
 Promotes code through the deployment pipeline using pull requests. Two modes: `/deploy test` merges the current branch into `test` (staging), and `/deploy` promotes `test` into `main` (production) with tagging and branch cleanup.

@@ -1,3 +1,8 @@
+---
+name: generate-image
+description: "Use this skill when the user asks to: Generate an image, icon, hero image, splash screen, or any visual asset; Generate every image planned for a project from an IMAGE-PLAN.md; Re-run image generation to fill in newly added entries; Create concept art, illustrations, or infographics; Also used programmatically by generate-screen (which invokes the single-shot path)."
+---
+
 # Skill: Generate Image
 
 ## Description

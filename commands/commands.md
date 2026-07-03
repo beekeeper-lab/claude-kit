@@ -1,3 +1,8 @@
+---
+name: commands
+description: "Prints a quick-reference table of all available slash commands with usage and flags."
+---
+
 # /commands Command
 
 Prints a quick-reference table of all available slash commands with usage and flags.

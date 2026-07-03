@@ -1,3 +1,8 @@
+---
+name: test-gen
+description: "Generate tests for the specified component or functionality. Focus primarily on UI/E2E tests using Playwright MCP, with unit tests as backup for uncovered logic."
+---
+
 # Test Generation (UI-First Approach)
 
 Generate tests for the specified component or functionality. **Focus primarily on UI/E2E tests** using Playwright MCP, with unit tests as backup for uncovered logic.

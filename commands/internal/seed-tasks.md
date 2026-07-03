@@ -1,3 +1,8 @@
+---
+name: seed-tasks
+description: "Bootstrap a project's task backlog by decomposing high-level objectives into discrete, assignable tasks. Each task is mapped to the most appropriate persona, given a priority, and linked to its dependencies. The output is a set of task files and a dependency graph that the Team Lead can immediately begin executing against."
+---
+
 # /seed-tasks Command
 
 Claude Code slash command that generates an initial set of tasks from project objectives and assigns them to team personas.

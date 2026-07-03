@@ -1,3 +1,8 @@
+---
+name: handoff
+description: "Package everything the next persona needs to pick up where the previous one left off. When the Architect finishes the design and the Developer needs to start implementing, or when the Developer finishes and Tech-QA needs to verify, the handoff packet bundles the artifacts, decisions, assumptions, next steps, and risks into one document. No context lost between the baton pass."
+---
+
 # /handoff Command
 
 Claude Code slash command that creates a structured handoff packet between personas.

@@ -1,3 +1,8 @@
+---
+name: deploy
+description: "- Invoked by the /deploy slash command. - /deploy test can be run from any feature branch. - /deploy (no args) must be run when test is ahead of main."
+---
+
 # Skill: Deploy
 
 ## Description

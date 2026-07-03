@@ -1,3 +1,8 @@
+---
+name: bug
+description: "Create a new plan in specs/*.md to resolve the Bug using the exact specified markdown Plan Format. Follow the Instructions to create the plan using Test-Driven Development principles."
+---
+
 # Bug Planning (TDD Approach)
 
 Create a new plan in specs/*.md to resolve the `Bug` using the exact specified markdown `Plan Format`. Follow the `Instructions` to create the plan using **Test-Driven Development** principles.

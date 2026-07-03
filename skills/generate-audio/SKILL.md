@@ -1,3 +1,8 @@
+---
+name: generate-audio
+description: "Use this skill when the user asks to: Generate narration MP3s for a markdown course/document set with inline > 🎙️ blocks; Re-run audio generation to fill in newly added narration blocks; Regenerate audio for blocks whose text has been edited; Preview what a generation run would do before spending credits"
+---
+
 # Skill: Generate Audio
 
 ## Description

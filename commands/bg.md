@@ -1,3 +1,8 @@
+---
+name: bg
+description: "Runs any slash command in a background tmux window so you can keep working in your current window."
+---
+
 # /bg Command
 
 Runs any slash command in a background tmux window so you can keep working in your current window.

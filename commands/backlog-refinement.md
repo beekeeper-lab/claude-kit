@@ -1,3 +1,8 @@
+---
+name: backlog-refinement
+description: "Provides a structured 'front door' to the beans workflow. Instead of requiring users to already know how to decompose their ideas into well-scoped beans, this command accepts free-form text and guides the user through a conversational refinement process. The Team Lead analyzes the input, asks clarifying questions, and creates properly-formed beans once understanding is clear."
+---
+
 # /backlog-refinement Command
 
 Claude Code slash command that turns raw ideas, feature descriptions, or broad vision text into one or more well-formed beans through an iterative dialogue with the Team Lead.

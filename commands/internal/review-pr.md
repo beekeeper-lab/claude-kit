@@ -1,3 +1,8 @@
+---
+name: review-pr
+description: "Run a repeatable, checklist-driven code review covering readability, correctness, maintainability, convention consistency, test coverage, and security. Produces a clear verdict (ship / ship with comments / request changes) with actionable, line-level feedback. Optionally enforces green checks (tests + lint) as a gate before review begins."
+---
+
 # /review-pr Command
 
 Claude Code slash command that performs a structured code review.

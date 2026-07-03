@@ -1,3 +1,8 @@
+---
+name: review-beans
+description: "Provides a comfortable way to review, edit, and approve beans outside the terminal. The user edits bean files directly in Obsidian — including changing status from Unapproved to Approved — and the changes persist because they are editing the real files."
+---
+
 # /review-beans Command
 
 Generates a filtered Map of Content (MOC) linking to beans by status, then opens Obsidian on the `ai/beans/` directory for review.

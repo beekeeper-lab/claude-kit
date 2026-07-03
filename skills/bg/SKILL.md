@@ -1,3 +1,8 @@
+---
+name: bg
+description: "Invoked by the /bg slash command with a command name and optional arguments."
+---
+
 # Skill: Background Command Execution
 
 ## Description

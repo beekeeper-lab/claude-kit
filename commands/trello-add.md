@@ -1,3 +1,8 @@
+---
+name: trello-add
+description: "Creates a Trello card from the command line. First line of text becomes the card name; remaining lines become the description."
+---
+
 # /trello-add Command
 
 Creates a Trello card from the command line. First line of text becomes the card name; remaining lines become the description.

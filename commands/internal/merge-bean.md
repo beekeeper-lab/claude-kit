@@ -1,3 +1,8 @@
+---
+name: merge-bean
+description: "After a bean has been verified and committed on its feature branch, the Merge Captain safely merges the work into test. This is the final stage of the bean execution wave — it integrates completed work so other beans and the team can build on it."
+---
+
 # /merge-bean Command
 
 Claude Code slash command that merges a bean's feature branch into a target branch (default: `test`) using a safe merge sequence.

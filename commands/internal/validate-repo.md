@@ -1,3 +1,8 @@
+---
+name: validate-repo
+description: "Verify that a project's structure, files, internal links, and stack-specific tooling are all in good shape. Catches missing files, broken references, secrets exposure, and configuration drift before they cause problems during development or export."
+---
+
 # /validate-repo Command
 
 Claude Code slash command that runs a comprehensive health check on a Foundry project.

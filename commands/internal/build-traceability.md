@@ -1,3 +1,8 @@
+---
+name: build-traceability
+description: "Map every acceptance criterion to the test cases that verify it, and every test case back to the criteria it covers. Produces a matrix showing coverage and a gap report highlighting untested requirements and orphaned tests. Essential for regulated posture projects; valuable for any project that needs confidence in test coverage."
+---
+
 # /build-traceability Command
 
 Claude Code slash command that builds a requirements-to-tests traceability matrix.

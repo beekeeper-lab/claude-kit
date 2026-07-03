@@ -1,3 +1,8 @@
+---
+name: backlog-consolidate
+description: "When multiple refinement sessions run in parallel (e.g., 3 Claude windows creating 5-7 beans each), the resulting 15-20 new beans inevitably contain duplicates, overlapping scope, contradictions, and dependency gaps. This command automates the detection of these issues and provides an iterative dialogue to clean up the backlog."
+---
+
 # /backlog-consolidate Command
 
 Claude Code slash command that detects and resolves duplicates, overlaps, contradictions, missing dependencies, and merge opportunities across recently created beans. Designed for post-refinement cleanup after running multiple `/backlog-refinement` sessions in parallel.

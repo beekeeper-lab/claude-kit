@@ -28,15 +28,15 @@ Show the sync status of all tracked branches in a clear table with actionable ne
    - `git rev-list --left-right --count origin/test...test` → same (skip if no local `test`)
 6. **Compare server test ↔ server main (deploy pipeline):**
    - `git rev-list --left-right --count origin/test...origin/main` → parse as `<test_ahead>\t<main_ahead>`
-7. **Compare .claude/kit submodule ↔ its remote:**
-   - Check if `.claude/kit` is a submodule: `test -f .claude/kit/.git || test -d .claude/kit/.git`
+7. **Compare .claude/shared submodule ↔ its remote:**
+   - Check if `.claude/shared` is a submodule: `test -f .claude/shared/.git || test -d .claude/shared/.git`
    - If not a submodule: skip this section and note "claude-kit submodule not configured"
-   - Fetch latest in submodule: `git -C .claude/kit fetch origin 2>/dev/null`
-   - Get local submodule HEAD: `git -C .claude/kit rev-parse --short HEAD`
-   - Get remote HEAD: `git -C .claude/kit rev-parse --short origin/main`
-   - Compare: `git -C .claude/kit rev-list --left-right --count origin/main...HEAD` → parse as `<behind>\t<ahead>`
-   - Check if parent repo's recorded commit matches submodule HEAD: `git rev-parse --short HEAD:.claude/kit` vs `git -C .claude/kit rev-parse --short HEAD`
-   - Check for uncommitted changes in submodule: `git -C .claude/kit status --porcelain`
+   - Fetch latest in submodule: `git -C .claude/shared fetch origin 2>/dev/null`
+   - Get local submodule HEAD: `git -C .claude/shared rev-parse --short HEAD`
+   - Get remote HEAD: `git -C .claude/shared rev-parse --short origin/main`
+   - Compare: `git -C .claude/shared rev-list --left-right --count origin/main...HEAD` → parse as `<behind>\t<ahead>`
+   - Check if parent repo's recorded commit matches submodule HEAD: `git rev-parse --short HEAD:.claude/shared` vs `git -C .claude/shared rev-parse --short HEAD`
+   - Check for uncommitted changes in submodule: `git -C .claude/shared status --porcelain`
 
 ## Output Format
 
@@ -98,10 +98,10 @@ Shows the promotion gap between `test` (staging) and `main` (production) on the 
 
 ### Claude Kit Sync table
 
-Shows whether the `.claude/kit` submodule is in sync with its remote. Keep this in sync to share improvements across projects.
+Shows whether the `.claude/shared` submodule is in sync with its remote. Keep this in sync to share improvements across projects.
 
 ```
-### Claude Kit Submodule (.claude/kit)
+### Claude Kit Submodule (.claude/shared)
 
 | Local    | Remote   | Recorded | Status    | Action Needed |
 |----------|----------|----------|-----------|---------------|
@@ -110,16 +110,16 @@ Shows whether the `.claude/kit` submodule is in sync with its remote. Keep this 
 
 - **Local** = submodule's current HEAD
 - **Remote** = `origin/main` in the submodule
-- **Recorded** = commit the parent repo expects (from `git rev-parse HEAD:.claude/kit`)
+- **Recorded** = commit the parent repo expects (from `git rev-parse HEAD:.claude/shared`)
 
 **Status and Action rules (evaluated in priority order):**
 
 | Condition | Status | Action |
 |-----------|--------|--------|
-| Submodule has uncommitted changes | ⚠ Dirty | Commit in `.claude/kit` first |
-| Local ahead of remote | ⚠ N ahead | `git -C .claude/kit push origin main` |
+| Submodule has uncommitted changes | ⚠ Dirty | Commit in `.claude/shared` first |
+| Local ahead of remote | ⚠ N ahead | `git -C .claude/shared push origin main` |
 | Local behind remote | ⚠ N behind | `./scripts/claude-sync.sh` |
-| Local != Recorded | ⚠ Pointer drift | `git add .claude/kit && git commit -m "Update claude-kit submodule"` |
+| Local != Recorded | ⚠ Pointer drift | `git add .claude/shared && git commit -m "Update claude-kit submodule"` |
 | All match, clean | ✓ In sync | — |
 | Not a submodule | — Not configured | Skip this section |
 
@@ -153,7 +153,7 @@ After the tables, add a one-line **Next step** that tells the user the single mo
 |------|------|-----|-----------|---------------|
 | test | main | —   | ✓ In sync | —             |
 
-### Claude Kit Submodule (.claude/kit)
+### Claude Kit Submodule (.claude/shared)
 
 | Local    | Remote   | Recorded | Status    | Action Needed |
 |----------|----------|----------|-----------|---------------|
@@ -182,7 +182,7 @@ All clear — nothing to do.
 |------|------|-----|-----------|---------------|
 | test | main | —   | ✓ In sync | —             |
 
-### Claude Kit Submodule (.claude/kit)
+### Claude Kit Submodule (.claude/shared)
 
 | Local    | Remote   | Recorded | Status              | Action Needed              |
 |----------|----------|----------|---------------------|----------------------------|
@@ -213,7 +213,7 @@ All clear — nothing to do.
 |------|------|-----|-----------|---------------|
 | test | main | —   | ✓ In sync | —             |
 
-### Claude Kit Submodule (.claude/kit)
+### Claude Kit Submodule (.claude/shared)
 
 | Local    | Remote   | Recorded | Status    | Action Needed |
 |----------|----------|----------|-----------|---------------|
@@ -242,7 +242,7 @@ All clear — nothing to do.
 |------|------|-----------------|--------------|---------------|
 | test | main | 2 commits ahead | ⚠ test ahead | `/deploy`     |
 
-### Claude Kit Submodule (.claude/kit)
+### Claude Kit Submodule (.claude/shared)
 
 | Local    | Remote   | Recorded | Status    | Action Needed |
 |----------|----------|----------|-----------|---------------|

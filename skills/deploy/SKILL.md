@@ -148,9 +148,9 @@ All merges use `gh pr create` + `gh pr merge` for traceability. One approval pro
     - Create annotated tag: `git tag -a <tag> -m "Deploy: <date> — <bean list>"`.
     - Push tag: `git push origin --tags`.
 
-19a. **Verify claude-kit submodule is in sync** — Ensure the `.claude/kit` submodule has been pushed:
-    - Run `git -C .claude/kit status --porcelain`. If dirty: warn "claude-kit submodule has uncommitted changes" and skip.
-    - Run `git -C .claude/kit log @{u}..HEAD --oneline 2>/dev/null`. If there are unpushed commits: run `git -C .claude/kit push` to sync.
+19a. **Verify claude-kit submodule is in sync** — Ensure the `.claude/shared` submodule has been pushed:
+    - Run `git -C .claude/shared status --porcelain`. If dirty: warn "claude-kit submodule has uncommitted changes" and skip.
+    - Run `git -C .claude/shared log @{u}..HEAD --oneline 2>/dev/null`. If there are unpushed commits: run `git -C .claude/shared push` to sync.
     - If already in sync or no upstream configured: skip.
 
 20. **Delete local feature branches** — All `bean/*` branches merged into test: `git branch -d`. Stale/orphaned ones for Done beans: `git branch -D`.

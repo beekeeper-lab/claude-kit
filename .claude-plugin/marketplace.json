@@ -1,0 +1,13 @@
+{
+  "name": "beekeeper-lab",
+  "owner": {
+    "name": "beekeeper-lab"
+  },
+  "plugins": [
+    {
+      "name": "claude-kit",
+      "source": ".",
+      "description": "beekeeper-lab shared agentic assets — commands, skills, agents, safety and workflow hooks"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "claude-kit",
+  "version": "1.0.0",
+  "description": "beekeeper-lab shared agentic assets — commands, skills, agents, safety and workflow hooks",
+  "author": {
+    "name": "beekeeper-lab"
+  }
+}

@@ -94,6 +94,33 @@ improvements. Choose deliberately (ADR-016):
   (one line per file: what diverged and why) so drift stays visible and
   auditable.
 
+## Installing as a plugin (ADR-016)
+
+claude-kit is also packaged as a Claude Code plugin (`.claude-plugin/plugin.json`),
+with a self-hosted marketplace listing in the same repo. To install:
+
+```
+/plugin marketplace add beekeeper-lab/claude-kit
+/plugin install claude-kit@beekeeper-lab
+```
+
+Notes:
+
+- **Plugin install replaces the submodule + `claude-sync.sh` apparatus** for the
+  shared layer: commands, skills, agents, and hooks are discovered from the
+  plugin, and hook wiring comes from `hooks/hooks.json` instead of a merged
+  `settings.json`.
+- **Project-local `.claude/` files still layer on top** — project-specific
+  commands, agents, skills, and settings work exactly as before.
+- **Submodule consumers keep working unchanged during migration.** Per ADR-016
+  the rollout is staged (hybrid): the submodule path remains fully supported
+  until all consumers have moved to the plugin.
+- **Migration caveat:** the plugin format carries hooks but not the
+  `permissions.deny` defense-in-depth rules from `settings.json` — plugin
+  consumers should copy that block into their project's own
+  `.claude/settings.json` (or settings.local.json) until permissions ship
+  in a plugin-native form.
+
 ## Publishing changes (foundry maintainers)
 
 Direct pushes are for foundry maintainers; everyone else uses

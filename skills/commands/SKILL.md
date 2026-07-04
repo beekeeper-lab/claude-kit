@@ -1,3 +1,8 @@
+---
+name: commands
+description: "- Invoked by the /commands slash command."
+---
+
 # Skill: Commands
 
 ## Description

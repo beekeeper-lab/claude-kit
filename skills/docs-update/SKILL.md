@@ -1,3 +1,8 @@
+---
+name: docs-update
+description: "- Invoked by the /docs-update slash command."
+---
+
 # Skill: Docs Update
 
 ## Description

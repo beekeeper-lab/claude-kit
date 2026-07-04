@@ -1,3 +1,8 @@
+---
+name: implement
+description: "Follow the Instructions to implement the Plan then Report the completed work."
+---
+
 # Implement the following plan
 Follow the `Instructions` to implement the `Plan` then `Report` the completed work.
 

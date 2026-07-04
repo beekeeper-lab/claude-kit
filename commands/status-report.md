@@ -1,3 +1,8 @@
+---
+name: status-report
+description: "Produce a structured status report by scanning the project workspace for task states, completed artifacts, and outstanding blockers. The report gives the Team Lead (and stakeholders) a single-document view of where the project stands without manually assembling updates from each persona. Output follows the status report template from personas/team-lead/templates/status-report.md."
+---
+
 # /status-report Command
 
 Claude Code slash command that generates a status report summarizing current progress, blockers, and next steps across the team.

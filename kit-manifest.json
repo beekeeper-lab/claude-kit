@@ -1,0 +1,9 @@
+{
+  "name": "claude-kit",
+  "distributed_skills": [
+    "_media_lib",
+    "generate-audio",
+    "generate-image",
+    "generate-screen"
+  ]
+}

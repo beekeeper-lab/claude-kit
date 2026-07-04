@@ -1,3 +1,8 @@
+---
+name: spawn-bean
+description: "Spawns one or more tmux workers, each running a Team Lead Claude Code agent that picks and executes a bean autonomously. Workers report progress via status files. The main window displays a live dashboard. Workers auto-submit their prompt and auto-close when done."
+---
+
 # /spawn-bean Command
 
 Spawns one or more tmux workers, each running a Team Lead Claude Code agent that picks and executes a bean autonomously. Workers report progress via status files. The main window displays a live dashboard. Workers auto-submit their prompt and auto-close when done.
@@ -122,7 +127,7 @@ LAUNCHER=$(mktemp /tmp/foundry-bean-XXXXXX.sh)
 cat > "$LAUNCHER" << SCRIPT_EOF
 #!/bin/bash
 cd "$WORKTREE_DIR"
-claude --dangerously-skip-permissions --agent team-lead \
+claude --agent team-lead \
   "$PROMPT"
 SCRIPT_EOF
 chmod +x "$LAUNCHER"
@@ -398,7 +403,7 @@ Workers clean up automatically:
 
 ## Important Notes
 
-- Each spawned Claude runs with `--dangerously-skip-permissions` and `--agent team-lead`
+- Each spawned Claude runs with `--agent team-lead` under the standard permission mode (ADR-017: bypass flags defeat the safety hooks)
 - **Windows mode** (default): each worker is a separate window (dot in status bar). Navigate with `Alt-N` or `` ` e ``
 - **Wide mode** (`--wide`): all workers share one window as tiled panes — ideal for large monitors where you can see all workers at once
 - **Git worktrees** provide isolation: each worker gets its own working directory at `/tmp/foundry-worktree-BEAN-NNN/`. No branch collisions, no file stomping between workers.

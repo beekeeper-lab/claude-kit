@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "branch=$(git branch --show-current 2>/dev/null); if [ \"$branch\" = \"main\" ] || [ \"$branch\" = \"master\" ]; then echo 'BLOCKED: Cannot edit files on main. Create a feature branch first: git checkout -b <branch-name>'; exit 1; fi"
+            "command": "branch=$(git branch --show-current 2>/dev/null); if [ \"$branch\" = \"main\" ] || [ \"$branch\" = \"master\" ] || [ \"$branch\" = \"test\" ] || [ \"$branch\" = \"prod\" ]; then echo 'BLOCKED: Cannot edit files on a protected branch ($branch). Create a feature branch first.'; exit 1; fi"
           }
         ]
       },
@@ -36,6 +36,24 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/validate-task-inputs.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/vdd-gate.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/handoff-reminder.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -47,17 +65,51 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/telemetry-stamp.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/format-on-save.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/session-start-context.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/stop-quality-reminder.py\""
+          }
+        ]
       }
     ]
   },
-  "mcpServers": {
-    "trello": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-trello"],
-      "env": {
-        "TRELLO_API_KEY": "${TRELLO_API_KEY}",
-        "TRELLO_TOKEN": "${TRELLO_TOKEN}"
-      }
-    }
+  "permissions": {
+    "deny": [
+      "Bash(git push origin main:*)",
+      "Bash(git push origin master:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf /:*)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.production)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Write(./.env)"
+    ]
   }
 }

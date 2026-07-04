@@ -1,3 +1,8 @@
+---
+name: generate-screen
+description: "Use this skill when the user asks to: - Generate a UI screen, page, form, dashboard, or wizard - Build a responsive layout from field definitions or requirements - Create a page based on a Mermaid diagram or data model - Build a screen that matches an existing style or reference image - Generate a page using existing project components and patterns - Create a UI from a CSV/JSON field list"
+---
+
 # Skill: Generate Screen
 
 ## Description

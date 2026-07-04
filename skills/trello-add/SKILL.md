@@ -1,3 +1,8 @@
+---
+name: trello-add
+description: "- Invoked by the /trello-add slash command. - Requires the Trello MCP server to be configured and accessible."
+---
+
 # Skill: Trello Add
 
 ## Description

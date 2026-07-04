@@ -45,6 +45,15 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/vdd-gate.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/shared/hooks/handoff-reminder.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [

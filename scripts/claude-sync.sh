@@ -436,8 +436,13 @@ install_git_hooks() {
         cp "$dest" "${dest}.pre-kit"
         warn "Existing git hook '${name}' backed up as ${name}.pre-kit"
       fi
-      cp "$hook" "$dest"
-      chmod +x "$dest"
+      # Atomic rename, never cp-in-place: this sync often runs FROM a git
+      # hook (post-checkout/post-merge), and cp'ing over the executing
+      # script corrupts bash's read position mid-run ("unexpected EOF").
+      local tmp="${dest}.tmp.$$"
+      cp "$hook" "$tmp"
+      chmod +x "$tmp"
+      mv -f "$tmp" "$dest"
       log "Installed git hook: ${name}"
     done
   done
